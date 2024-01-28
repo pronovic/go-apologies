@@ -11,10 +11,10 @@ func (e Sample) Value() string { return e.value }
 
 var Value1 = Sample{"Value1"}
 var Value2 = Sample{"Value2"}
-var SampleValues = Values[Sample](Value1, Value2)
+var SampleValues = NewValues[Sample](Value1, Value2)
 
 func TestMembers(t *testing.T) {
-	assert.Equal(t, []Enum{Value1, Value2}, SampleValues.members)
+	assert.Equal(t, []Sample{Value1, Value2}, SampleValues.Members())
 }
 
 func TestMemberValues(t *testing.T) {
@@ -30,7 +30,7 @@ func TestMemberOf(t *testing.T) {
 
 func TestGetMember(t *testing.T) {
 	var err error
-	var member Enum
+	var member Sample
 
 	_, err = SampleValues.GetMember("")
 	assert.EqualError(t, err, "member not found")
