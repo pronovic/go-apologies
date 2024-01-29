@@ -7,24 +7,29 @@ import (
 )
 
 // CircularQueue is a fixed-sized queue that keeps returning its contents repeatedly, in order.
-type CircularQueue[T any] struct {
+type CircularQueue[T any] interface {
+	SetFirst(entry T) error
+	Next() (T, error)
+}
+
+type circularQueue[T any] struct {
 	wrapped *queue.CircularQueue[T]
 }
 
 // New constructs a circular queue with the contents of an array or slice.
 func New[T any](entries []T) CircularQueue[T] {
 	wrapped := queue.New[T]()
-	q := CircularQueue[T]{&wrapped}
+	q := circularQueue[T]{&wrapped}
 
 	for _, e := range entries {
 		q.wrapped.Enqueue(e)
 	}
 
-	return q
+	return &q
 }
 
 // SetFirst moves the indicated entry to the front of the circular queue, returning an error if not found
-func (q *CircularQueue[T]) SetFirst(entry T) error {
+func (q *circularQueue[T]) SetFirst(entry T) error {
 	if q.wrapped.IsEmpty() {
 		return errors.New("queue is empty")
 	}
@@ -43,7 +48,7 @@ func (q *CircularQueue[T]) SetFirst(entry T) error {
 }
 
 // Next gets the next entry in the queue, wrapping around to the front if needed
-func (q *CircularQueue[T]) Next() (T, error) {
+func (q *circularQueue[T]) Next() (T, error) {
 	if q.wrapped.IsEmpty() {
 		return *new(T), errors.New("queue is empty")
 	}
