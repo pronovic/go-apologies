@@ -1,8 +1,12 @@
 package pkg
 
 import (
+	"crypto/rand"
+	"errors"
 	"fmt"
 	"github.com/pronovic/go-apologies/pkg/util/enum"
+	"math/big"
+	"strconv"
 )
 
 // MinPlayers a game consists of at least 2 players
@@ -32,7 +36,7 @@ var Adult = GameMode{"Adult"}
 // GameModes is the list of all legal GameMode enumerations
 var GameModes = enum.NewValues[GameMode](Standard, Adult)
 
-// PlayerColor defines all legal player colors, in order of use
+// PlayerColor defines all legal player colors
 type PlayerColor struct{ value string }
 
 // Value implements the enum.Enum interface for PlayerColor.
@@ -43,7 +47,7 @@ var Yellow = PlayerColor{"Yellow"}
 var Blue = PlayerColor{"Blue"}
 var Green = PlayerColor{"Green"}
 
-// PlayerColors is the list of all legal PlayerColor enumerations
+// PlayerColors is the list of all legal PlayerColor enumerations, in order of use
 var PlayerColors = enum.NewValues[PlayerColor](Red, Yellow, Blue, Green)
 
 // CardType defines all legal types of cards
@@ -87,9 +91,9 @@ var DeckCounts = map[CardType]int{
 }
 
 // DeckSize is the total size of the deck
-var DeckSize = func(m map[CardType]int) int {
+var DeckSize = func(counts map[CardType]int) int {
 	var total = 0
-	for _, v := range m {
+	for _, v := range counts {
 		total += v
 	}
 	return total
@@ -142,8 +146,8 @@ func (c *card) Type() CardType {
 
 // Deck The deck of cards associated with a game.
 type Deck interface {
-	Draw() Card
-	Discard(card Card) Card
+	Draw() (Card, error)
+	Discard(card Card) error
 }
 
 type deck struct {
@@ -155,9 +159,12 @@ func NewDeck() Deck {
 	var drawPile = make(map[string]Card)
 	var discardPile = make(map[string]Card)
 
+	var count = 0
 	for _, c := range CardTypes.Members() {
-		for i := 0; i < DeckCounts[CardType(c)]; i++ { // TODO: WTF, is this sort of organzation just impossible ??!?!
-
+		for i := 0; i < DeckCounts[c]; i++ {
+			var id = strconv.Itoa(count)
+			drawPile[id] = NewCard(id, c)
+			count += 1
 		}
 	}
 
@@ -167,12 +174,47 @@ func NewDeck() Deck {
 	}
 }
 
-func (p *deck) Draw() Card {
-	return *new(Card) // TODO: implement Draw()
+func (p *deck) Draw() (Card, error) {
+	if len(p.drawPile) < 1 {
+		// this is equivalent to shuffling the discard pile into the draw pile
+		for id, card := range p.discardPile {
+			delete(p.discardPile, id)
+			p.drawPile[id] = card
+		}
+	}
+
+	if len(p.drawPile) < 1 {
+		// in any normal game, this should never happen
+		return *new(Card), errors.New("no cards available in deck")
+	}
+
+	keys := make([]string, 0, len(p.drawPile))
+	for k := range p.drawPile {
+		keys = append(keys, k)
+	}
+
+	index, err := rand.Int(rand.Reader, big.NewInt(int64(len(keys))))
+	if err != nil {
+		return *new(Card), errors.New("failed to generate random int for draw")
+	}
+
+	key := keys[int(index.Int64())]
+	card, _ := p.drawPile[key]
+	delete(p.drawPile, key)
+
+	return card, nil
 }
 
-func (p *deck) Discard(card Card) Card {
-	return *new(Card) // TODO: implement Discard()
+func (p *deck) Discard(card Card) error {
+	_, inDrawPile := p.drawPile[card.Id()]
+	_, inDiscardPile := p.discardPile[card.Id()]
+
+	if inDrawPile || inDiscardPile {
+		return errors.New("card already exists in deck")
+	}
+
+	p.discardPile[card.Id()] = card
+	return nil
 }
 
 // Position is the position of a pawn on the board.
