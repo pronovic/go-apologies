@@ -1,8 +1,8 @@
-package main
+package pkg
 
 import (
 	"fmt"
-	"github.com/pronovic/go-apologies/util/enum"
+	"github.com/pronovic/go-apologies/pkg/util/enum"
 )
 
 // MinPlayers a game consists of at least 2 players
@@ -121,12 +121,12 @@ type Card interface {
 }
 
 type card struct {
-	id   string
+	id       string
 	cardType CardType
 }
 
 func NewCard(id string, cardType CardType) Card {
-	return &card {
+	return &card{
 		id: id,
 		cardType: cardType,
 	}
@@ -156,12 +156,12 @@ func NewDeck() Deck {
 	var discardPile = make(map[string]Card)
 
 	for _, c := range CardTypes.Members() {
-		for i := 0; i < DeckCounts[CardType(c)]; i++ {  // TODO: WTF, is this sort of organzation just impossible ??!?!
+		for i := 0; i < DeckCounts[CardType(c)]; i++ { // TODO: WTF, is this sort of organzation just impossible ??!?!
 
 		}
 	}
 
-	return &deck {
+	return &deck{
 		drawPile: drawPile,
 		discardPile: discardPile,
 	}
@@ -217,7 +217,7 @@ type position struct {
 }
 
 func NewPosition(start bool, home bool, safe *int, square *int) Position {
-	return &position {
+	return &position{
 		start: start,
 		home: home,
 		safe: safe,
@@ -294,14 +294,14 @@ type Pawn interface {
 }
 
 type pawn struct {
-	color PlayerColor
-	index int
-	name string
+	color    PlayerColor
+	index    int
+	name     string
 	position Position
 }
 
 func NewPawn(color PlayerColor, index int) Pawn {
-	return &pawn {
+	return &pawn{
 		color: color,
 		index: index,
 		name: fmt.Sprintf("%s%d", color, index),

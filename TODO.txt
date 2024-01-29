@@ -1,0 +1,4 @@
+Need a makefile for CLI tasks
+Run fmt
+Run import organizer
+Run godoc
