@@ -236,19 +236,19 @@ type Position interface {
 	Copy() Position
 
 	// MoveToPosition Move the pawn to a specific position on the board.
-	MoveToPosition(position Position) Position
+	MoveToPosition(position Position) error
 
 	// MoveToStart Move the pawn back to its start area.
-	MoveToStart() Position
+	MoveToStart() error
 
 	// MoveToHome Move the pawn to its home area.
-	MoveToHome() Position
+	MoveToHome() error
 
 	// MoveToSafe Move the pawn to a square in its safe area.
-	MoveToSafe() Position
+	MoveToSafe(square int) error
 
 	// MoveToSquare Move the pawn to a square on the board.
-	MoveToSquare() Position
+	MoveToSquare(square int) error
 }
 
 type position struct {
@@ -284,27 +284,90 @@ func (p *position) Square() *int {
 }
 
 func (p *position) Copy() Position {
-	return *new(Position) // TODO: implement Copy()
+	return &position {
+		start: p.start,
+		home: p.home,
+		safe: p.safe,
+		square: p.square,
+	}
 }
 
-func (p *position) MoveToPosition(position Position) Position {
-	return *new(Position) // TODO: implement MoveToPosition()
+func (p *position) MoveToPosition(position Position) error {
+	var fields = 0
+
+	if p.Start() {
+		fields += 1
+	}
+
+	if p.Home() {
+		fields += 1
+	}
+
+	if p.Safe() != nil {
+		fields += 1
+	}
+
+	if p.Square() != nil {
+		fields += 1
+	}
+
+	if fields != 1 {
+		return errors.New("invalid position")
+	}
+
+	if position.Start() {
+		return p.MoveToStart()
+	} else if position.Home() {
+		return p.MoveToHome()
+	} else if position.Safe() != nil {
+		return p.MoveToSafe(*position.Safe())
+	} else if position.Square() != nil {
+		return p.MoveToSquare(*position.Square())
+	}
 }
 
-func (p *position) MoveToStart() Position {
-	return *new(Position) // TODO: implement MoveToStart()
+func (p *position) MoveToStart() error {
+	p.start = true
+	p.home = false
+	p.safe = nil
+	p.square = nil
+
+	return nil
 }
 
-func (p *position) MoveToHome() Position {
-	return *new(Position) // TODO: implement MoveToHome()
+func (p *position) MoveToHome() error {
+	p.start = false
+	p.home = true
+	p.safe = nil
+	p.square = nil
+
+	return nil
 }
 
-func (p *position) MoveToSafe() Position {
-	return *new(Position) // TODO: implement MoveToSafe()
+func (p *position) MoveToSafe(square int) error {
+	if square < 0 || square >= SafeSquares {
+		return errors.New("invalid square")
+	}
+
+	p.start = false
+	p.home = false
+	p.safe = &square
+	p.square = nil
+
+	return nil
 }
 
-func (p *position) MoveToSquare() Position {
-	return *new(Position) // TODO: implement MoveToSquare()
+func (p *position) MoveToSquare(square int) error {
+	if square < 0 || square >= BoardSquares {
+		return errors.New("invalid square")
+	}
+
+	p.start = false
+	p.home = false
+	p.safe = nil
+	p.square = &square
+
+	return nil
 }
 
 func (p *position) String() string {
