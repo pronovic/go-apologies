@@ -7,6 +7,7 @@ import (
 	"github.com/pronovic/go-apologies/pkg/util/enum"
 	"math/big"
 	"strconv"
+	"time"
 )
 
 // MinPlayers a game consists of at least 2 players
@@ -16,7 +17,7 @@ const MinPlayers = 2
 const MaxPlayers = 4
 
 // Pawns there are 4 pawns per player, numbered 0-3
-const Pawns = 3
+const Pawns = 4
 
 // SafeSquares there are 5 safe squares for each color, numbered 0-4
 const SafeSquares = 5
@@ -323,6 +324,8 @@ func (p *position) MoveToPosition(position Position) error {
 		return p.MoveToSafe(*position.Safe())
 	} else if position.Square() != nil {
 		return p.MoveToSquare(*position.Square())
+	} else {
+		return errors.New("invalid position")
 	}
 }
 
@@ -438,20 +441,273 @@ func (p *pawn) String() string {
 	return fmt.Sprintf("%s->%s", p.name, p.position)
 }
 
+// Player A player, which has a color and a set of pawns.
+type Player interface {
 
-//// Player is a player which has a color and a set of pawns.
-//// TODO: finish defining Player
-//type Player struct {
-//}
-//
-//// PlayerView is a player-specific view of the game, showing only the information a player would have available on their turn.
-//// TODO: finish defining PlayerView
-//type PlayerView struct {
-//
-//	// ThePlayer is the player associated with the view.
-//	ThePlayer Player
-//
-//	// Opponents is the player's opponents, with private information stripped.
-//	Opponents map[PlayerColor]Player
-//
-//}
+	// Color the color of this player
+	Color() PlayerColor
+
+	// Hand List of cards in the player's hand
+	Hand() []Card
+
+	// Pawns List of all pawns belonging to the player
+	Pawns() []Pawn
+
+	// Turns number of turns for this player
+	Turns() int
+
+	// Copy Return a fully-independent copy of the player.
+	Copy() Player
+
+	// PublicData Return a fully-independent copy of the player with only public data visible.
+	PublicData() Player
+
+	// FindFirstPawnInStart Find the first pawn in the start area, if any.
+	FindFirstPawnInStart() *Pawn // optional
+
+	// AllPawnsInHome Whether all of this user's pawns are in home.
+	AllPawnsInHome() bool
+}
+
+type player struct {
+	color    PlayerColor
+	hand     []Card
+	pawns    []Pawn
+	turns    int
+}
+
+func NewPlayer(color PlayerColor) Player {
+	return &player{
+		color: color,
+		hand: make([]Card, 0, DeckSize),
+		pawns: make([]Pawn, 0, Pawns),
+		turns: 0,
+	}
+}
+
+func (p *player) Color() PlayerColor {
+	return p.color
+}
+
+func (p *player) Hand() []Card {
+	return p.hand
+}
+
+func (p *player) Pawns() []Pawn {
+	return p.pawns
+}
+
+func (p *player) Turns() int {
+	return p.turns
+}
+
+func (p *player) Copy() Player {
+	// TODO: implement Copy()
+	return *new(Player)
+}
+
+func (p *player) PublicData() Player {
+	// TODO: implement PublicData()
+	return *new(Player)
+}
+
+func (p *player) FindFirstPawnInStart() *Pawn { // optional
+	// TODO: implement FindFirstPawnInStart()
+	return nil
+}
+
+func (p *player) AllPawnsInHome() bool {
+	// TODO: implement AllPawnsInHome
+	return false
+}
+
+// History Tracks an action taken during the game.
+type History interface {
+
+	// Action String describing the action
+	Action() string
+
+	// Color Color of the player associated with the action
+	Color() *PlayerColor  // optional
+
+	// Card Card associated with the action
+	Card() *CardType	// optional
+
+	// Timestamp Timestamp tied to the action (defaults to current time)
+	Timestamp() time.Time
+
+}
+
+type history struct {
+	action string
+	color *PlayerColor
+	card *CardType
+	timestamp time.Time
+}
+
+func NewHistory(action string, color *PlayerColor, card *CardType) History {
+	return &history{
+		action: action,
+		color: color,
+		card: card,
+		timestamp: time.Now().UTC(),
+	}
+}
+
+func (h *history) Action() string {
+	return h.action
+}
+
+func (h *history) Color() *PlayerColor { // optional
+	return h.color
+}
+
+func (h *history) Card() *CardType { // optional
+	return h.card
+}
+
+func (h *history) Timestamp() time.Time {
+	return h.timestamp
+}
+
+// PlayerView A player-specific view of the game, showing only the information a player would have available on their turn.
+type PlayerView interface {
+
+	// Player The player associated with the view.
+	Player() Player
+
+	// Opponents The player's opponents, with private information stripped
+	Opponents() map[Player]PlayerColor
+
+	// Copy Return a fully-independent copy of the player view.
+	Copy() PlayerView
+
+	// GetPawn Return the pawn from this view with the same color and index, if any
+	GetPawn(prototype Pawn) *Pawn
+
+	// AllPawns Return a list of all pawns on the board.
+	AllPawns() []Pawn
+}
+
+type playerView struct {
+	player Player
+	opponents map[Player]PlayerColor
+}
+
+func NewPlayerView(player Player, opponents map[Player]PlayerColor) PlayerView {
+	return &playerView{
+		player: player,
+		opponents: opponents,
+	}
+}
+
+func (v *playerView) Player() Player {
+	return v.player
+}
+
+func (v *playerView) Opponents() map[Player]PlayerColor {
+	return v.opponents
+}
+
+func (v *playerView) Copy() PlayerView {
+	return *new(PlayerView) // TODO: implement Copy()
+}
+
+func (v *playerView) GetPawn(prototype Pawn) *Pawn {
+	return new(Pawn) // TODO: implement GetPawn()
+}
+
+func (v *playerView) AllPawns() []Pawn {
+	return make([]Pawn, 0) // TODO: implement AllPawns()
+}
+
+// Game The game, consisting of state for a set of players.
+type Game interface {
+
+	// PlayerCount Number of players in the game
+	PlayerCount() int
+
+	// Players All players in the game
+	Players() map[Player]PlayerColor
+
+	// Deck The deck of cards for the game
+	Deck() Deck
+
+	// History Game history
+	History() []History
+
+	// Started Whether the game has been started.
+	Started() bool
+
+	// Completed Whether the game is completed.
+	Completed() bool
+
+	// Winner The winner of the game, if any.
+	Winner() *Player
+
+	// Copy Return a fully-independent copy of the game.
+	Copy() Game
+
+	// Track Tracks an action taken during the game.
+	Track(action string, player *Player, card *Card)
+
+	// CreatePlayerView Return a player-specific view of the game, showing only the information a player would have available on their turn.
+	CreatePlayerView(color PlayerColor) PlayerView
+
+}
+
+type game struct {
+	playerCount int
+	players map[Player]PlayerColor
+	deck Deck
+	history []History
+}
+
+func NewGame(playerCount int, players map[Player]PlayerColor, deck Deck) Game {
+	return &game{
+		playerCount: playerCount,
+		players: players,
+		deck: deck,
+		history: make([]History, 0),
+	}
+}
+
+func (g *game) PlayerCount() int {
+	return g.playerCount
+}
+
+func (g *game) Players() map[Player]PlayerColor {
+	return g.players
+}
+
+func (g *game) Deck() Deck {
+	return g.deck
+}
+
+func (g *game) History() []History {
+	return g.history
+}
+
+func (g *game) Started() bool {
+	return false // TODO: implement Started()
+}
+
+func (g *game) Completed() bool {
+	return false // TODO: implement Completed()
+}
+
+func (g *game) Winner() *Player {
+	return nil // TODO: implement Winner()
+}
+
+func (g *game) Copy() Game {
+	return *new(Game) // TODO : implement Copy()
+}
+
+func (g *game) Track(action string, player *Player, card *Card) {
+	// TODO: implement Track()
+}
+
+func (g *game) CreatePlayerView(color PlayerColor) PlayerView {
+	return *new(PlayerView) // implement CreatePlayerView()
+}
