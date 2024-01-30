@@ -123,6 +123,9 @@ type Card interface {
 
 	// Type The type of the card
 	Type() CardType
+
+	// Copy Return a fully-independent copy of the card.
+	Copy() Card
 }
 
 type card struct {
@@ -130,6 +133,7 @@ type card struct {
 	cardType CardType
 }
 
+// NewCard constructs a new Card
 func NewCard(id string, cardType CardType) Card {
 	return &card{
 		id: id,
@@ -145,10 +149,25 @@ func (c *card) Type() CardType {
 	return c.cardType
 }
 
+func (c *card) Copy() Card {
+	return &card {
+		id: c.id,
+		cardType: c.cardType,
+	}
+}
+
 // Deck The deck of cards associated with a game.
 type Deck interface {
+
+	// Copy Return a fully-independent copy of the deck.
+	Copy() Deck
+
+	// Draw a card from the draw pile
 	Draw() (Card, error)
+
+	// Discard a card to the discard pile
 	Discard(card Card) error
+
 }
 
 type deck struct {
@@ -156,9 +175,10 @@ type deck struct {
 	discardPile map[string]Card
 }
 
+// NewDeck constructs a new Deck
 func NewDeck() Deck {
-	var drawPile = make(map[string]Card)
-	var discardPile = make(map[string]Card)
+	var drawPile = make(map[string]Card, DeckSize)
+	var discardPile = make(map[string]Card, DeckSize)
 
 	var count = 0
 	for _, c := range CardTypes.Members() {
@@ -172,6 +192,24 @@ func NewDeck() Deck {
 	return &deck{
 		drawPile: drawPile,
 		discardPile: discardPile,
+	}
+}
+
+// Copy Return a fully-independent copy of the deck.
+func (d *deck) Copy() Deck {
+	var drawPileCopy = make(map[string]Card, DeckSize)
+	for key := range d.drawPile {
+		drawPileCopy[key] = d.drawPile[key].Copy()
+	}
+
+	var discardPileCopy = make(map[string]Card, DeckSize)
+	for key := range d.discardPile {
+		discardPileCopy[key] = d.discardPile[key].Copy()
+	}
+
+	return &deck{
+		drawPile: drawPileCopy,
+		discardPile: discardPileCopy,
 	}
 }
 
@@ -259,6 +297,7 @@ type position struct {
 	square *int
 }
 
+// NewPosition constructs a new Position
 func NewPosition(start bool, home bool, safe *int, square *int) Position {
 	return &position{
 		start: start,
@@ -399,6 +438,9 @@ type Pawn interface {
 
 	// Position The position of this pawn on the board
 	Position() Position
+
+	// Copy Return a fully-independent copy of the pawn.
+	Copy() Pawn
 }
 
 type pawn struct {
@@ -408,6 +450,7 @@ type pawn struct {
 	position Position
 }
 
+// NewPawn constructs a new Pawn
 func NewPawn(color PlayerColor, index int) Pawn {
 	return &pawn{
 		color: color,
@@ -431,6 +474,15 @@ func (p *pawn) Name() string {
 
 func (p *pawn) Position() Position {
 	return p.position
+}
+
+func (p *pawn) Copy() Pawn {
+	return &pawn{
+		color: p.color,
+		index: p.index,
+		name: p.name,
+		position: p.position.Copy(),
+	}
 }
 
 func (p *pawn) SetPosition(position Position) {
@@ -476,6 +528,7 @@ type player struct {
 	turns    int
 }
 
+// NewPlayer constructs a new Player
 func NewPlayer(color PlayerColor) Player {
 	return &player{
 		color: color,
@@ -502,8 +555,22 @@ func (p *player) Turns() int {
 }
 
 func (p *player) Copy() Player {
-	// TODO: implement Copy()
-	return *new(Player)
+	handCopy := make([]Card, 0, DeckSize)
+	for i := range p.hand {
+		handCopy[i] = p.hand[i].Copy()
+	}
+
+	pawnsCopy := make([]Pawn, 0, Pawns)
+	for i := range p.pawns {
+		pawnsCopy[i] = p.pawns[i].Copy()
+	}
+
+	return &player{
+		color: p.color,
+		hand:  handCopy,
+		pawns: pawnsCopy,
+		turns: p.turns,
+	}
 }
 
 func (p *player) PublicData() Player {
@@ -536,6 +603,9 @@ type History interface {
 	// Timestamp Timestamp tied to the action (defaults to current time)
 	Timestamp() time.Time
 
+	// Copy Return a fully-independent copy of the history.
+	Copy() History
+
 }
 
 type history struct {
@@ -545,6 +615,7 @@ type history struct {
 	timestamp time.Time
 }
 
+// NewHistory constructs a new History
 func NewHistory(action string, color *PlayerColor, card *CardType) History {
 	return &history{
 		action: action,
@@ -570,6 +641,15 @@ func (h *history) Timestamp() time.Time {
 	return h.timestamp
 }
 
+func (h *history) Copy() History {
+	return &history{
+		action: h.action,
+		color: h.color,
+		card: h.card,
+		timestamp: h.timestamp,
+	}
+}
+
 // PlayerView A player-specific view of the game, showing only the information a player would have available on their turn.
 type PlayerView interface {
 
@@ -577,7 +657,7 @@ type PlayerView interface {
 	Player() Player
 
 	// Opponents The player's opponents, with private information stripped
-	Opponents() map[Player]PlayerColor
+	Opponents() map[PlayerColor]Player
 
 	// Copy Return a fully-independent copy of the player view.
 	Copy() PlayerView
@@ -591,10 +671,11 @@ type PlayerView interface {
 
 type playerView struct {
 	player Player
-	opponents map[Player]PlayerColor
+	opponents map[PlayerColor]Player
 }
 
-func NewPlayerView(player Player, opponents map[Player]PlayerColor) PlayerView {
+// NewPlayerView contructs a new PlayerView
+func NewPlayerView(player Player, opponents map[PlayerColor]Player) PlayerView {
 	return &playerView{
 		player: player,
 		opponents: opponents,
@@ -605,12 +686,20 @@ func (v *playerView) Player() Player {
 	return v.player
 }
 
-func (v *playerView) Opponents() map[Player]PlayerColor {
+func (v *playerView) Opponents() map[PlayerColor]Player {
 	return v.opponents
 }
 
 func (v *playerView) Copy() PlayerView {
-	return *new(PlayerView) // TODO: implement Copy()
+	opponentsCopy := make(map[PlayerColor]Player, len(v.opponents))
+	for key := range v.opponents {
+		opponentsCopy[key] = v.opponents[key].Copy()
+	}
+
+	return &playerView{
+		player: v.player.Copy(),
+		opponents: opponentsCopy,
+	}
 }
 
 func (v *playerView) GetPawn(prototype Pawn) *Pawn {
@@ -628,13 +717,16 @@ type Game interface {
 	PlayerCount() int
 
 	// Players All players in the game
-	Players() map[Player]PlayerColor
+	Players() map[PlayerColor]Player
 
 	// Deck The deck of cards for the game
 	Deck() Deck
 
 	// History Game history
 	History() []History
+
+	// Copy Return a fully-independent copy of the game.
+	Copy() Game
 
 	// Started Whether the game has been started.
 	Started() bool
@@ -644,9 +736,6 @@ type Game interface {
 
 	// Winner The winner of the game, if any.
 	Winner() *Player
-
-	// Copy Return a fully-independent copy of the game.
-	Copy() Game
 
 	// Track Tracks an action taken during the game.
 	Track(action string, player *Player, card *Card)
@@ -658,12 +747,13 @@ type Game interface {
 
 type game struct {
 	playerCount int
-	players map[Player]PlayerColor
+	players map[PlayerColor]Player
 	deck Deck
 	history []History
 }
 
-func NewGame(playerCount int, players map[Player]PlayerColor, deck Deck) Game {
+// NewGame constructs a new Game
+func NewGame(playerCount int, players map[PlayerColor]Player, deck Deck) Game {
 	return &game{
 		playerCount: playerCount,
 		players: players,
@@ -676,7 +766,7 @@ func (g *game) PlayerCount() int {
 	return g.playerCount
 }
 
-func (g *game) Players() map[Player]PlayerColor {
+func (g *game) Players() map[PlayerColor]Player {
 	return g.players
 }
 
@@ -686,6 +776,25 @@ func (g *game) Deck() Deck {
 
 func (g *game) History() []History {
 	return g.history
+}
+
+func (g *game) Copy() Game {
+	var playersCopy = make(map[PlayerColor]Player, len(g.players))
+	for key := range g.players {
+		playersCopy[key] = g.players[key].Copy()
+	}
+
+	var historyCopy = make([]History, len(g.history))
+	for i := range g.history {
+		historyCopy[i] = g.history[i].Copy()
+	}
+
+	return &game{
+		playerCount: g.playerCount,
+		players: playersCopy,
+		deck: g.deck.Copy(),
+		history: historyCopy,
+	}
 }
 
 func (g *game) Started() bool {
@@ -698,10 +807,6 @@ func (g *game) Completed() bool {
 
 func (g *game) Winner() *Player {
 	return nil // TODO: implement Winner()
-}
-
-func (g *game) Copy() Game {
-	return *new(Game) // TODO : implement Copy()
 }
 
 func (g *game) Track(action string, player *Player, card *Card) {

@@ -68,6 +68,7 @@ type values[T Enum] struct {
 	members[]T
 }
 
+// NewValues constructs a new Values collection with a set of members
 func NewValues[T Enum](members ...T) Values[T] {
 	return &values[T]{append(make([]T, 0, len(members)), members...)}
 }

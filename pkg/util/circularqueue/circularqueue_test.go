@@ -9,7 +9,7 @@ func TestEmpty(t *testing.T) {
 	var err error
 	var entries []string
 
-	queue := New[string](entries)
+	queue := NewCircularQueue[string](entries)
 
 	err = queue.SetFirst("")
 	assert.EqualError(t, err, "queue is empty")
@@ -26,7 +26,7 @@ func TestSingle(t *testing.T) {
 	var err error
 	var entries = []string{"a"}
 
-	queue := New[string](entries)
+	queue := NewCircularQueue[string](entries)
 
 	for j := 0; j <= 10; j++ {
 		entry, err = queue.Next()
@@ -55,7 +55,7 @@ func TestMultiple(t *testing.T) {
 	var err error
 	var entries = []string{"a", "b", "c", "d", "e"}
 
-	queue := New[string](entries)
+	queue := NewCircularQueue[string](entries)
 
 	entry, err = queue.Next()
 	assert.Nil(t, err)

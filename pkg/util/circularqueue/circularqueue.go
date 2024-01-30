@@ -16,8 +16,8 @@ type circularQueue[T any] struct {
 	wrapped *queue.CircularQueue[T]
 }
 
-// New constructs a circular queue with the contents of an array or slice.
-func New[T any](entries []T) CircularQueue[T] {
+// NewCircularQueue constructs a circular queue with the contents of an array or slice.
+func NewCircularQueue[T any](entries []T) CircularQueue[T] {
 	wrapped := queue.New[T]()
 	q := circularQueue[T]{&wrapped}
 
