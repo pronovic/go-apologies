@@ -399,19 +399,19 @@ func (p *position) Copy() Position {
 func (p *position) MoveToPosition(position Position) error {
 	var fields = 0
 
-	if p.Start() {
+	if position.Start() {
 		fields += 1
 	}
 
-	if p.Home() {
+	if position.Home() {
 		fields += 1
 	}
 
-	if p.Safe() != nil {
+	if position.Safe() != nil {
 		fields += 1
 	}
 
-	if p.Square() != nil {
+	if position.Square() != nil {
 		fields += 1
 	}
 
@@ -452,7 +452,7 @@ func (p *position) MoveToHome() error {
 
 func (p *position) MoveToSafe(square int) error {
 	if square < 0 || square >= SafeSquares {
-		return errors.New("invalid square")
+		return errors.New("invalid safe square")
 	}
 
 	p.start = false
@@ -482,9 +482,11 @@ func (p *position) String() string {
 	} else if p.start {
 		return "start"
 	} else if p.safe != nil {
-		return fmt.Sprintf("safe %d", p.safe)
+		return fmt.Sprintf("safe %v", *p.safe)
+	} else if p.square != nil {
+		return fmt.Sprintf("square %v", *p.square)
 	} else {
-		return fmt.Sprintf("square %d", p.square)
+		return "uninitialized"
 	}
 }
 
