@@ -78,7 +78,7 @@ func (v *values[T]) Members() []T {
 }
 
 func (v *values[T]) MemberValues() []string {
-	members := make([]string, len(v.members))
+	members := make([]string, 0, len(v.members))
 
 	for i, m := range v.members {
 		members[i] = m.Value()

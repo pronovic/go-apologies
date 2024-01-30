@@ -133,10 +133,10 @@ var TurnSquares = map[PlayerColor]Position {
 
 // Slides defines the start positions for each color
 var Slides = map[PlayerColor][]Slide {
-	Red: { NewSlide(1, 4), NewSlide(9, 13)},
-	Blue: { NewSlide(16, 19), NewSlide(24, 28)},
-	Yellow: { NewSlide(31, 34), NewSlide(39, 43)},
-	Green: { NewSlide(46, 49), NewSlide(54, 58)},
+	Red: {newSlide(1, 4), newSlide(9, 13)},
+	Blue: {newSlide(16, 19), newSlide(24, 28)},
+	Yellow: {newSlide(31, 34), newSlide(39, 43)},
+	Green: {newSlide(46, 49), newSlide(54, 58)},
 }
 
 // Slide defines the start and end positions of a slide on the board
@@ -153,7 +153,8 @@ type slide struct {
 	end int
 }
 
-func NewSlide(start int, end int) Slide {
+// newSlide creates a new slide, for defining constants
+func newSlide(start int, end int) Slide {
 	return &slide{start, end }
 }
 
@@ -811,7 +812,7 @@ func (v *playerView) AllPawns() []Pawn {
 		total += len(v.opponents[key].Pawns())
 	}
 
-	all := make([]Pawn, total)
+	all := make([]Pawn, 0, total)
 	copy(all, v.player.Pawns())
 	for key := range v.opponents {
 		pawns := v.opponents[key].Pawns()
@@ -897,7 +898,7 @@ func (g *game) Copy() Game {
 		playersCopy[key] = g.players[key].Copy()
 	}
 
-	var historyCopy = make([]History, len(g.history))
+	var historyCopy = make([]History, 0, len(g.history))
 	for i := range g.history {
 		historyCopy[i] = g.history[i].Copy()
 	}
