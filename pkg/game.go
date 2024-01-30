@@ -115,6 +115,56 @@ var DrawAgain = map[CardType]bool{
 	CardApologies: false,
 }
 
+// StartCircles defines the start circles for each color
+var StartCircles = map[PlayerColor]Position {
+	Red: newPositionAtSquare(4),
+	Blue: newPositionAtSquare(19),
+	Yellow: newPositionAtSquare(34),
+	Green: newPositionAtSquare(49),
+}
+
+// TurnSquares defines the turn squares for each color, where forward movement turns into the safe zone
+var TurnSquares = map[PlayerColor]Position {
+	Red: newPositionAtSquare(2),
+	Blue: newPositionAtSquare(17),
+	Yellow: newPositionAtSquare(32),
+	Green: newPositionAtSquare(47),
+}
+
+// Slides defines the start positions for each color
+var Slides = map[PlayerColor][]Slide {
+	Red: { NewSlide(1, 4), NewSlide(9, 13)},
+	Blue: { NewSlide(16, 19), NewSlide(24, 28)},
+	Yellow: { NewSlide(31, 34), NewSlide(39, 43)},
+	Green: { NewSlide(46, 49), NewSlide(54, 58)},
+}
+
+// Slide defines the start and end positions of a slide on the board
+type Slide interface {
+	// Start is the start of the slide
+	Start() int
+
+	// End is the end of a the slide
+	End() int
+}
+
+type slide struct {
+	start int
+	end int
+}
+
+func NewSlide(start int, end int) Slide {
+	return &slide{start, end }
+}
+
+func (s *slide) Start() int {
+	return s.start
+}
+
+func (s *slide) End() int {
+	return s.end
+}
+
 // Card is a card in a deck or in a player's hand
 type Card interface {
 
@@ -213,22 +263,22 @@ func (d *deck) Copy() Deck {
 	}
 }
 
-func (p *deck) Draw() (Card, error) {
-	if len(p.drawPile) < 1 {
+func (d *deck) Draw() (Card, error) {
+	if len(d.drawPile) < 1 {
 		// this is equivalent to shuffling the discard pile into the draw pile
-		for id, card := range p.discardPile {
-			delete(p.discardPile, id)
-			p.drawPile[id] = card
+		for id, card := range d.discardPile {
+			delete(d.discardPile, id)
+			d.drawPile[id] = card
 		}
 	}
 
-	if len(p.drawPile) < 1 {
+	if len(d.drawPile) < 1 {
 		// in any normal game, this should never happen
 		return *new(Card), errors.New("no cards available in deck")
 	}
 
-	keys := make([]string, 0, len(p.drawPile))
-	for k := range p.drawPile {
+	keys := make([]string, 0, len(d.drawPile))
+	for k := range d.drawPile {
 		keys = append(keys, k)
 	}
 
@@ -238,21 +288,21 @@ func (p *deck) Draw() (Card, error) {
 	}
 
 	key := keys[int(index.Int64())]
-	card, _ := p.drawPile[key]
-	delete(p.drawPile, key)
+	card, _ := d.drawPile[key]
+	delete(d.drawPile, key)
 
 	return card, nil
 }
 
-func (p *deck) Discard(card Card) error {
-	_, inDrawPile := p.drawPile[card.Id()]
-	_, inDiscardPile := p.discardPile[card.Id()]
+func (d *deck) Discard(card Card) error {
+	_, inDrawPile := d.drawPile[card.Id()]
+	_, inDiscardPile := d.discardPile[card.Id()]
 
 	if inDrawPile || inDiscardPile {
 		return errors.New("card already exists in deck")
 	}
 
-	p.discardPile[card.Id()] = card
+	d.discardPile[card.Id()] = card
 	return nil
 }
 
@@ -305,6 +355,19 @@ func NewPosition(start bool, home bool, safe *int, square *int) Position {
 		safe: safe,
 		square: square,
 	}
+}
+
+// newPositionAtSquare creates a new position at a particular square, for defining constants
+func newPositionAtSquare(square int) Position {
+	p := NewPosition(false, false, nil, nil)
+
+	err := p.MoveToSquare(square)
+	if err != nil {
+		// panic is appropriate here, because this is used internally to set up constants, and if those are broken, we can't run
+		panic("invalid square for new position")
+	}
+
+	return p
 }
 
 func (p *position) Start() bool {
@@ -420,7 +483,7 @@ func (p *position) String() string {
 	} else if p.safe != nil {
 		return fmt.Sprintf("safe %d", p.safe)
 	} else {
-		return fmt.Sprintf("square %s", p.square)
+		return fmt.Sprintf("square %d", p.square)
 	}
 }
 
@@ -519,6 +582,9 @@ type Player interface {
 
 	// AllPawnsInHome Whether all of this user's pawns are in home.
 	AllPawnsInHome() bool
+
+	// IncrementTurns the number of turns for a player
+	IncrementTurns()
 }
 
 type player struct {
@@ -574,18 +640,43 @@ func (p *player) Copy() Player {
 }
 
 func (p *player) PublicData() Player {
-	// TODO: implement PublicData()
-	return *new(Player)
+	handCopy := make([]Card, 0, DeckSize) // other players should not see this player's hand when making decisions
+
+	pawnsCopy := make([]Pawn, 0, Pawns)
+	for i := range p.pawns {
+		pawnsCopy[i] = p.pawns[i].Copy()
+	}
+
+	return &player{
+		color: p.color,
+		hand:  handCopy,
+		pawns: pawnsCopy,
+		turns: p.turns,
+	}
 }
 
 func (p *player) FindFirstPawnInStart() *Pawn { // optional
-	// TODO: implement FindFirstPawnInStart()
+	for i := range p.pawns {
+		if p.pawns[i].Position().Start() {
+			return &p.pawns[i]
+		}
+	}
+
 	return nil
 }
 
 func (p *player) AllPawnsInHome() bool {
-	// TODO: implement AllPawnsInHome
-	return false
+	for i := range p.pawns {
+		if ! p.pawns[i].Position().Home() {
+			return false
+		}
+	}
+
+	return true
+}
+
+func (p *player) IncrementTurns() {
+	p.turns += 1
 }
 
 // History Tracks an action taken during the game.
@@ -703,11 +794,33 @@ func (v *playerView) Copy() PlayerView {
 }
 
 func (v *playerView) GetPawn(prototype Pawn) *Pawn {
-	return new(Pawn) // TODO: implement GetPawn()
+	all := v.AllPawns()
+	for i := range all {
+		if all[i].Color() == prototype.Color() && all[i].Index() == prototype.Index() {
+			return &all[i]
+		}
+	}
+
+	return nil
 }
 
 func (v *playerView) AllPawns() []Pawn {
-	return make([]Pawn, 0) // TODO: implement AllPawns()
+	total := 0
+	total += len(v.player.Pawns())
+	for key := range v.opponents {
+		total += len(v.opponents[key].Pawns())
+	}
+
+	all := make([]Pawn, total)
+	copy(all, v.player.Pawns())
+	for key := range v.opponents {
+		pawns := v.opponents[key].Pawns()
+		for i := range pawns {
+			all = append(all, pawns[i])
+		}
+	}
+
+	return all
 }
 
 // Game The game, consisting of state for a set of players.
@@ -737,8 +850,8 @@ type Game interface {
 	// Winner The winner of the game, if any.
 	Winner() *Player
 
-	// Track Tracks an action taken during the game.
-	Track(action string, player *Player, card *Card)
+	// Track Tracks an action taken during the game, optionally tracking player and/or card
+	Track(action string, player Player, card Card)
 
 	// CreatePlayerView Return a player-specific view of the game, showing only the information a player would have available on their turn.
 	CreatePlayerView(color PlayerColor) PlayerView
@@ -798,21 +911,61 @@ func (g *game) Copy() Game {
 }
 
 func (g *game) Started() bool {
-	return false // TODO: implement Started()
+	return len(g.history) > 0 // if there is any history the game has been started
 }
 
 func (g *game) Completed() bool {
-	return false // TODO: implement Completed()
+	for _, player := range g.players {
+		if player.AllPawnsInHome() {
+			return true
+		}
+	}
+
+	return false
 }
 
 func (g *game) Winner() *Player {
-	return nil // TODO: implement Winner()
+	for _, player := range g.players {
+		if player.AllPawnsInHome() {
+			return &player
+		}
+	}
+
+	return nil
 }
 
-func (g *game) Track(action string, player *Player, card *Card) {
-	// TODO: implement Track()
+func (g *game) Track(action string, player Player, card Card) {
+	// TODO: player and card are optional, but it's not clear how I represent that, because pointer to interface does not work well
+
+	var color *PlayerColor = nil
+	if player != nil {
+		x := player.Color()
+		color = &x
+	}
+
+	var cardtype *CardType = nil
+	if card != nil {
+		tmp := card.Type()
+		cardtype = &tmp
+	}
+
+	var history = NewHistory(action, color, cardtype)
+	g.history = append(g.history, history)
+
+	if player != nil {
+		g.players[player.Color()].IncrementTurns()
+	}
 }
 
 func (g *game) CreatePlayerView(color PlayerColor) PlayerView {
-	return *new(PlayerView) // implement CreatePlayerView()
+	player := g.players[color].Copy()
+
+	opponents := make(map[PlayerColor]Player, len(g.players))
+	for i := range g.players {
+		if g.players[i].Color() != player.Color() {
+			opponents[g.players[i].Color()] = g.players[i].PublicData()
+		}
+	}
+
+	return NewPlayerView(player, opponents)
 }
