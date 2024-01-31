@@ -50,30 +50,358 @@ func TestDistanceToHome(t *testing.T) {
 	assert.Equal(t, 13, DistanceToHome(pawnSquare(Green, 40)))
 }
 
+func TestCalculatePositionHome(t *testing.T) {
+	for _, color := range PlayerColors.Members() {
+		position := NewPosition(false, false, nil, nil)
+		_ = position.MoveToHome()
+		_, err := calculatePosition(color, position, 1)
+		assert.EqualError(t, err, "pawn in home or start may not move")
+	}
+}
+
+func TestCalculatePositionStart(t *testing.T) {
+	for _, color := range PlayerColors.Members() {
+		position := NewPosition(false, false, nil, nil)
+		_ = position.MoveToStart()
+		_, err := calculatePosition(color, position, 1)
+		assert.EqualError(t, err, "pawn in home or start may not move")
+	}
+}
+
+func TestCalculatePositionFromSafe(t *testing.T) {
+	var result Position
+	var err error
+	var color PlayerColor
+
+	for _, color = range PlayerColors.Members() {
+		result, err = calculatePosition(color, positionSafe(0), 0)
+		assert.Nil(t, err)
+		assert.Equal(t, positionSafe(0), result)
+
+		result, err = calculatePosition(color, positionSafe(3), 0)
+		assert.Nil(t, err)
+		assert.Equal(t, positionSafe(3), result)
+	}
+
+	for _, color = range PlayerColors.Members() {
+		result, err = calculatePosition(color, positionSafe(0), 1)
+		assert.Nil(t, err)
+		assert.Equal(t, positionSafe(1), result)
+
+		result, err = calculatePosition(color, positionSafe(2), 2)
+		assert.Nil(t, err)
+		assert.Equal(t, positionSafe(4), result)
+
+		result, err = calculatePosition(color, positionSafe(4), 1)
+		assert.Nil(t, err)
+		assert.Equal(t, positionHome(), result)
+	}
+
+	for _, color = range PlayerColors.Members() {
+		result, err = calculatePosition(color, positionSafe(3), 3)
+		assert.EqualError(t, err, "pawn cannot move past home")
+
+		result, err = calculatePosition(color, positionSafe(4), 2)
+		assert.EqualError(t, err, "pawn cannot move past home")
+	}
+
+	for _, color = range PlayerColors.Members() {
+		result, err = calculatePosition(color, positionSafe(4), -2)
+		assert.Nil(t, err)
+		assert.Equal(t, positionSafe(2), result)
+
+		result, err = calculatePosition(color, positionSafe(1), -1)
+		assert.Nil(t, err)
+		assert.Equal(t, positionSafe(0), result)
+	}
+
+	result, err = calculatePosition(Red, positionSafe(0), -1)
+	assert.Nil(t, err)
+	assert.Equal(t, positionSquare(2), result)
+
+	result, err = calculatePosition(Red, positionSafe(0), -2)
+	assert.Nil(t, err)
+	assert.Equal(t, positionSquare(1), result)
+
+	result, err = calculatePosition(Red, positionSafe(0), -3)
+	assert.Nil(t, err)
+	assert.Equal(t, positionSquare(0), result)
+
+	result, err = calculatePosition(Red, positionSafe(0), -4)
+	assert.Nil(t, err)
+	assert.Equal(t, positionSquare(59), result)
+
+	result, err = calculatePosition(Red, positionSafe(0), -5)
+	assert.Nil(t, err)
+	assert.Equal(t, positionSquare(58), result)
+
+	result, err = calculatePosition(Blue, positionSafe(0), -1)
+	assert.Nil(t, err)
+	assert.Equal(t, positionSquare(17), result)
+
+	result, err = calculatePosition(Blue, positionSafe(0), -2)
+	assert.Nil(t, err)
+	assert.Equal(t, positionSquare(16), result)
+
+	result, err = calculatePosition(Yellow, positionSafe(0), -1)
+	assert.Nil(t, err)
+	assert.Equal(t, positionSquare(32), result)
+
+	result, err = calculatePosition(Yellow, positionSafe(0), -2)
+	assert.Nil(t, err)
+	assert.Equal(t, positionSquare(31), result)
+
+	result, err = calculatePosition(Green, positionSafe(0), -1)
+	assert.Nil(t, err)
+	assert.Equal(t, positionSquare(47), result)
+
+	result, err = calculatePosition(Green, positionSafe(0), -2)
+	assert.Nil(t, err)
+	assert.Equal(t, positionSquare(46), result)
+}
+
+func TestCalculatePositionFromSquare(t *testing.T) {
+	var result Position
+	var err error
+	var color PlayerColor
+
+	result, err = calculatePosition(Red, positionSquare(58), 1)
+	assert.Nil(t, err)
+	assert.Equal(t, positionSquare(59), result)
+
+	result, err = calculatePosition(Red, positionSquare(59), 1)
+	assert.Nil(t, err)
+	assert.Equal(t, positionSquare(0), result)
+
+	result, err = calculatePosition(Red, positionSquare(54), 5)
+	assert.Nil(t, err)
+	assert.Equal(t, positionSquare(59), result)
+
+	result, err = calculatePosition(Red, positionSquare(54), 6)
+	assert.Nil(t, err)
+	assert.Equal(t, positionSquare(0), result)
+
+	result, err = calculatePosition(Red, positionSquare(54), 7)
+	assert.Nil(t, err)
+	assert.Equal(t, positionSquare(1), result)
+
+	for _, color = range PlayerColors.Members() {
+		result, err = calculatePosition(color, positionSquare(54), 5)
+		assert.Nil(t, err)
+		assert.Equal(t, positionSquare(59), result)
+
+		result, err = calculatePosition(color, positionSquare(54), 6)
+		assert.Nil(t, err)
+		assert.Equal(t, positionSquare(0), result)
+
+		result, err = calculatePosition(color, positionSquare(54), 7)
+		assert.Nil(t, err)
+		assert.Equal(t, positionSquare(1), result)
+
+		result, err = calculatePosition(color, positionSquare(58), 1)
+		assert.Nil(t, err)
+		assert.Equal(t, positionSquare(59), result)
+
+		result, err = calculatePosition(color, positionSquare(59), 1)
+		assert.Nil(t, err)
+		assert.Equal(t, positionSquare(0), result)
+
+		result, err = calculatePosition(color, positionSquare(0), 1)
+		assert.Nil(t, err)
+		assert.Equal(t, positionSquare(1), result)
+
+		result, err = calculatePosition(color, positionSquare(1), 1)
+		assert.Nil(t, err)
+		assert.Equal(t, positionSquare(2), result)
+
+		result, err = calculatePosition(color, positionSquare(10), 5)
+		assert.Nil(t, err)
+		assert.Equal(t, positionSquare(15), result)
+	}
+
+	for _, color = range PlayerColors.Members() {
+		result, err = calculatePosition(color, positionSquare(59), -5)
+		assert.Nil(t, err)
+		assert.Equal(t, positionSquare(54), result)
+
+		result, err = calculatePosition(color, positionSquare(0), -6)
+		assert.Nil(t, err)
+		assert.Equal(t, positionSquare(54), result)
+
+		result, err = calculatePosition(color, positionSquare(1), -7)
+		assert.Nil(t, err)
+		assert.Equal(t, positionSquare(54), result)
+
+		result, err = calculatePosition(color, positionSquare(59), -1)
+		assert.Nil(t, err)
+		assert.Equal(t, positionSquare(58), result)
+
+		result, err = calculatePosition(color, positionSquare(0), -1)
+		assert.Nil(t, err)
+		assert.Equal(t, positionSquare(59), result)
+
+		result, err = calculatePosition(color, positionSquare(1), -1)
+		assert.Nil(t, err)
+		assert.Equal(t, positionSquare(0), result)
+
+		result, err = calculatePosition(color, positionSquare(2), -1)
+		assert.Nil(t, err)
+		assert.Equal(t, positionSquare(1), result)
+
+		result, err = calculatePosition(color, positionSquare(15), -5)
+		assert.Nil(t, err)
+		assert.Equal(t, positionSquare(10), result)
+	}
+
+	result, err = calculatePosition(Red, positionSquare(0), 3)
+	assert.Nil(t, err)
+	assert.Equal(t, positionSafe(0), result)
+
+	result, err = calculatePosition(Red, positionSquare(1), 2)
+	assert.Nil(t, err)
+	assert.Equal(t, positionSafe(0), result)
+
+	result, err = calculatePosition(Red, positionSquare(2), 1)
+	assert.Nil(t, err)
+	assert.Equal(t, positionSafe(0), result)
+
+	result, err = calculatePosition(Red, positionSquare(1), 3)
+	assert.Nil(t, err)
+	assert.Equal(t, positionSafe(1), result)
+
+	result, err = calculatePosition(Red, positionSquare(2), 2)
+	assert.Nil(t, err)
+	assert.Equal(t, positionSafe(1), result)
+
+	result, err = calculatePosition(Red, positionSquare(2), 6)
+	assert.Nil(t, err)
+	assert.Equal(t, positionHome(), result)
+
+	result, err = calculatePosition(Red, positionSquare(51), 12)
+	assert.Nil(t, err)
+	assert.Equal(t, positionSafe(0), result)
+
+	result, err = calculatePosition(Red, positionSquare(52), 12)
+	assert.Nil(t, err)
+	assert.Equal(t, positionSafe(1), result)
+
+	result, err = calculatePosition(Red, positionSquare(58), 5)
+	assert.Nil(t, err)
+	assert.Equal(t, positionSafe(0), result)
+
+	result, err = calculatePosition(Red, positionSquare(59), 4)
+	assert.Nil(t, err)
+	assert.Equal(t, positionSafe(0), result)
+
+	result, err = calculatePosition(Red, positionSquare(2), 7)
+	assert.EqualError(t, err, "pawn cannot move past home")
+
+	result, err = calculatePosition(Blue, positionSquare(16), 2)
+	assert.Nil(t, err)
+	assert.Equal(t, positionSafe(0), result)
+
+	result, err = calculatePosition(Blue, positionSquare(17), 1)
+	assert.Nil(t, err)
+	assert.Equal(t, positionSafe(0), result)
+
+	result, err = calculatePosition(Blue, positionSquare(16), 3)
+	assert.Nil(t, err)
+	assert.Equal(t, positionSafe(1), result)
+
+	result, err = calculatePosition(Blue, positionSquare(17), 2)
+	assert.Nil(t, err)
+	assert.Equal(t, positionSafe(1), result)
+
+	result, err = calculatePosition(Blue, positionSquare(17), 6)
+	assert.Nil(t, err)
+	assert.Equal(t, positionHome(), result)
+
+	result, err = calculatePosition(Blue, positionSquare(17), 7)
+	assert.EqualError(t, err, "pawn cannot move past home")
+
+	result, err = calculatePosition(Yellow, positionSquare(31), 2)
+	assert.Nil(t, err)
+	assert.Equal(t, positionSafe(0), result)
+
+	result, err = calculatePosition(Yellow, positionSquare(32), 1)
+	assert.Nil(t, err)
+	assert.Equal(t, positionSafe(0), result)
+
+	result, err = calculatePosition(Yellow, positionSquare(31), 3)
+	assert.Nil(t, err)
+	assert.Equal(t, positionSafe(1), result)
+
+	result, err = calculatePosition(Yellow, positionSquare(32), 2)
+	assert.Nil(t, err)
+	assert.Equal(t, positionSafe(1), result)
+
+	result, err = calculatePosition(Yellow, positionSquare(32), 6)
+	assert.Nil(t, err)
+	assert.Equal(t, positionHome(), result)
+
+	result, err = calculatePosition(Yellow, positionSquare(32), 7)
+	assert.EqualError(t, err, "pawn cannot move past home")
+
+	result, err = calculatePosition(Green, positionSquare(46), 2)
+	assert.Nil(t, err)
+	assert.Equal(t, positionSafe(0), result)
+
+	result, err = calculatePosition(Green, positionSquare(47), 1)
+	assert.Nil(t, err)
+	assert.Equal(t, positionSafe(0), result)
+
+	result, err = calculatePosition(Green, positionSquare(46), 3)
+	assert.Nil(t, err)
+	assert.Equal(t, positionSafe(1), result)
+
+	result, err = calculatePosition(Green, positionSquare(47), 2)
+	assert.Nil(t, err)
+	assert.Equal(t, positionSafe(1), result)
+
+	result, err = calculatePosition(Green, positionSquare(47), 6)
+	assert.Nil(t, err)
+	assert.Equal(t, positionHome(), result)
+
+	result, err = calculatePosition(Green, positionSquare(47), 7)
+	assert.EqualError(t, err, "pawn cannot move past home")
+}
+
+func positionHome() Position {
+	return NewPosition(false, true, nil, nil)
+}
+
+func positionStart() Position {
+	return NewPosition(true, false, nil, nil)
+}
+
+func positionSafe(safe int) Position {
+	return NewPosition(false, false, &safe, nil)
+}
+
+func positionSquare(square int) Position {
+	return NewPosition(false, false, nil, &square)
+}
+
 func pawnHome(color PlayerColor) Pawn {
-	position := NewPosition(false, true, nil, nil)
 	pawn := NewPawn(color, 0)
-	pawn.SetPosition(position)
+	pawn.SetPosition(positionHome())
 	return pawn
 }
 
 func pawnStart(color PlayerColor) Pawn {
-	position := NewPosition(true, false, nil, nil)
 	pawn := NewPawn(color, 0)
-	pawn.SetPosition(position)
+	pawn.SetPosition(positionStart())
 	return pawn
 }
 
 func pawnSafe(color PlayerColor, safe int) Pawn {
-	position := NewPosition(false, false, &safe, nil)
 	pawn := NewPawn(color, 0)
-	pawn.SetPosition(position)
+	pawn.SetPosition(positionSafe(safe))
 	return pawn
 }
 
 func pawnSquare(color PlayerColor, square int) Pawn {
-	position := NewPosition(false, false, nil, &square)
 	pawn := NewPawn(color, 0)
-	pawn.SetPosition(position)
+	pawn.SetPosition(positionSquare(square))
 	return pawn
 }

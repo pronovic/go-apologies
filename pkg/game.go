@@ -277,7 +277,7 @@ func (d *deck) Draw() (Card, error) {
 
 	if len(d.drawPile) < 1 {
 		// in any normal game, this should never happen
-		return *new(Card), errors.New("no cards available in deck")
+		return (Card)(nil), errors.New("no cards available in deck")
 	}
 
 	keys := make([]string, 0, len(d.drawPile))
@@ -287,7 +287,7 @@ func (d *deck) Draw() (Card, error) {
 
 	index, err := rand.Int(rand.Reader, big.NewInt(int64(len(keys))))
 	if err != nil {
-		return *new(Card), errors.New("failed to generate random int for draw")
+		return (Card)(nil), errors.New("failed to generate random int for draw")
 	}
 
 	key := keys[int(index.Int64())]
@@ -926,7 +926,7 @@ type game struct {
 // NewGame constructs a new Game
 func NewGame(playerCount int) (Game, error) {
 	if playerCount < MinPlayers || playerCount > MaxPlayers {
-		return *new(Game), errors.New("invalid number of players")
+		return (*game)(nil), errors.New("invalid number of players")
 	}
 
 	players := make(map[PlayerColor]Player, playerCount)
@@ -1028,7 +1028,7 @@ func (g *game) Track(action string, player Player, card Card) {
 func (g *game) CreatePlayerView(color PlayerColor) (PlayerView, error) {
 	player, ok := g.players[color]
 	if ! ok {
-		return *new(PlayerView), errors.New("invalid color")
+		return (PlayerView)(nil), errors.New("invalid color")
 	}
 
 	copied := player.Copy()
