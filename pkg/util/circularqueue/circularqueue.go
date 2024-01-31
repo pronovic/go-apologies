@@ -3,21 +3,22 @@ package circularqueue
 import (
 	"errors"
 	"github.com/golang-ds/queue/circularqueue"
-	"github.com/google/go-cmp/cmp"
 )
 
+// This relies on the `comparable` predfined identifier.  See: https://stackoverflow.com/a/68054461
+
 // CircularQueue is a fixed-sized queue that keeps returning its contents repeatedly, in order.
-type CircularQueue[T any] interface {
+type CircularQueue[T comparable] interface {
 	SetFirst(entry T) error
 	Next() (T, error)
 }
 
-type circularQueue[T any] struct {
+type circularQueue[T comparable] struct {
 	wrapped *queue.CircularQueue[T]
 }
 
 // NewCircularQueue constructs a circular queue with the contents of an array or slice.
-func NewCircularQueue[T any](entries []T) CircularQueue[T] {
+func NewCircularQueue[T comparable](entries []T) CircularQueue[T] {
 	wrapped := queue.New[T]()
 	q := circularQueue[T]{&wrapped}
 
@@ -37,8 +38,8 @@ func (q *circularQueue[T]) SetFirst(entry T) error {
 	for i := 0; i < q.wrapped.Size(); i++ {
 		var first, _ = q.wrapped.First()
 
-		if diff := cmp.Diff(entry, first); diff == "" {
-			return nil // entry is found at front of queue
+		if entry == first {
+			return nil  // entry is found at front of queue
 		}
 
 		q.wrapped.Rotate() // rotate to the next entry and try again
