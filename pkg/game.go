@@ -51,7 +51,7 @@ var Blue = PlayerColor{"Blue"}
 var Green = PlayerColor{"Green"}
 
 // PlayerColors is the list of all legal PlayerColor enumerations, in order of use
-var PlayerColors = enum.NewValues[PlayerColor](Red, Yellow, Blue, Green)
+var PlayerColors = enum.NewValues[PlayerColor](Red, Yellow, Green, Blue)
 
 // CardType defines all legal types of cards
 // The "A" card (CardApologies) is like the "Sorry" card in the original game
@@ -377,7 +377,7 @@ func newPositionAtSquare(square int) Position {
 	err := p.MoveToSquare(square)
 	if err != nil {
 		// panic is appropriate here, because this is used internally to set up constants, and if those are broken, we can't run
-		panic("invalid square for new position")
+		panic("invalid square for new p")
 	}
 
 	return p
@@ -912,7 +912,7 @@ type Game interface {
 	Track(action string, player Player, card Card)
 
 	// CreatePlayerView Return a player-specific view of the game, showing only the information a player would have available on their turn.
-	CreatePlayerView(color PlayerColor) PlayerView
+	CreatePlayerView(color PlayerColor) (PlayerView, error)
 
 }
 
@@ -924,13 +924,25 @@ type game struct {
 }
 
 // NewGame constructs a new Game
-func NewGame(playerCount int, players map[PlayerColor]Player, deck Deck) Game {
-	return &game{
-		playerCount: playerCount,
-		players: players,
-		deck: deck,
-		history: make([]History, 0),
+func NewGame(playerCount int) (Game, error) {
+	if playerCount < MinPlayers || playerCount > MaxPlayers {
+		return *new(Game), errors.New("invalid number of players")
 	}
+
+	players := make(map[PlayerColor]Player, playerCount)
+	for i := 0; i < playerCount; i++ {
+		color := PlayerColors.Members()[i]
+		players[color] = NewPlayer(color)
+	}
+
+	game := &game{
+		playerCount: playerCount,
+		players:     players,
+		deck:        NewDeck(),
+		history:     make([]History, 0),
+	}
+
+	return game, nil
 }
 
 func (g *game) PlayerCount() int {
@@ -957,7 +969,7 @@ func (g *game) Copy() Game {
 
 	var historyCopy = make([]History, 0, len(g.history))
 	for i := range g.history {
-		historyCopy[i] = g.history[i].Copy()
+		historyCopy = append(historyCopy, g.history[i])
 	}
 
 	return &game{
@@ -973,8 +985,8 @@ func (g *game) Started() bool {
 }
 
 func (g *game) Completed() bool {
-	for _, player := range g.players {
-		if player.AllPawnsInHome() {
+	for _, players := range g.players {
+		if players.AllPawnsInHome() {
 			return true
 		}
 	}
@@ -983,9 +995,9 @@ func (g *game) Completed() bool {
 }
 
 func (g *game) Winner() *Player {
-	for _, player := range g.players {
-		if player.AllPawnsInHome() {
-			return &player
+	for _, players := range g.players {
+		if players.AllPawnsInHome() {
+			return &players
 		}
 	}
 
@@ -993,8 +1005,6 @@ func (g *game) Winner() *Player {
 }
 
 func (g *game) Track(action string, player Player, card Card) {
-	// TODO: player and card are optional, but it's not clear how I represent that, because pointer to interface does not work well
-
 	var color *PlayerColor = nil
 	if player != nil {
 		x := player.Color()
@@ -1015,8 +1025,13 @@ func (g *game) Track(action string, player Player, card Card) {
 	}
 }
 
-func (g *game) CreatePlayerView(color PlayerColor) PlayerView {
-	player := g.players[color].Copy()
+func (g *game) CreatePlayerView(color PlayerColor) (PlayerView, error) {
+	player, ok := g.players[color]
+	if ! ok {
+		return *new(PlayerView), errors.New("invalid color")
+	}
+
+	copied := player.Copy()
 
 	opponents := make(map[PlayerColor]Player, len(g.players))
 	for i := range g.players {
@@ -1025,5 +1040,5 @@ func (g *game) CreatePlayerView(color PlayerColor) PlayerView {
 		}
 	}
 
-	return NewPlayerView(player, opponents)
+	return NewPlayerView(copied, opponents), nil
 }
