@@ -35,6 +35,9 @@ type Action interface {
 
 	// SetPosition Set the position on the action (can be nil)
 	SetPosition(position Position)
+
+	// Equals Checks for value equality on the interface
+	Equals(other Action) bool
 }
 
 type action struct {
@@ -68,6 +71,12 @@ func (a *action) SetPosition(position Position) {
 	a.position = position
 }
 
+func (a *action) Equals(other Action) bool {
+	return a.actionType == other.Type() &&
+		a.pawn.Equals(other.Pawn()) &&
+		((a.position == nil && other.Position() == nil) || a.position.Equals(other.Position()))
+}
+
 // Move is a player's move on the board, which consists of one or more actions
 //
 // Note that the actions associated with a move include both the immediate actions that the player
@@ -80,6 +89,7 @@ type Move interface {
 	Card() Card
 	Actions() []Action
 	SideEffects() []Action
+	AddSideEffect(action Action)
 }
 
 type move struct {
@@ -112,6 +122,20 @@ func (m *move) Actions() []Action {
 
 func (m *move) SideEffects() []Action {
 	return m.sideEffects
+}
+
+func (m *move) AddSideEffect(action Action) {
+	found := false
+	for _, a := range m.actions {
+		if a.Equals(action) {
+			found = true
+			break
+		}
+	}
+
+	if !found {
+		m.sideEffects = append(m.sideEffects, action)
+	}
 }
 
 // ConstructLegalMoves Return the set of legal moves for a pawn using a card, possibly empty.
@@ -271,96 +295,264 @@ func calculatePosition(color PlayerColor, position Position, squares int) (Posit
 
 // Return the set of legal moves for a pawn using Card1, possibly empty.
 func constructLegalMoves1(color PlayerColor, card Card, pawn Pawn, allPawns []Pawn) []Move {
-	return []Move{} // TODO: implement constructLegalMoves1
+	moves := make([]Move, 0)
+	moveCircle(&moves, color, card, pawn, allPawns)
+	moveSimple(&moves, color, card, pawn, allPawns, 1)
+	return moves
 }
 
 // Return the set of legal moves for a pawn using Card2, possibly empty.
 func constructLegalMoves2(color PlayerColor, card Card, pawn Pawn, allPawns []Pawn) []Move {
-	return []Move{} // TODO: implement constructLegalMoves2
+	moves := make([]Move, 0)
+	moveCircle(&moves, color, card, pawn, allPawns)
+	moveSimple(&moves, color, card, pawn, allPawns, 1)
+	return moves
 }
 
 // Return the set of legal moves for a pawn using Card3, possibly empty.
 func constructLegalMoves3(color PlayerColor, card Card, pawn Pawn, allPawns []Pawn) []Move {
-	return []Move{} // TODO: implement constructLegalMoves3
+	moves := make([]Move, 0)
+	moveSimple(&moves, color, card, pawn, allPawns, 3)
+	return moves
 }
 
 // Return the set of legal moves for a pawn using Card4, possibly empty.
 func constructLegalMoves4(color PlayerColor, card Card, pawn Pawn, allPawns []Pawn) []Move {
-	return []Move{} // TODO: implement constructLegalMoves4
+	moves := make([]Move, 0)
+	moveSimple(&moves, color, card, pawn, allPawns, -4)
+	return moves
 }
 
 // Return the set of legal moves for a pawn using Card5, possibly empty.
 func constructLegalMoves5(color PlayerColor, card Card, pawn Pawn, allPawns []Pawn) []Move {
-	return []Move{} // TODO: implement constructLegalMoves5
+	moves := make([]Move, 0)
+	moveSimple(&moves, color, card, pawn, allPawns, 5)
+	return moves
 }
 
 // Return the set of legal moves for a pawn using Card7, possibly empty.
 func constructLegalMoves7(color PlayerColor, card Card, pawn Pawn, allPawns []Pawn) []Move {
-	return []Move{} // TODO: implement constructLegalMoves7
+	moves := make([]Move, 0)
+	moveSimple(&moves, color, card, pawn, allPawns, 7)
+	moveSplit(&moves, color, card, pawn, allPawns)
+	return moves
 }
 
 // Return the set of legal moves for a pawn using Card8, possibly empty.
 func constructLegalMoves8(color PlayerColor, card Card, pawn Pawn, allPawns []Pawn) []Move {
-	return []Move{} // TODO: implement constructLegalMoves8
+	moves := make([]Move, 0)
+	moveSimple(&moves, color, card, pawn, allPawns, 8)
+	return moves
 }
 
 // Return the set of legal moves for a pawn using Card10, possibly empty.
 func constructLegalMoves10(color PlayerColor, card Card, pawn Pawn, allPawns []Pawn) []Move {
-	return []Move{} // TODO: implement constructLegalMoves10
+	moves := make([]Move, 0)
+	moveSimple(&moves, color, card, pawn, allPawns, 10)
+	moveSimple(&moves, color, card, pawn, allPawns, -1)
+	return moves
 }
 
 // Return the set of legal moves for a pawn using Card11, possibly empty.
 func constructLegalMoves11(color PlayerColor, card Card, pawn Pawn, allPawns []Pawn) []Move {
-	return []Move{} // TODO: implement constructLegalMoves11
+	moves := make([]Move, 0)
+	moveSwap(&moves, color, card, pawn, allPawns)
+	moveSimple(&moves, color, card, pawn, allPawns, 11)
+	return moves
 }
 
 // Return the set of legal moves for a pawn using Card12, possibly empty.
 func constructLegalMoves12(color PlayerColor, card Card, pawn Pawn, allPawns []Pawn) []Move {
-	return []Move{} // TODO: implement constructLegalMoves12
+	moves := make([]Move, 0)
+	moveSimple(&moves, color, card, pawn, allPawns, 12)
+	return moves
 }
 
 // Return the set of legal moves for a pawn using CardApologies, possibly empty.
 func constructLegalMovesApologies(color PlayerColor, card Card, pawn Pawn, allPawns []Pawn) []Move {
-	return []Move{} // TODO: implement constructLegalMovesApologies
+	moves := make([]Move, 0)
+	moveApologies(&moves, color, card, pawn, allPawns)
+	return moves
 }
 
 // Return the first pawn at the indicated position, or None.
-func findPawn(allPawns []Pawn, position Position) *Pawn {
-	return nil  // TODO: implement findPawn
+func findPawn(allPawns []Pawn, position Position) Pawn {
+	for _, p := range allPawns {
+		if p.Position().Equals(position) {
+			return p
+		}
+	}
+
+	return nil
 }
 
-func moveCircle(color PlayerColor, card Card, pawn Pawn, allPawns []Pawn) []Move {
+func moveCircle(moves *[]Move, color PlayerColor, card Card, pawn Pawn, allPawns []Pawn) {
 	// For start-related cards, a pawn in the start area can move to the associated
 	// circle position if that position is not occupied by another pawn of the same color.
-	return []Move{} // TODO: implement moveCircle
+	if pawn.Position().Start() {
+		conflict := findPawn(allPawns, StartCircles[color])
+		if conflict == nil {
+			actions := []Action { NewAction(MoveToPosition, pawn, StartCircles[color].Copy()) }
+			sideEffects := make([]Action, 0)
+			move := NewMove(card, actions, sideEffects)
+			*moves = append(*moves, move)
+		} else if conflict != nil && conflict.Color() != color {
+			actions := []Action { NewAction(MoveToPosition, pawn, StartCircles[color].Copy())}
+			sideEffects := []Action { NewAction(MoveToStart, conflict, nil) }
+			move := NewMove(card, actions, sideEffects)
+			*moves = append(*moves, move)
+		}
+	}
 }
 
-func moveSimple(color PlayerColor, card Card, pawn Pawn, allPawns []Pawn) []Move {
+func moveSimple(moves *[]Move, color PlayerColor, card Card, pawn Pawn, allPawns []Pawn, squares int) {
 	// For most cards, a pawn on the board can move forward or backward if the
 	// resulting position is not occupied by another pawn of the same color.
-	return []Move{} // TODO: implement moveSimple
+	if pawn.Position().Square() != nil || pawn.Position().Safe() != nil {
+		target, err := calculatePosition(color, pawn.Position(), squares)
+		if err == nil { // if the requested position is not legal, then just ignore it
+			if target.Home() || target.Start() { // by definition, there can't be a conflict going to home or start
+				actions := []Action { NewAction(MoveToPosition, pawn, target) }
+				sideEffects := make([]Action, 0)
+				move := NewMove(card, actions, sideEffects)
+				*moves = append(*moves, move)
+			} else {
+				conflict := findPawn(allPawns, target)
+				if conflict == nil {
+					actions := []Action { NewAction(MoveToPosition, pawn, target) }
+					sideEffects := make([]Action, 0)
+					move := NewMove(card, actions, sideEffects)
+					*moves = append(*moves, move)
+				} else if conflict != nil && conflict.Color() != color {
+					actions := []Action { NewAction(MoveToPosition, pawn, target)}
+					sideEffects := []Action { NewAction(MoveToStart, conflict, nil) }
+					move := NewMove(card, actions, sideEffects)
+					*moves = append(*moves, move)
+				}
+			}
+		}
+	}
 }
 
-func moveSplit(color PlayerColor, card Card, pawn Pawn, allPawns []Pawn) []Move {
+func moveSplit(moves *[]Move, color PlayerColor, card Card, pawn Pawn, allPawns []Pawn) {
 	// For the 7 card, we can split up the move between two different pawns.
 	// Any combination of 7 forward moves is legal, as long as the resulting position
 	// is not occupied by another pawn of the same color.
-	return []Move{} // TODO: implement moveSplit
+
+	type splitPair struct {
+		left int
+		right int
+	}
+
+	// legal ways to split up a move of 7
+	legalSplits := []splitPair{{1, 6}, {2, 5}, {3, 4}, {4, 3}, {5, 2}, {6, 1} }
+
+	for _, other := range allPawns {
+		if !other.Equals(pawn) && other.Color() == color && !other.Position().Home() && !other.Position().Start() {
+
+			// any pawn except other
+			filtered := make([]Pawn, 0)
+			for _, p := range allPawns {
+				if !p.Equals(other) {
+					filtered = append(filtered, p)
+				}
+			}
+
+			for _, legal := range legalSplits {
+				left := make([]Move, 0)
+				moveSimple(&left, color, card, pawn, filtered, legal.left)
+
+				right := make([]Move, 0)
+				moveSimple(&right, color, card, pawn, filtered, legal.right)
+
+				if len(left) > 0 && len(right) > 0 {
+					actions := make([]Action, 0)
+					sideEffects := make([]Action, 0)
+
+					for _, l := range left[0].Actions() {
+						actions = append(actions, l)
+					}
+
+					for _, l := range left[0].SideEffects() {
+						sideEffects = append(sideEffects, l)
+					}
+
+					for _, r := range right[0].Actions() {
+						actions = append(actions, r)
+					}
+
+					for _, r := range right[0].SideEffects() {
+						sideEffects = append(sideEffects, r)
+					}
+
+					move := NewMove(card, actions, sideEffects)
+					*moves = append(*moves, move)
+				}
+			}
+		}
+	}
 }
 
-func moveSwap(color PlayerColor, card Card, pawn Pawn, allPawns []Pawn) []Move {
+func moveSwap(moves *[]Move, color PlayerColor, card Card, pawn Pawn, allPawns []Pawn) {
 	// For the 11 card, a pawn on the board can swap with another pawn of a different
 	// color, as long as that pawn is outside of the start area, safe area, or home area.
-	return []Move{} // TODO: implement moveSwap
+	if pawn.Position().Square() != nil { // pawn is on the board
+		 for _, swap := range allPawns {
+			 if swap.Color() != color && !swap.Position().Home() && !swap.Position().Start() && swap.Position().Safe() == nil {
+				 actions := []Action {
+					 NewAction(MoveToPosition, pawn, swap.Position().Copy()),
+					 NewAction(MoveToPosition, swap, pawn.Position().Copy()),
+				 }
+				 sideEffects := make([]Action, 0)
+				 move := NewMove(card, actions, sideEffects)
+				 *moves = append(*moves, move)
+			 }
+		 }
+	}
 }
 
-func moveApologies(color PlayerColor, card Card, pawn Pawn, allPawns []Pawn) []Move {
+func moveApologies(moves *[]Move, color PlayerColor, card Card, pawn Pawn, allPawns []Pawn) {
 	// For the Apologies card, a pawn in start can swap with another pawn of a different
 	// color, as long as that pawn is outside of the start area, safe area, or home area.
-	return []Move{} // TODO: implement moveApologies
+	if pawn.Position().Start() {
+		for _, swap := range allPawns {
+			if swap.Color() != color && !swap.Position().Home() && !swap.Position().Start() && swap.Position().Safe() == nil {
+				actions := []Action {
+					NewAction(MoveToPosition, pawn, swap.Position().Copy()),
+					NewAction(MoveToStart, swap, nil),
+				}
+				sideEffects := make([]Action, 0)
+				move := NewMove(card, actions, sideEffects)
+				*moves = append(*moves, move)
+			}
+		}
+	}
 }
 
 // Augment any legal moves with additional side-effects that occur as a result of slides.
 func augmentWithSlides(allPawns []Pawn, moves []Move) {
-	// TODO: implement augmentWithSlides
+	for _, move := range moves {
+		for _, action := range move.Actions() {
+			if action.Type() == MoveToPosition { // look at any move to a position on the board
+				for _, color := range PlayerColors.Members() {
+					if color != action.Pawn().Color() { // any color other than the pawn's
+						for _, slide := range Slides[color] { // # look at all slides with this color
+							if action.Position() != nil && action.Position().Square() != nil && *action.Position().Square() == slide.Start() {
+								_ = action.Position().MoveToSquare(slide.End()) // if the pawn landed on the start of the slide, move the pawn to the end of the slide
+								for square := slide.Start()+1; square <= slide.End(); square++ {
+									// Note: in this one case, a pawn can bump another pawn of the same color
+									tmp := NewPosition(false, false, nil, &square)
+									pawn := findPawn(allPawns, tmp)
+									if pawn != nil {
+										bump := NewAction(MoveToStart, pawn, nil)
+										move.AddSideEffect(bump)
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
 }

@@ -179,6 +179,9 @@ type Card interface {
 
 	// Copy Return a fully-independent copy of the card.
 	Copy() Card
+
+	// Equals Checks for value equality on the interface
+	Equals(other Card) bool
 }
 
 type card struct {
@@ -207,6 +210,11 @@ func (c *card) Copy() Card {
 		id: c.id,
 		cardType: c.cardType,
 	}
+}
+
+func (c *card) Equals(other Card) bool {
+	return c.id == other.Id() &&
+		c.cardType == other.Type()
 }
 
 // Deck The deck of cards associated with a game.
@@ -327,6 +335,9 @@ type Position interface {
 	// Copy Return a fully-independent copy of the position.
 	Copy() Position
 
+	// Equals Checks for value equality on the interface
+	Equals(other Position) bool
+
 	// MoveToPosition Move the pawn to a specific position on the board.
 	MoveToPosition(position Position) error
 
@@ -406,6 +417,13 @@ func (p *position) Copy() Position {
 		safe: p.safe,
 		square: p.square,
 	}
+}
+
+func (p *position) Equals(other Position) bool {
+	return p.start == other.Start() &&
+		p.home == other.Home() &&
+		p.safe == other.Safe() &&
+		p.square == other.Square()
 }
 
 func (p *position) MoveToPosition(position Position) error {
@@ -522,6 +540,9 @@ type Pawn interface {
 
 	// Copy Return a fully-independent copy of the pawn.
 	Copy() Pawn
+
+	// Equals Checks for value equality on the interface
+	Equals(other Pawn) bool
 }
 
 type pawn struct {
@@ -564,6 +585,13 @@ func (p *pawn) Copy() Pawn {
 		name: p.name,
 		position: p.position.Copy(),
 	}
+}
+
+func (p *pawn) Equals(other Pawn) bool {
+	return p.color == other.Color() &&
+		p.index == other.Index() &&
+		p.name == other.Name() &&
+		p.position.Equals(other.Position())
 }
 
 func (p *pawn) SetPosition(position Position) {
@@ -691,7 +719,7 @@ func (p *player) AppendToHand(card Card) {
 func (p *player) RemoveFromHand(card Card) {
 	for i := 0; i < len(p.hand); i++ {
 		found := p.hand[i]
-		if found.Id() == card.Id() && found.Type() == card.Type() {
+		if found == card {
 			p.hand = slices.Delete(p.hand, i, i+1)
 			return
 		}

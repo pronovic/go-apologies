@@ -31,6 +31,15 @@ func TestCardCopy(t *testing.T) {
 	assert.NotSame(t, obj, copied)
 }
 
+func TestCardEquals(t *testing.T) {
+	c1 := NewCard("id1", CardApologies)
+	c2 := NewCard("id2", Card11)
+	assert.Equal(t, c1, c1)
+	assert.Equal(t, c2, c2)
+	assert.NotEqual(t, c1, c2)
+	assert.NotEqual(t, c2, c1)
+}
+
 func TestNewDeck(t *testing.T) {
 	obj := NewDeck()
 	underlying := obj.(*deck)
@@ -211,6 +220,15 @@ func TestPositionCopy(t *testing.T) {
 	copied = obj.Copy()
 	assert.Equal(t, obj, copied)
 	assert.NotSame(t, obj, copied)
+}
+
+func TestPositionEquals(t *testing.T) {
+	p1 := NewPosition(true, false, nil, nil)
+	p2 := NewPosition(false, true, nil, nil)
+	assert.Equal(t, p1, p1)
+	assert.Equal(t, p2, p2)
+	assert.NotEqual(t, p1, p2)
+	assert.NotEqual(t, p2, p1)
 }
 
 func TestPositionMoveToPositionValidStart(t *testing.T) {
