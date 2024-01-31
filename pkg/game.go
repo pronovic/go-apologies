@@ -867,7 +867,10 @@ func (v *playerView) AllPawns() []Pawn {
 	}
 
 	all := make([]Pawn, 0, total)
-	copy(all, v.player.Pawns())
+	for i := range v.player.Pawns() {
+		all = append(all, v.player.Pawns()[i])
+	}
+
 	for key := range v.opponents {
 		pawns := v.opponents[key].Pawns()
 		for i := range pawns {

@@ -544,3 +544,24 @@ func TestPlayerViewCopy(t *testing.T) {
 	assert.Equal(t, obj, copied)
 	assert.NotSame(t, obj, copied)
 }
+
+func TestPlayerViewGetPawn(t *testing.T) {
+	player := NewPlayer(Red)
+	opponents := map[PlayerColor]Player{Green: NewPlayer(Green)}
+	view := NewPlayerView(player, opponents)
+	assert.Equal(t, &view.Player().Pawns()[3], view.GetPawn(NewPawn(Red, 3)))
+	assert.Equal(t, &view.Opponents()[Green].Pawns()[1], view.GetPawn(NewPawn(Green, 1)))
+	assert.Nil(t, view.GetPawn(NewPawn(Yellow, 0)))
+}
+
+func TestPlayerViewAllPawns(t *testing.T) {
+	player := NewPlayer(Red)
+	opponents := map[PlayerColor]Player{Green: NewPlayer(Green)}
+	view := NewPlayerView(player, opponents)
+	pawns := view.AllPawns()
+	assert.Equal(t, 2 * Pawns, len(pawns))
+	for i := 0; i < Pawns; i++ {
+		assert.True(t, slices.Contains(pawns, player.Pawns()[i]))
+		assert.True(t, slices.Contains(pawns, opponents[Green].Pawns()[i]))
+	}
+}
