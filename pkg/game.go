@@ -5,7 +5,9 @@ import (
 	"errors"
 	"fmt"
 	"github.com/pronovic/go-apologies/pkg/util/enum"
+	"github.com/pronovic/go-apologies/pkg/util/timestamp"
 	"math/big"
+	"slices"
 	"strconv"
 	"time"
 )
@@ -358,6 +360,16 @@ func NewPosition(start bool, home bool, safe *int, square *int) Position {
 	}
 }
 
+// emptyPosition creates a new position in the start, for internal use
+func emptyPosition() Position {
+	return &position{
+		start: true,
+		home: false,
+		safe: nil,
+		square: nil,
+	}
+}
+
 // newPositionAtSquare creates a new position at a particular square, for defining constants
 func newPositionAtSquare(square int) Position {
 	p := NewPosition(false, false, nil, nil)
@@ -505,6 +517,9 @@ type Pawn interface {
 	// Position The position of this pawn on the board
 	Position() Position
 
+	// SetPosition Set the position of this pawn on the board
+	SetPosition(position Position)
+
 	// Copy Return a fully-independent copy of the pawn.
 	Copy() Pawn
 }
@@ -521,8 +536,8 @@ func NewPawn(color PlayerColor, index int) Pawn {
 	return &pawn{
 		color: color,
 		index: index,
-		name: fmt.Sprintf("%s%d", color, index),
-		position: *new(Position),
+		name: fmt.Sprintf("%s%d", color.value, index),
+		position: emptyPosition(),
 	}
 }
 
@@ -580,6 +595,12 @@ type Player interface {
 	// PublicData Return a fully-independent copy of the player with only public data visible.
 	PublicData() Player
 
+	// AppendToHand appends a card into the player's hand
+	AppendToHand(card Card)
+
+	// RemoveFromHand removes a card from the player's hand
+	RemoveFromHand(card Card)
+
 	// FindFirstPawnInStart Find the first pawn in the start area, if any.
 	FindFirstPawnInStart() *Pawn // optional
 
@@ -599,10 +620,15 @@ type player struct {
 
 // NewPlayer constructs a new Player
 func NewPlayer(color PlayerColor) Player {
+	pawns := make([]Pawn, 0, Pawns)
+	for i := 0; i < Pawns; i++ {
+		pawns = append(pawns, NewPawn(color, i))
+	}
+
 	return &player{
 		color: color,
 		hand: make([]Card, 0, DeckSize),
-		pawns: make([]Pawn, 0, Pawns),
+		pawns: pawns,
 		turns: 0,
 	}
 }
@@ -626,12 +652,12 @@ func (p *player) Turns() int {
 func (p *player) Copy() Player {
 	handCopy := make([]Card, 0, DeckSize)
 	for i := range p.hand {
-		handCopy[i] = p.hand[i].Copy()
+		handCopy = append(handCopy, p.hand[i].Copy())
 	}
 
 	pawnsCopy := make([]Pawn, 0, Pawns)
 	for i := range p.pawns {
-		pawnsCopy[i] = p.pawns[i].Copy()
+		pawnsCopy = append(pawnsCopy, p.pawns[i].Copy())
 	}
 
 	return &player{
@@ -647,7 +673,7 @@ func (p *player) PublicData() Player {
 
 	pawnsCopy := make([]Pawn, 0, Pawns)
 	for i := range p.pawns {
-		pawnsCopy[i] = p.pawns[i].Copy()
+		pawnsCopy = append(pawnsCopy, p.pawns[i].Copy())
 	}
 
 	return &player{
@@ -656,6 +682,22 @@ func (p *player) PublicData() Player {
 		pawns: pawnsCopy,
 		turns: p.turns,
 	}
+}
+
+func (p *player) AppendToHand(card Card) {
+	p.hand = append(p.hand, card)
+}
+
+func (p *player) RemoveFromHand(card Card) {
+	for i := 0; i < len(p.hand); i++ {
+		found := p.hand[i]
+		if found == card {
+			p.hand = slices.Delete(p.hand, i, i+1)
+			return
+		}
+	}
+
+	return
 }
 
 func (p *player) FindFirstPawnInStart() *Pawn { // optional
@@ -715,7 +757,7 @@ func NewHistory(action string, color *PlayerColor, card *CardType) History {
 		action: action,
 		color: color,
 		card: card,
-		timestamp: time.Now().UTC(),
+		timestamp: timestamp.CurrentTime(),
 	}
 }
 
@@ -742,6 +784,16 @@ func (h *history) Copy() History {
 		card: h.card,
 		timestamp: h.timestamp,
 	}
+}
+
+func (h *history) String() string {
+	now := h.timestamp.Format(timestamp.Layout)
+	color := "General"
+	if h.color != nil {
+		color = h.color.Value()
+	}
+	action := h.action
+	return fmt.Sprintf("[%s] %s - %s", now, color, action)
 }
 
 // PlayerView A player-specific view of the game, showing only the information a player would have available on their turn.

@@ -1,12 +1,16 @@
 package pkg
 
-
 import (
 	"fmt"
+	"github.com/pronovic/go-apologies/pkg/util/timestamp"
 	"github.com/stretchr/testify/assert"
 	"slices"
 	"testing"
 )
+
+func init() {
+	timestamp.UseStubbedTime()  // once this has been called, it takes effect permanently for all unit tests
+}
 
 func TestNewSlide(t *testing.T) {
 	obj := newSlide(1, 2)
@@ -342,4 +346,201 @@ func TestPositionMoveToSquareInvalid(t *testing.T) {
 		err := position.MoveToSquare(square)
 		assert.EqualError(t, err, "invalid square")
 	}
+}
+
+func TestNewPawn(t *testing.T) {
+	obj := NewPawn(Red, 13)
+	assert.Equal(t, Red, obj.Color())
+	assert.Equal(t, 13, obj.Index())
+	assert.Equal(t, "Red13", obj.Name())
+	assert.Equal(t, NewPosition(true, false, nil, nil), obj.Position())
+	assert.Equal(t, "Red13->start", fmt.Sprintf("%s", obj))
+}
+
+func TestPawnCopy(t *testing.T) {
+	obj := NewPawn(Red, 13)
+	copied := obj.Copy()
+	assert.Equal(t, obj, copied)
+	assert.NotSame(t, obj, copied)
+}
+
+func TestPawnSetPosition(t *testing.T) {
+	obj := NewPawn(Red, 13)
+	target := NewPosition(false, true, nil, nil)
+	obj.SetPosition(target)
+	assert.Equal(t, target, obj.Position())
+	assert.Equal(t, "Red13->home", fmt.Sprintf("%s", obj))
+}
+
+func TestNewPlayer(t *testing.T) {
+	obj := NewPlayer(Red)
+	assert.Equal(t, Red, obj.Color())
+	assert.Equal(t, 0, obj.Turns())
+	assert.Equal(t, Pawns, len(obj.Pawns()))
+}
+
+func TestPlayerCopy(t *testing.T) {
+	var err error
+
+	card1 := NewCard("0", CardApologies)
+
+	obj := NewPlayer(Red)
+	obj.AppendToHand(card1)
+	err = obj.Pawns()[0].Position().MoveToHome()
+	assert.Nil(t, err)
+	err = obj.Pawns()[1].Position().MoveToSafe(2)
+	assert.Nil(t, err)
+	err = obj.Pawns()[2].Position().MoveToSquare(32)
+	assert.Nil(t, err)
+
+	copied := obj.Copy()
+	assert.Equal(t, obj, copied)
+	assert.NotSame(t, obj, copied)
+}
+
+func TestPlayerPublicData(t *testing.T) {
+	var err error
+
+	card1 := NewCard("0", CardApologies)
+
+	obj := NewPlayer(Red)
+	obj.AppendToHand(card1)
+	err = obj.Pawns()[0].Position().MoveToHome()
+	assert.Nil(t, err)
+	err = obj.Pawns()[1].Position().MoveToSafe(2)
+	assert.Nil(t, err)
+	err = obj.Pawns()[2].Position().MoveToSquare(32)
+	assert.Nil(t, err)
+
+	expected := obj.Copy()
+	expected.RemoveFromHand(card1) // the hand is cleared
+
+	public := obj.PublicData()
+	assert.Equal(t, expected, public)
+	assert.NotSame(t, obj, public)
+}
+
+func TestPlayerAppendAndRemoveHand(t *testing.T) {
+	obj := NewPlayer(Red)
+
+	card1 := NewCard("1", Card1)
+	card2 := NewCard("2", Card2)
+	card3 := NewCard("3", Card3)
+
+	// remove is idempotent; if it's not there, then that's ok
+	obj.RemoveFromHand(card1)
+	obj.RemoveFromHand(card2)
+	obj.RemoveFromHand(card3)
+
+	obj.AppendToHand(card1)
+	assert.Equal(t, []Card{card1}, obj.Hand())
+
+	obj.AppendToHand(card2)
+	assert.Equal(t, []Card{card1, card2}, obj.Hand())
+
+	obj.AppendToHand(card3)
+	assert.Equal(t, []Card{card1, card2, card3}, obj.Hand())
+
+	obj.RemoveFromHand(card2)
+	assert.Equal(t, []Card{card1, card3}, obj.Hand())
+
+	obj.RemoveFromHand(card3)
+	assert.Equal(t, []Card{card1}, obj.Hand())
+
+	obj.RemoveFromHand(card1)
+	assert.Equal(t, []Card{}, obj.Hand())
+}
+
+func TestPlayerFindFirstPawnInStart(t *testing.T) {
+	obj := NewPlayer(Red)
+
+	for i := 0; i < Pawns; i++ {
+		assert.Same(t, obj.Pawns()[i], *obj.FindFirstPawnInStart())
+		err := obj.Pawns()[i].Position().MoveToHome()
+		assert.Nil(t, err)
+	}
+
+	assert.Nil(t, obj.FindFirstPawnInStart())
+}
+
+func TestAllPawnsInHome(t *testing.T) {
+	obj := NewPlayer(Red)
+
+	for i := 0; i < Pawns; i++ {
+		assert.False(t, obj.AllPawnsInHome())
+		err := obj.Pawns()[i].Position().MoveToHome()
+		assert.Nil(t, err)
+	}
+
+	assert.True(t, obj.AllPawnsInHome())
+}
+
+func TestIncrementTurns(t *testing.T) {
+	obj := NewPlayer(Red)
+	assert.Equal(t, 0, obj.Turns())
+	obj.IncrementTurns()
+	assert.Equal(t, 1, obj.Turns())
+	obj.IncrementTurns()
+	obj.IncrementTurns()
+	assert.Equal(t, 3, obj.Turns())
+}
+
+func TestNewHistory(t *testing.T) {
+	var obj History
+
+	obj = NewHistory("action", nil, nil)
+	assert.Equal(t, "action", obj.Action())
+	assert.Nil(t, obj.Color())
+	assert.Nil(t, obj.Card())
+	assert.Equal(t, timestamp.GetStubbedTime(), obj.Timestamp())
+	assert.Equal(t, fmt.Sprintf("[%s] General - action", timestamp.StubbedTime), fmt.Sprintf("%s", obj))
+
+	color := Blue
+	obj = NewHistory("action", &color, nil)
+	assert.Equal(t, &color, obj.Color())
+	assert.Nil(t, obj.Card())
+	assert.Equal(t, timestamp.GetStubbedTime(), obj.Timestamp())
+	assert.Equal(t, fmt.Sprintf("[%s] Blue - action", timestamp.StubbedTime), fmt.Sprintf("%s", obj))
+
+	card1 := Card12
+	obj = NewHistory("action", nil, &card1)
+	assert.Nil(t, obj.Color())
+	assert.Equal(t, &card1, obj.Card())
+	assert.Equal(t, timestamp.GetStubbedTime(), obj.Timestamp())
+	assert.Equal(t, fmt.Sprintf("[%s] General - action", timestamp.StubbedTime), fmt.Sprintf("%s", obj))
+}
+
+func TestHistoryCopy(t *testing.T) {
+	color := Blue
+	card1 := Card12
+	obj := NewHistory("action", &color, &card1)
+	copied := obj.Copy()
+	assert.Equal(t, obj, copied)
+	assert.NotSame(t, obj, copied)
+}
+
+func TestNewPlayerView(t *testing.T) {
+	player1 := NewPlayer(Blue)
+	player2 := NewPlayer(Red)
+
+	opponents := make(map[PlayerColor]Player, 1)
+	opponents[Red] = player2
+
+	obj := NewPlayerView(player1, opponents)
+	assert.Equal(t, player1, obj.Player())
+	assert.Equal(t, opponents, obj.Opponents())
+	assert.Equal(t, player2, obj.Opponents()[Red])
+}
+
+func TestPlayerViewCopy(t *testing.T) {
+	player1 := NewPlayer(Blue)
+	player2 := NewPlayer(Red)
+
+	opponents := make(map[PlayerColor]Player, 1)
+	opponents[Red] = player2
+
+	obj := NewPlayerView(player1, opponents)
+	copied := obj.Copy()
+	assert.Equal(t, obj, copied)
+	assert.NotSame(t, obj, copied)
 }
