@@ -5,6 +5,74 @@ import (
 	"testing"
 )
 
+func TestNewAction(t *testing.T) {
+
+}
+
+func TestActionSetPosition(t *testing.T) {
+
+}
+
+func TestActionEquals(t *testing.T) {
+
+}
+
+func TestNewMove(t *testing.T) {
+
+}
+
+func TestMoveAddSideEffect(t *testing.T) {
+
+}
+
+func TestConstructLegalMovesCard1(t *testing.T) {
+
+}
+
+func TestConstructLegalMovesCard2(t *testing.T) {
+
+}
+
+func TestConstructLegalMovesCard3(t *testing.T) {
+
+}
+
+func TestConstructLegalMovesCard4(t *testing.T) {
+
+}
+
+func TestConstructLegalMovesCard5(t *testing.T) {
+
+}
+
+func TestConstructLegalMovesCard7(t *testing.T) {
+
+}
+
+func TestConstructLegalMovesCard8(t *testing.T) {
+
+}
+
+func TestConstructLegalMovesCard10(t *testing.T) {
+
+}
+
+func TestConstructLegalMovesCard11(t *testing.T) {
+
+}
+
+func TestConstructLegalMovesCard12(t *testing.T) {
+
+}
+
+func TestConstructLegalMovesCardApologies(t *testing.T) {
+
+}
+
+func TestConstructLegalMovesCardSpecial(t *testing.T) {
+
+}
+
 func TestDistanceToHome(t *testing.T) {
 	// distance from home is always 0
 	for _, color := range []PlayerColor{ Red, Yellow, Green } {

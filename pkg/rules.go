@@ -201,6 +201,8 @@ func DistanceToHome(pawn Pawn) int {
 	}
 }
 
+// TODO: implement rules
+
 // Calculate the new position for a forward or backwards move, taking into account safe zone turns but disregarding slides.
 func calculatePosition(color PlayerColor, position Position, squares int) (Position, error) {
 	if position.Home() || position.Start() {
