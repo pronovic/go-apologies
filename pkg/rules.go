@@ -46,7 +46,30 @@ func ConstructLegalMoves(color PlayerColor, card Card, pawn Pawn, allPawns []Paw
 
 // DistanceToHome Return the distance to home for this pawn, a number of squares when moving forward.
 func DistanceToHome(pawn Pawn) int {
-	return 0  // TODO: implement DistanceToHome
+	if pawn.Position().Home() {
+		return 0
+	} else if pawn.Position().Start() {
+		return 65
+	} else if pawn.Position().Safe() != nil {
+		return SafeSquares - *pawn.Position().Safe()
+	} else {
+		circle := *StartCircles[pawn.Color()].Square()
+		turn := *TurnSquares[pawn.Color()].Square()
+		square := *pawn.Position().Square()
+		squareToCorner := BoardSquares - square
+		cornerToTurn := turn
+		turnToHome := SafeSquares + 1
+		total := squareToCorner + cornerToTurn + turnToHome
+		if turn < square && square < circle {
+			return total
+		} else {
+			if total < 65 {
+				return total
+			} else {
+				return total - 60
+			}
+		}
+	}
 }
 
 // Calculate the new position for a forward or backwards move, taking into account safe zone turns but disregarding slides.

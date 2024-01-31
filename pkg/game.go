@@ -337,7 +337,7 @@ type Position interface {
 	MoveToHome() error
 
 	// MoveToSafe Move the pawn to a square in its safe area.
-	MoveToSafe(square int) error
+	MoveToSafe(safe int) error
 
 	// MoveToSquare Move the pawn to a square on the board.
 	MoveToSquare(square int) error
@@ -462,14 +462,14 @@ func (p *position) MoveToHome() error {
 	return nil
 }
 
-func (p *position) MoveToSafe(square int) error {
-	if square < 0 || square >= SafeSquares {
+func (p *position) MoveToSafe(safe int) error {
+	if safe < 0 || safe >= SafeSquares {
 		return errors.New("invalid safe square")
 	}
 
 	p.start = false
 	p.home = false
-	p.safe = &square
+	p.safe = &safe
 	p.square = nil
 
 	return nil

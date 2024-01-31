@@ -279,7 +279,7 @@ func TestPositionMoveToPositionInvalidNone(t *testing.T) {
 }
 
 func TestPositionMoveToPositionInvalidSafe(t *testing.T) {
-	for _, safe := range []int {-1000, -2, -1, 5, 6, 1000, } {
+	for _, safe := range []int {-1000, -2, -1, 5, 6, 1000 } {
 		target := NewPosition(false, false, &safe, nil)
 		position := NewPosition(false, false, nil, nil)
 		err := position.MoveToPosition(target)
@@ -288,7 +288,7 @@ func TestPositionMoveToPositionInvalidSafe(t *testing.T) {
 }
 
 func TestPositionMoveToPositionInvalidSquare(t *testing.T) {
-	for _, square := range []int { -1000, -2, -1, 60, 61, 1000, } {
+	for _, square := range []int { -1000, -2, -1, 60, 61, 1000 } {
 		target := NewPosition(false, false, nil, &square)
 		position := NewPosition(false, false, nil, nil)
 		err := position.MoveToPosition(target)
@@ -323,7 +323,7 @@ func TestPositionMoveToSafeValid(t *testing.T) {
 }
 
 func TestPositionMoveToSafeInvalid(t *testing.T) {
-	for _, safe := range []int {-1000, -2, -1, 5, 6, 1000, } {
+	for _, safe := range []int {-1000, -2, -1, 5, 6, 1000 } {
 		position := NewPosition(false, false, nil, nil)
 		err := position.MoveToSafe(safe)
 		assert.EqualError(t, err, "invalid safe square")
@@ -341,7 +341,7 @@ func TestPositionMoveToSquareValid(t *testing.T) {
 }
 
 func TestPositionMoveToSquareInvalid(t *testing.T) {
-	for _, square := range []int { -1000, -2, -1, 60, 61, 1000, } {
+	for _, square := range []int { -1000, -2, -1, 60, 61, 1000 } {
 		position := NewPosition(false, false, nil, nil)
 		err := position.MoveToSquare(square)
 		assert.EqualError(t, err, "invalid square")
