@@ -691,7 +691,7 @@ func (p *player) AppendToHand(card Card) {
 func (p *player) RemoveFromHand(card Card) {
 	for i := 0; i < len(p.hand); i++ {
 		found := p.hand[i]
-		if found == card {
+		if found.Id() == card.Id() && found.Type() == card.Type() {
 			p.hand = slices.Delete(p.hand, i, i+1)
 			return
 		}

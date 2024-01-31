@@ -80,8 +80,8 @@ func (v *values[T]) Members() []T {
 func (v *values[T]) MemberValues() []string {
 	members := make([]string, 0, len(v.members))
 
-	for i, m := range v.members {
-		members[i] = m.Value()
+	for _, m := range v.members {
+		members = append(members, m.Value())
 	}
 
 	return members
