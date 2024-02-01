@@ -33,11 +33,11 @@ type GameMode struct{ value string }
 // Value implements the enum.Enum interface for GameMode.
 func (e GameMode) Value() string { return e.value }
 
-var Standard = GameMode{"Standard"}
-var Adult = GameMode{"Adult"}
+var StandardMode = GameMode{"StandardMode"}
+var AdultMode = GameMode{"AdultMode"}
 
 // GameModes is the list of all legal GameMode enumerations
-var GameModes = enum.NewValues[GameMode](Standard, Adult)
+var GameModes = enum.NewValues[GameMode](StandardMode, AdultMode)
 
 // PlayerColor defines all legal player colors
 type PlayerColor struct{ value string }
@@ -870,8 +870,8 @@ type PlayerView interface {
 	// Copy Return a fully-independent copy of the player view.
 	Copy() PlayerView
 
-	// GetPawn Return the pawn from this view with the same color and index, if any
-	GetPawn(prototype Pawn) *Pawn
+	// GetPawn Return the pawn from this view with the same color and index, possibly nil
+	GetPawn(prototype Pawn) Pawn
 
 	// AllPawns Return a list of all pawns on the board.
 	AllPawns() []Pawn
@@ -910,11 +910,11 @@ func (v *playerView) Copy() PlayerView {
 	}
 }
 
-func (v *playerView) GetPawn(prototype Pawn) *Pawn {
+func (v *playerView) GetPawn(prototype Pawn) Pawn {
 	all := v.AllPawns()
 	for i := range all {
 		if all[i].Color() == prototype.Color() && all[i].Index() == prototype.Index() {
-			return &all[i]
+			return all[i]
 		}
 	}
 

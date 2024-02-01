@@ -567,8 +567,8 @@ func TestPlayerViewGetPawn(t *testing.T) {
 	player1 := NewPlayer(Red)
 	opponents := map[PlayerColor]Player{Green: NewPlayer(Green)}
 	view := NewPlayerView(player1, opponents)
-	assert.Equal(t, &view.Player().Pawns()[3], view.GetPawn(NewPawn(Red, 3)))
-	assert.Equal(t, &view.Opponents()[Green].Pawns()[1], view.GetPawn(NewPawn(Green, 1)))
+	assert.Equal(t, view.Player().Pawns()[3], view.GetPawn(NewPawn(Red, 3)))
+	assert.Equal(t, view.Opponents()[Green].Pawns()[1], view.GetPawn(NewPawn(Green, 1)))
 	assert.Nil(t, view.GetPawn(NewPawn(Yellow, 0)))
 }
 
