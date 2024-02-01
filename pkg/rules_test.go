@@ -8,46 +8,46 @@ import (
 func TestDistanceToHome(t *testing.T) {
 	// distance from home is always 0
 	for _, color := range []PlayerColor{ Red, Yellow, Green } {
-		assert.Equal(t, 0, DistanceToHome(pawnHome(color)))
+		assert.Equal(t, 0, distanceToHome(pawnHome(color)))
 	}
 
 	// distance from start is always 65
 	for _, color := range []PlayerColor{ Red, Yellow, Green } {
-		assert.Equal(t, 65, DistanceToHome(pawnStart(color)))
+		assert.Equal(t, 65, distanceToHome(pawnStart(color)))
 	}
 
 	// distance from within safe is always <= 5
-	assert.Equal(t, 5, DistanceToHome(pawnSafe(Red, 0)))
-	assert.Equal(t, 4, DistanceToHome(pawnSafe(Red, 1)))
-	assert.Equal(t, 3, DistanceToHome(pawnSafe(Red, 2)))
-	assert.Equal(t, 2, DistanceToHome(pawnSafe(Red, 3)))
-	assert.Equal(t, 1, DistanceToHome(pawnSafe(Red, 4)))
+	assert.Equal(t, 5, distanceToHome(pawnSafe(Red, 0)))
+	assert.Equal(t, 4, distanceToHome(pawnSafe(Red, 1)))
+	assert.Equal(t, 3, distanceToHome(pawnSafe(Red, 2)))
+	assert.Equal(t, 2, distanceToHome(pawnSafe(Red, 3)))
+	assert.Equal(t, 1, distanceToHome(pawnSafe(Red, 4)))
 
 	// distance from circle is always 64
-	assert.Equal(t, 64, DistanceToHome(pawnSquare(Red, 4)))
-	assert.Equal(t, 64, DistanceToHome(pawnSquare(Blue, 19)))
-	assert.Equal(t, 64, DistanceToHome(pawnSquare(Yellow, 34)))
-	assert.Equal(t, 64, DistanceToHome(pawnSquare(Green, 49)))
+	assert.Equal(t, 64, distanceToHome(pawnSquare(Red, 4)))
+	assert.Equal(t, 64, distanceToHome(pawnSquare(Blue, 19)))
+	assert.Equal(t, 64, distanceToHome(pawnSquare(Yellow, 34)))
+	assert.Equal(t, 64, distanceToHome(pawnSquare(Green, 49)))
 
 	// distance from square between turn and circle is always 65
-	assert.Equal(t, 65, DistanceToHome(pawnSquare(Red, 3)))
-	assert.Equal(t, 65, DistanceToHome(pawnSquare(Blue, 18)))
-	assert.Equal(t, 65, DistanceToHome(pawnSquare(Yellow, 33)))
-	assert.Equal(t, 65, DistanceToHome(pawnSquare(Green, 48)))
+	assert.Equal(t, 65, distanceToHome(pawnSquare(Red, 3)))
+	assert.Equal(t, 65, distanceToHome(pawnSquare(Blue, 18)))
+	assert.Equal(t, 65, distanceToHome(pawnSquare(Yellow, 33)))
+	assert.Equal(t, 65, distanceToHome(pawnSquare(Green, 48)))
 
 	// distance from turn is always 6
-	assert.Equal(t, 6, DistanceToHome(pawnSquare(Red, 2)))
-	assert.Equal(t, 6, DistanceToHome(pawnSquare(Blue, 17)))
-	assert.Equal(t, 6, DistanceToHome(pawnSquare(Yellow, 32)))
-	assert.Equal(t, 6, DistanceToHome(pawnSquare(Green, 47)))
+	assert.Equal(t, 6, distanceToHome(pawnSquare(Red, 2)))
+	assert.Equal(t, 6, distanceToHome(pawnSquare(Blue, 17)))
+	assert.Equal(t, 6, distanceToHome(pawnSquare(Yellow, 32)))
+	assert.Equal(t, 6, distanceToHome(pawnSquare(Green, 47)))
 
 	// check some arbitrary squares
-	assert.Equal(t, 7, DistanceToHome(pawnSquare(Red, 1)))
-	assert.Equal(t, 8, DistanceToHome(pawnSquare(Red, 0)))
-	assert.Equal(t, 9, DistanceToHome(pawnSquare(Red, 59)))
-	assert.Equal(t, 59, DistanceToHome(pawnSquare(Red, 9)))
-	assert.Equal(t, 23, DistanceToHome(pawnSquare(Blue, 0)))
-	assert.Equal(t, 13, DistanceToHome(pawnSquare(Green, 40)))
+	assert.Equal(t, 7, distanceToHome(pawnSquare(Red, 1)))
+	assert.Equal(t, 8, distanceToHome(pawnSquare(Red, 0)))
+	assert.Equal(t, 9, distanceToHome(pawnSquare(Red, 59)))
+	assert.Equal(t, 59, distanceToHome(pawnSquare(Red, 9)))
+	assert.Equal(t, 23, distanceToHome(pawnSquare(Blue, 0)))
+	assert.Equal(t, 13, distanceToHome(pawnSquare(Green, 40)))
 }
 
 func TestCalculatePositionHome(t *testing.T) {

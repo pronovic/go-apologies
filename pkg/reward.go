@@ -35,7 +35,7 @@ func calculateDistanceIncentive(player Player) int {
 	// Incentive of 1 point for each square closer to home for each of the player's 4 pawns
 	distance := 0
 	for _, pawn := range player.Pawns() {
-		distance += DistanceToHome(pawn)
+		distance += distanceToHome(pawn)
 	}
 	return 260 - distance  // 260 = 4*65, max distance for 4 pawns
 }

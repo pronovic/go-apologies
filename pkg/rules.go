@@ -138,8 +138,8 @@ func (m *move) AddSideEffect(action Action) {
 	}
 }
 
-// ConstructLegalMoves Return the set of legal moves for a pawn using a card, possibly empty.
-func ConstructLegalMoves(color PlayerColor, card Card, pawn Pawn, allPawns []Pawn) []Move {
+// constructLegalMoves Return the set of legal moves for a pawn using a card, possibly empty.
+func constructLegalMoves(color PlayerColor, card Card, pawn Pawn, allPawns []Pawn) []Move {
 	var moves []Move
 	if pawn.Position().Home() {
 		moves = make([]Move, 0)
@@ -173,8 +173,8 @@ func ConstructLegalMoves(color PlayerColor, card Card, pawn Pawn, allPawns []Paw
 	return moves
 }
 
-// DistanceToHome Return the distance to home for this pawn, a number of squares when moving forward.
-func DistanceToHome(pawn Pawn) int {
+// distanceToHome Return the distance to home for this pawn, a number of squares when moving forward.
+func distanceToHome(pawn Pawn) int {
 	if pawn.Position().Home() {
 		return 0
 	} else if pawn.Position().Start() {
@@ -200,8 +200,6 @@ func DistanceToHome(pawn Pawn) int {
 		}
 	}
 }
-
-// TODO: implement rules
 
 // Calculate the new position for a forward or backwards move, taking into account safe zone turns but disregarding slides.
 func calculatePosition(color PlayerColor, position Position, squares int) (Position, error) {
