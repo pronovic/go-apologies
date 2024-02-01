@@ -6,35 +6,209 @@ import (
 )
 
 func TestNewAction(t *testing.T) {
-
+	pawn := NewPawn(Red, 0)
+	position := NewPosition(false, false, nil, nil)
+	obj := NewAction(MoveToPosition, pawn, position)
+	assert.Equal(t, MoveToPosition, obj.Type())
+	assert.Same(t, pawn, obj.Pawn())
+	assert.Same(t, position, obj.Position())
 }
 
 func TestActionSetPosition(t *testing.T) {
-
+	pawn := NewPawn(Red, 0)
+	position1 := NewPosition(false, false, nil, nil)
+	position2 := NewPosition(true, false, nil, nil)
+	obj := NewAction(MoveToPosition, pawn, position1)
+	obj.SetPosition(position2)
+	assert.Same(t, position2, obj.Position())
 }
 
 func TestActionEquals(t *testing.T) {
+	pawn1 := NewPawn(Red, 0)
+	position1 := NewPosition(false, false, nil, nil)
+	obj1 := NewAction(MoveToPosition, pawn1, position1)
 
+	pawn2 := NewPawn(Red, 0)
+	position2 := NewPosition(false, false, nil, nil)
+	obj2 := NewAction(MoveToStart, pawn2, position2)
+
+	position3 := NewPosition(false, false, nil, nil)
+	obj3 := NewAction(MoveToStart, nil, position3)
+
+	pawn4 := NewPawn(Red, 0)
+	obj4 := NewAction(MoveToStart, pawn4, nil)
+
+	obj5 := NewAction(MoveToPosition, nil, nil)
+
+	assert.Equal(t, obj1, obj1)
+	assert.Equal(t, obj2, obj2)
+	assert.Equal(t, obj3, obj3)
+	assert.Equal(t, obj4, obj4)
+	assert.Equal(t, obj5, obj5)
+
+	assert.NotEqual(t, obj1, obj2)
+	assert.NotEqual(t, obj1, obj3)
+	assert.NotEqual(t, obj1, obj4)
+	assert.NotEqual(t, obj1, obj5)
+
+	assert.NotEqual(t, obj5, obj1)
+	assert.NotEqual(t, obj5, obj2)
+	assert.NotEqual(t, obj5, obj3)
+	assert.NotEqual(t, obj5, obj4)
 }
 
 func TestNewMove(t *testing.T) {
+	card := NewCard("1", Card1)
+	actions := make([]Action, 1, 2)
+	sideEffects := make([]Action, 2, 3)
+	obj := NewMove(card, actions, sideEffects)
+	assert.NotEmpty(t, obj.Id()) // filled in with a UUID
+	assert.Equal(t, card, obj.Card())
+	assert.Equal(t, actions, obj.Actions())
+	assert.Equal(t, sideEffects, obj.SideEffects())
 
+	obj2 := NewMove(card, actions, sideEffects)
+	assert.NotEqual(t, obj.Id(), obj2.Id()) // just make sure we get a unique UUID each time
 }
 
 func TestMoveAddSideEffect(t *testing.T) {
+	card := NewCard("1", Card1)
+	actions := make([]Action, 0)
+	sideEffects := make([]Action, 0)
+	obj := NewMove(card, actions, sideEffects)
 
+	pawn := NewPawn(Red, 0)
+	position := NewPosition(false, false, nil, nil)
+	sideEffect := NewAction(MoveToPosition, pawn, position)
+	obj.AddSideEffect(sideEffect)
+	assert.Equal(t, []Action {sideEffect}, obj.SideEffects())
 }
 
 func TestMoveMergedActions(t *testing.T) {
+	pawn1 := NewPawn(Red, 0)
+	position1 := NewPosition(false, false, nil, nil)
+	action1 := NewAction(MoveToPosition, pawn1, position1)
 
+	pawn2 := NewPawn(Red, 0)
+	position2 := NewPosition(false, false, nil, nil)
+	action2 := NewAction(MoveToStart, pawn2, position2)
+
+	position3 := NewPosition(false, false, nil, nil)
+	action3 := NewAction(MoveToStart, nil, position3)
+
+	pawn4 := NewPawn(Red, 0)
+	action4 := NewAction(MoveToStart, pawn4, nil)
+
+	card := NewCard("1", Card1)
+	actions := []Action { action1, action2 }
+	sideEffects := []Action { action3, action4 }
+	expected := []Action { action1, action2, action3, action4 }
+	obj := NewMove(card, actions, sideEffects)
+	assert.Equal(t, expected, obj.MergedActions())
+}
+
+func TestStartGameStandardMode(t *testing.T) {
+	game, _ := NewGame(2)
+	err := StartGame(game, StandardMode)
+
+	assert.Nil(t, err)
+	assert.True(t, game.Started())
+
+	assert.Equal(t, Red, game.Players()[Red].Color())
+	assert.Equal(t, 0, len(game.Players()[Red].Hand()))
+
+	assert.Equal(t, Yellow, game.Players()[Yellow].Color())
+	assert.Equal(t, 0, len(game.Players()[Yellow].Hand()))
+
+	err = StartGame(game, StandardMode)
+	assert.EqualError(t, err, "game is already started")
+}
+
+func TestStartGameAdultMode(t *testing.T) {
+	game, _ := NewGame(4)
+	err := StartGame(game, AdultMode)
+
+	assert.Equal(t, Red, game.Players()[Red].Color())
+	assert.Equal(t, AdultHand, len(game.Players()[Red].Hand()))
+	assert.Equal(t, 4, *game.Players()[Red].Pawns()[0].Position().Square())
+
+	assert.Equal(t, Yellow, game.Players()[Yellow].Color())
+	assert.Equal(t, AdultHand, len(game.Players()[Yellow].Hand()))
+	assert.Equal(t, 34, *game.Players()[Yellow].Pawns()[0].Position().Square())
+
+	assert.Equal(t, Green, game.Players()[Green].Color())
+	assert.Equal(t, AdultHand, len(game.Players()[Green].Hand()))
+	assert.Equal(t, 49, *game.Players()[Green].Pawns()[0].Position().Square())
+
+	assert.Equal(t, Blue, game.Players()[Blue].Color())
+	assert.Equal(t, AdultHand, len(game.Players()[Blue].Hand()))
+	assert.Equal(t, 19, *game.Players()[Blue].Pawns()[0].Position().Square())
+
+	err = StartGame(game, AdultMode)
+	assert.EqualError(t, err, "game is already started")
 }
 
 func TestExecuteMove(t *testing.T) {
+	actions := []Action {
+		NewAction(MoveToPosition, NewPawn(Red, 1), positionSquare(10)),
+		NewAction(MoveToPosition, NewPawn(Yellow, 3), positionSquare(11)),
+	}
 
+	sideEffects := []Action {
+		NewAction(MoveToStart, NewPawn(Blue, 2), nil),
+		NewAction(MoveToPosition, NewPawn(Green, 0), positionSquare(12)),
+	}
+
+	move := NewMove(NewCard("1", Card1), actions, sideEffects)
+
+	game, _ := NewGame(4)
+	player := game.Players()[Red]
+
+	err := ExecuteMove(game, player, move)
+	assert.Nil(t, err)
+
+	assert.Equal(t, 10, *game.Players()[Red].Pawns()[1].Position().Square())
+	assert.Equal(t, 11, *game.Players()[Yellow].Pawns()[3].Position().Square())
+	assert.True(t, game.Players()[Blue].Pawns()[2].Position().Start())
+	assert.Equal(t, 12, *game.Players()[Green].Pawns()[0].Position().Square())
 }
 
 func TestEvaluateMove(t *testing.T) {
+	var err error
+	var result PlayerView
 
+	actions := []Action {
+		NewAction(MoveToPosition, NewPawn(Red, 1), positionSquare(10)),
+		NewAction(MoveToPosition, NewPawn(Yellow, 3), positionSquare(11)),
+	}
+
+	sideEffects := []Action {
+		NewAction(MoveToStart, NewPawn(Blue, 2), nil),
+		NewAction(MoveToPosition, NewPawn(Green, 0), positionSquare(12)),
+	}
+
+	move := NewMove(NewCard("1", Card1), actions, sideEffects)
+
+	game, _ := NewGame(4)
+	view, err := game.CreatePlayerView(Red)
+	assert.Nil(t, err)
+
+	expected := view.Copy()
+
+	err = expected.Player().Pawns()[1].Position().MoveToSquare(10)
+	assert.Nil(t, err)
+
+	err = expected.Opponents()[Yellow].Pawns()[3].Position().MoveToSquare(11)
+	assert.Nil(t, err)
+
+	err = expected.Opponents()[Yellow].Pawns()[2].Position().MoveToStart()
+	assert.Nil(t, err)
+
+	err = expected.Opponents()[Green].Pawns()[0].Position().MoveToSquare(12)
+	assert.Nil(t, err)
+
+	result, err = EvaluateMove(view, move)
+	assert.Equal(t, expected, result)
 }
 
 func TestDistanceToHome(t *testing.T) {
@@ -197,18 +371,6 @@ func TestCalculatePositionFromSquare(t *testing.T) {
 	calculatePositionSuccess(t, Green, positionSquare(47), 2, positionSafe(1))
 	calculatePositionSuccess(t, Green, positionSquare(47), 6, positionHome())
 	calculatePositionFailure(t, Green, positionSquare(47), 7, "pawn cannot move past home")
-}
-
-func TestStartGameStarted(t *testing.T) {
-
-}
-
-func TestStartGameStandardMode(t *testing.T) {
-
-}
-
-func TestStartGameAdultMode(t *testing.T) {
-
 }
 
 func TestConstructLegalMovesNoMovesWithCard(t *testing.T) {
