@@ -2,6 +2,7 @@ package pkg
 
 import (
 	"errors"
+	"fmt"
 	"github.com/pronovic/go-apologies/pkg/util/enum"
 	"github.com/google/uuid"
 )
@@ -90,6 +91,7 @@ type Move interface {
 	Actions() []Action
 	SideEffects() []Action
 	AddSideEffect(action Action)
+	MergedActions() []Action
 }
 
 type move struct {
@@ -136,6 +138,140 @@ func (m *move) AddSideEffect(action Action) {
 	if !found {
 		m.sideEffects = append(m.sideEffects, action)
 	}
+}
+
+func (m *move) MergedActions() []Action {
+	merged := make([]Action, 0, len(m.actions) + len(m.sideEffects))
+
+	for _, action := range m.actions {
+		merged = append(merged, action)
+	}
+
+	for _, action := range m.sideEffects {
+		merged = append(merged, action)
+	}
+
+	return merged
+}
+
+// StartGame starts a game using the passed-in mode
+func StartGame(game Game, mode GameMode) error {
+	if game.Started() {
+		return errors.New("game is already started")
+	}
+
+	game.Track(fmt.Sprintf("Game started with mode: %s", mode), nil, nil)
+
+	// the adult mode version of the game moves some pawns and deals some cards to each player
+	if mode == AdultMode {
+		for _, player := range game.Players() {
+			err := player.Pawns()[0].Position().MoveToPosition(StartCircles[player.Color()])
+			if err != nil {
+				return err
+			}
+		}
+
+		for i := 0; i < AdultHand; i++ {
+			for _, player := range game.Players() {
+				card, err := game.Deck().Draw()
+				if err != nil {
+					return err
+				}
+				player.AppendToHand(card)
+			}
+		}
+	}
+
+	return nil
+}
+
+// ConstructLegalMoves returns the set of all legal moves for a player and its opponents
+// Pass the card to play, or nil if the move should come from the player's hand
+func ConstructLegalMoves(view PlayerView, card Card) ([]Move, error) {
+	moves := make([]Move, 0)
+	allPawns := view.AllPawns()
+
+	cards := view.Player().Hand()
+	if card != nil {
+		cards = make([]Card, 0)
+		cards = append(cards, card)
+	}
+
+	for _, played := range cards {
+		for _, pawn := range view.Player().Pawns() {
+			for _, move := range constructLegalMoves(view.Player().Color(), played, pawn, allPawns) {
+				moves = append(moves, move)  // TODO: filter out duplicates
+			}
+		}
+	}
+
+	// if there are no legal moves, then forfeit (discarding one card) becomes the only allowable move
+	if len(moves) == 0 {
+		for _, played := range cards {
+			moves = append(moves, NewMove(played, []Action{}, []Action{}))
+		}
+	}
+
+	if len(moves) == 0 {
+		return []Move{}, errors.New("internal error: could not construct any legal moves")
+	}
+
+	return moves, nil
+}
+
+// ExecuteMove Execute a player's move, updating game state
+func ExecuteMove(game Game, player Player, move Move) error {
+	for _, action := range move.MergedActions() { // execute actions, then side effects, in order
+		// keep in mind that the pawn on the action is a different object than the pawn in the game
+		pawn := game.Players()[action.Pawn().Color()].Pawns()[action.Pawn().Index()]
+		if action.Type() == MoveToStart {
+			game.Track(fmt.Sprintf("Played card %s: [%s->start]", move.Card().Type().Value(), pawn.Name()), player, move.Card())
+			err := pawn.Position().MoveToStart()
+			if err != nil {
+				return err
+			}
+		} else if action.Type() == MoveToPosition && action.Position() != nil {
+			game.Track(fmt.Sprintf("Played card %s: [%s->position]", move.Card().Type().Value(), pawn.Name()), player, move.Card())
+			err := pawn.Position().MoveToPosition(action.Position())
+			if err != nil {
+				return err
+			}
+		}
+	}
+
+	if game.Completed() {
+		winner := *game.Winner()
+		game.Track(fmt.Sprintf("Game completed: winner is %s after %d turns", winner.Color().Value(), winner.Turns()), nil, nil)
+	}
+
+	return nil
+}
+
+// EvaluateMove constructs a new player view that results from executing the passed-in move.
+// This is equivalent to execute_move() but has no permanent effect on the game.  It's intended for
+// use by a character, to evaluate the results of each legal move.
+func EvaluateMove(view PlayerView, move Move) (PlayerView, error) {
+	result := view.Copy()
+
+	for _, action := range move.MergedActions() { // execute actions, then side effects, in order
+		// keep in mind that the pawn on the action is a different object than the pawn in the game
+		pawn := result.GetPawn(action.Pawn())
+		if pawn != nil {  // if the pawn isn't valid, just ignore it
+			if action.Type() == MoveToStart {
+				err := pawn.Position().MoveToStart()
+				if err != nil {
+					return nil, err
+				}
+			} else if action.Type() == MoveToPosition && action.Position() != nil {
+				err := pawn.Position().MoveToPosition(action.Position())
+				if err != nil {
+					return nil, err
+				}
+			}
+		}
+	}
+
+	return result, nil
 }
 
 // constructLegalMoves Return the set of legal moves for a pawn using a card, possibly empty.
