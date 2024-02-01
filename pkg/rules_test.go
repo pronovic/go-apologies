@@ -5,6 +5,38 @@ import (
 	"testing"
 )
 
+func TestNewAction(t *testing.T) {
+
+}
+
+func TestActionSetPosition(t *testing.T) {
+
+}
+
+func TestActionEquals(t *testing.T) {
+
+}
+
+func TestNewMove(t *testing.T) {
+
+}
+
+func TestMoveAddSideEffect(t *testing.T) {
+
+}
+
+func TestMoveMergedActions(t *testing.T) {
+
+}
+
+func TestExecuteMove(t *testing.T) {
+
+}
+
+func TestEvaluateMove(t *testing.T) {
+
+}
+
 func TestDistanceToHome(t *testing.T) {
 	// distance from home is always 0
 	for _, color := range []PlayerColor{ Red, Yellow, Green } {
@@ -167,6 +199,82 @@ func TestCalculatePositionFromSquare(t *testing.T) {
 	calculatePositionFailure(t, Green, positionSquare(47), 7, "pawn cannot move past home")
 }
 
+func TestStartGameStarted(t *testing.T) {
+
+}
+
+func TestStartGameStandardMode(t *testing.T) {
+
+}
+
+func TestStartGameAdultMode(t *testing.T) {
+
+}
+
+func TestConstructLegalMovesNoMovesWithCard(t *testing.T) {
+
+}
+
+func TestConstructLegalMovesNoMovesNoCard(t *testing.T) {
+
+}
+
+func TestConstructLegalMovesWithMovesWithCard(t *testing.T) {
+
+}
+
+func TestConstructLegalMovesWithMovesNoCard(t *testing.T) {
+
+}
+
+func TestConstructLegalMovesCard1(t *testing.T) {
+
+}
+
+func TestConstructLegalMovesCard2(t *testing.T) {
+
+}
+
+func TestConstructLegalMovesCard3(t *testing.T) {
+
+}
+
+func TestConstructLegalMovesCard4(t *testing.T) {
+
+}
+
+func TestConstructLegalMovesCard5(t *testing.T) {
+
+}
+
+func TestConstructLegalMovesCard7(t *testing.T) {
+
+}
+
+func TestConstructLegalMovesCard8(t *testing.T) {
+
+}
+
+func TestConstructLegalMovesCard10(t *testing.T) {
+
+}
+
+func TestConstructLegalMovesCard11(t *testing.T) {
+
+}
+
+func TestConstructLegalMovesCard12(t *testing.T) {
+
+}
+
+func TestConstructLegalMovesCardApologies(t *testing.T) {
+
+}
+
+func TestConstructLegalMovesCardSpecial(t *testing.T) {
+
+}
+
 func calculatePositionSuccess(t *testing.T, color PlayerColor, start Position, squares int, expected Position) {
 	result, err := calculatePosition(color, start, squares)
 	assert.Nil(t, err)
@@ -217,3 +325,4 @@ func pawnSquare(color PlayerColor, square int) Pawn {
 	pawn.SetPosition(positionSquare(square))
 	return pawn
 }
+
