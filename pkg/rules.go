@@ -441,14 +441,6 @@ func moveSplit(moves *[]Move, color PlayerColor, card Card, pawn Pawn, allPawns 
 	// Any combination of 7 forward moves is legal, as long as the resulting position
 	// is not occupied by another pawn of the same color.
 
-	type splitPair struct {
-		left int
-		right int
-	}
-
-	// legal ways to split up a move of 7
-	legalSplits := []splitPair{{1, 6}, {2, 5}, {3, 4}, {4, 3}, {5, 2}, {6, 1} }
-
 	for _, other := range allPawns {
 		if !other.Equals(pawn) && other.Color() == color && !other.Position().Home() && !other.Position().Start() {
 
@@ -460,12 +452,12 @@ func moveSplit(moves *[]Move, color PlayerColor, card Card, pawn Pawn, allPawns 
 				}
 			}
 
-			for _, legal := range legalSplits {
+			for _, legal := range LegalSplits {
 				left := make([]Move, 0)
-				moveSimple(&left, color, card, pawn, filtered, legal.left)
+				moveSimple(&left, color, card, pawn, filtered, legal.Left())
 
 				right := make([]Move, 0)
-				moveSimple(&right, color, card, pawn, filtered, legal.right)
+				moveSimple(&right, color, card, pawn, filtered, legal.Right())
 
 				if len(left) > 0 && len(right) > 0 {
 					actions := make([]Action, 0)
