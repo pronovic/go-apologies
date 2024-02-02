@@ -1,4 +1,4 @@
-package pkg
+package model
 
 import (
 	"crypto/rand"
@@ -142,16 +142,6 @@ var Slides = map[PlayerColor][]Slide {
 	Green: {newSlide(46, 49), newSlide(54, 58)},
 }
 
-// LegalSplits defines legal ways to split up a move of 7
-var LegalSplits = []SplitPair{
-	newSplitPair(1, 6),
-	newSplitPair(2, 5),
-	newSplitPair(3, 4),
-	newSplitPair(4, 3),
-	newSplitPair(5, 2),
-	newSplitPair(6, 1),
-}
-
 // Slide defines the start and end positions of a slide on the board
 type Slide interface {
 	// Start is the start of the slide
@@ -177,30 +167,6 @@ func (s *slide) Start() int {
 
 func (s *slide) End() int {
 	return s.end
-}
-
-// SplitPair defines a legal way to split up a move of 7
-type SplitPair interface {
-	Left() int
-	Right() int
-}
-
-type splitPair struct {
-	left int
-	right int
-}
-
-// newSplitPair creates a new split pair, for defining constants
-func newSplitPair(left int, right int) SplitPair {
-	return &splitPair { left, right }
-}
-
-func (p *splitPair) Left() int {
-	return p.left
-}
-
-func (p *splitPair) Right() int {
-	return p.right
 }
 
 // Card is a card in a deck or in a player's hand
