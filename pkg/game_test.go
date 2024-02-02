@@ -2,7 +2,7 @@ package pkg
 
 import (
 	"fmt"
-	"github.com/pronovic/go-apologies/pkg/internal/timestamp"
+	"github.com/pronovic/go-apologies/internal/timestamp"
 	"github.com/stretchr/testify/assert"
 	"slices"
 	"testing"
