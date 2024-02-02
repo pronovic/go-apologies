@@ -2,7 +2,6 @@ package reward
 
 import (
 	"github.com/pronovic/go-apologies/model"
-	"github.com/pronovic/go-apologies/rules"
 )
 
 func Calculate(view model.PlayerView) float32 {
@@ -40,7 +39,7 @@ func calculateDistanceIncentive(player model.Player) int {
 	// Incentive of 1 point for each square closer to home for each of the player's 4 pawns
 	distance := 0
 	for _, pawn := range player.Pawns() {
-		distance += rules.DistanceToHome(pawn)
+		distance += distanceToHome(pawn)
 	}
 	return 260 - distance  // 260 = 4*65, max distance for 4 pawns
 }
@@ -62,5 +61,33 @@ func calculateWinnerIncentive(player model.Player) int {
 		return 100
 	} else {
 		return 0
+	}
+}
+
+// distanceToHome calculates the distance to home for this pawn, a number of squares when moving forward.
+func distanceToHome(pawn model.Pawn) int {
+	if pawn.Position().Home() {
+		return 0
+	} else if pawn.Position().Start() {
+		return 65
+	} else if pawn.Position().Safe() != nil {
+		return model.SafeSquares - *pawn.Position().Safe()
+	} else {
+		circle := *model.StartCircles[pawn.Color()].Square()
+		turn := *model.TurnSquares[pawn.Color()].Square()
+		square := *pawn.Position().Square()
+		squareToCorner := model.BoardSquares - square
+		cornerToTurn := turn
+		turnToHome := model.SafeSquares + 1
+		total := squareToCorner + cornerToTurn + turnToHome
+		if turn < square && square < circle {
+			return total
+		} else {
+			if total < 65 {
+				return total
+			} else {
+				return total - 60
+			}
+		}
 	}
 }

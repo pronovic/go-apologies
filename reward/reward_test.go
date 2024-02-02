@@ -126,3 +126,89 @@ func TestCalculateRewardArbitrary(t *testing.T) {
 	assert.Equal(t, float32(0), Calculate(green))
 	assert.Equal(t, float32(0), Calculate(blue))
 }
+
+
+func TestDistanceToHome(t *testing.T) {
+	// distance from home is always 0
+	for _, color := range []model.PlayerColor{ model.Red, model.Yellow, model.Green } {
+		assert.Equal(t, 0, distanceToHome(pawnHome(color)))
+	}
+
+	// distance from start is always 65
+	for _, color := range []model.PlayerColor{ model.Red, model.Yellow, model.Green } {
+		assert.Equal(t, 65, distanceToHome(pawnStart(color)))
+	}
+
+	// distance from within safe is always <= 5
+	assert.Equal(t, 5, distanceToHome(pawnSafe(model.Red, 0)))
+	assert.Equal(t, 4, distanceToHome(pawnSafe(model.Red, 1)))
+	assert.Equal(t, 3, distanceToHome(pawnSafe(model.Red, 2)))
+	assert.Equal(t, 2, distanceToHome(pawnSafe(model.Red, 3)))
+	assert.Equal(t, 1, distanceToHome(pawnSafe(model.Red, 4)))
+
+	// distance from circle is always 64
+	assert.Equal(t, 64, distanceToHome(pawnSquare(model.Red, 4)))
+	assert.Equal(t, 64, distanceToHome(pawnSquare(model.Blue, 19)))
+	assert.Equal(t, 64, distanceToHome(pawnSquare(model.Yellow, 34)))
+	assert.Equal(t, 64, distanceToHome(pawnSquare(model.Green, 49)))
+
+	// distance from square between turn and circle is always 65
+	assert.Equal(t, 65, distanceToHome(pawnSquare(model.Red, 3)))
+	assert.Equal(t, 65, distanceToHome(pawnSquare(model.Blue, 18)))
+	assert.Equal(t, 65, distanceToHome(pawnSquare(model.Yellow, 33)))
+	assert.Equal(t, 65, distanceToHome(pawnSquare(model.Green, 48)))
+
+	// distance from turn is always 6
+	assert.Equal(t, 6, distanceToHome(pawnSquare(model.Red, 2)))
+	assert.Equal(t, 6, distanceToHome(pawnSquare(model.Blue, 17)))
+	assert.Equal(t, 6, distanceToHome(pawnSquare(model.Yellow, 32)))
+	assert.Equal(t, 6, distanceToHome(pawnSquare(model.Green, 47)))
+
+	// check some arbitrary squares
+	assert.Equal(t, 7, distanceToHome(pawnSquare(model.Red, 1)))
+	assert.Equal(t, 8, distanceToHome(pawnSquare(model.Red, 0)))
+	assert.Equal(t, 9, distanceToHome(pawnSquare(model.Red, 59)))
+	assert.Equal(t, 59, distanceToHome(pawnSquare(model.Red, 9)))
+	assert.Equal(t, 23, distanceToHome(pawnSquare(model.Blue, 0)))
+	assert.Equal(t, 13, distanceToHome(pawnSquare(model.Green, 40)))
+}
+
+func pawnHome(color model.PlayerColor) model.Pawn {
+	pawn := model.NewPawn(color, 0)
+	pawn.SetPosition(positionHome())
+	return pawn
+}
+
+func pawnStart(color model.PlayerColor) model.Pawn {
+	pawn := model.NewPawn(color, 0)
+	pawn.SetPosition(positionStart())
+	return pawn
+}
+
+func pawnSafe(color model.PlayerColor, safe int) model.Pawn {
+	pawn := model.NewPawn(color, 0)
+	pawn.SetPosition(positionSafe(safe))
+	return pawn
+}
+
+func pawnSquare(color model.PlayerColor, square int) model.Pawn {
+	pawn := model.NewPawn(color, 0)
+	pawn.SetPosition(positionSquare(square))
+	return pawn
+}
+
+func positionHome() model.Position {
+	return model.NewPosition(false, true, nil, nil)
+}
+
+func positionStart() model.Position {
+	return model.NewPosition(true, false, nil, nil)
+}
+
+func positionSafe(safe int) model.Position {
+	return model.NewPosition(false, false, &safe, nil)
+}
+
+func positionSquare(square int) model.Position {
+	return model.NewPosition(false, false, nil, &square)
+}
