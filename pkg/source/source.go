@@ -1,4 +1,6 @@
-package pkg
+package source
+
+import "github.com/pronovic/go-apologies/pkg"
 
 type CharacterInputSource interface {
 
@@ -17,6 +19,6 @@ type CharacterInputSource interface {
 	// a misbehaving source (or a source attempting to cheat) does not get an advantage.  The game
 	// rules require a player to make a legal move if one is available, even if that move is
 	// disadvantageous.
-	ChooseMove() Move
+	ChooseMove() pkg.Move
 
 }
