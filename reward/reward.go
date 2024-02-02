@@ -1,12 +1,15 @@
-package pkg
+package reward
 
-import "github.com/pronovic/go-apologies/model"
+import (
+	"github.com/pronovic/go-apologies/model"
+	"github.com/pronovic/go-apologies/pkg"
+)
 
-func CalculateReward(view model.PlayerView) float32 {
+func Calculate(view model.PlayerView) float32 {
 	return float32(calculateReward(view))
 }
 
-func RewardRange(players int) (float32, float32) {
+func Range(players int) (float32, float32) {
 	return 0.0, float32((players - 1) * 400) // reward is up to 400 points per opponent
 }
 
@@ -37,7 +40,7 @@ func calculateDistanceIncentive(player model.Player) int {
 	// Incentive of 1 point for each square closer to home for each of the player's 4 pawns
 	distance := 0
 	for _, pawn := range player.Pawns() {
-		distance += distanceToHome(pawn)
+		distance += pkg.DistanceToHome(pawn)
 	}
 	return 260 - distance  // 260 = 4*65, max distance for 4 pawns
 }

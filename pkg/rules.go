@@ -322,8 +322,8 @@ func constructLegalMoves(color model.PlayerColor, card model.Card, pawn model.Pa
 	return moves
 }
 
-// distanceToHome Return the distance to home for this pawn, a number of squares when moving forward.
-func distanceToHome(pawn model.Pawn) int {
+// DistanceToHome Return the distance to home for this pawn, a number of squares when moving forward.
+func DistanceToHome(pawn model.Pawn) int {
 	if pawn.Position().Home() {
 		return 0
 	} else if pawn.Position().Start() {
