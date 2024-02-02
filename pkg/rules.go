@@ -3,9 +3,9 @@ package pkg
 import (
 	"errors"
 	"fmt"
-	"github.com/pronovic/go-apologies/pkg/util/enum"
-	"github.com/pronovic/go-apologies/pkg/util/equality"
-	"github.com/pronovic/go-apologies/pkg/util/identifier"
+	"github.com/pronovic/go-apologies/pkg/internal/enum"
+	"github.com/pronovic/go-apologies/pkg/internal/equality"
+	"github.com/pronovic/go-apologies/pkg/internal/identifier"
 	"github.com/google/uuid"
 )
 

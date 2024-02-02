@@ -1,7 +1,7 @@
 package pkg
 
 import (
-	"github.com/pronovic/go-apologies/pkg/util/identifier"
+	"github.com/pronovic/go-apologies/pkg/internal/identifier"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
