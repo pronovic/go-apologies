@@ -38,9 +38,6 @@ func (e GameMode) Value() string { return e.value }
 var StandardMode = GameMode{"StandardMode"}
 var AdultMode = GameMode{"AdultMode"}
 
-// GameModes is the list of all legal GameMode enumerations
-var GameModes = enum.NewValues[GameMode](StandardMode, AdultMode)
-
 // PlayerColor defines all legal player colors
 type PlayerColor struct{ value string }
 
