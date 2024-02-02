@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/pronovic/go-apologies/pkg/util/enum"
+	"github.com/pronovic/go-apologies/pkg/util/identifier"
 	"github.com/google/uuid"
 )
 
@@ -103,11 +104,15 @@ type move struct {
 
 func NewMove(card Card, actions []Action, sideEffects []Action) Move {
 	return &move{
-		id: uuid.New().String(),
+		id: identifier.NewId(),
 		card: card,
 		actions: actions,
 		sideEffects: sideEffects,
 	}
+}
+
+func MoveId() string {
+	return uuid.New().String()
 }
 
 func (m *move) Id() string {
