@@ -310,7 +310,7 @@ func (d *deck) Copy() Deck {
 
 func (d *deck) Draw() (Card, error) {
 	if len(d.drawPile) < 1 {
-		// this is equivalent to shuffling the discard pile into the draw pile
+		// this is equivalent to shuffling the discard pile into the draw pile, because we draw randomly from the deck
 		for id, card := range d.discardPile {
 			delete(d.discardPile, id)
 			d.drawPile[id] = card
@@ -322,6 +322,7 @@ func (d *deck) Draw() (Card, error) {
 		return (Card)(nil), errors.New("no cards available in deck")
 	}
 
+	// because range on a map is not stable, the order of keys will vary
 	keys := make([]string, 0, len(d.drawPile))
 	for k := range d.drawPile {
 		keys = append(keys, k)
@@ -898,8 +899,13 @@ func (v *playerView) Opponents() map[PlayerColor]Player {
 
 func (v *playerView) Copy() PlayerView {
 	opponentsCopy := make(map[PlayerColor]Player, len(v.opponents))
-	for key := range v.opponents {
-		opponentsCopy[key] = v.opponents[key].Copy()
+
+	// range on a map explicitly does *not* return keys in a stable order, so we iterate on colors instead
+	for _, color := range PlayerColors.Members() {
+		opponent, exists := v.opponents[color]
+		if exists {
+			opponentsCopy[color] = opponent.Copy()
+		}
 	}
 
 	return &playerView{
@@ -920,21 +926,20 @@ func (v *playerView) GetPawn(prototype Pawn) Pawn {
 }
 
 func (v *playerView) AllPawns() []Pawn {
-	total := 0
-	total += len(v.player.Pawns())
-	for key := range v.opponents {
-		total += len(v.opponents[key].Pawns())
-	}
+	all := make([]Pawn, 0)
 
-	all := make([]Pawn, 0, total)
 	for i := range v.player.Pawns() {
 		all = append(all, v.player.Pawns()[i])
 	}
 
-	for key := range v.opponents {
-		pawns := v.opponents[key].Pawns()
-		for i := range pawns {
-			all = append(all, pawns[i])
+	// range on a map explicitly does *not* return keys in a stable order, so we iterate on colors instead
+	for _, color := range PlayerColors.Members() {
+		opponent, exists := v.opponents[color]
+		if exists {
+			pawns := opponent.Pawns()
+			for i := range pawns {
+				all = append(all, pawns[i])
+			}
 		}
 	}
 
@@ -1023,8 +1028,13 @@ func (g *game) History() []History {
 
 func (g *game) Copy() Game {
 	var playersCopy = make(map[PlayerColor]Player, len(g.players))
-	for key := range g.players {
-		playersCopy[key] = g.players[key].Copy()
+
+	// range on a map explicitly does *not* return keys in a stable order, so we iterate on colors instead
+	for _, color := range PlayerColors.Members() {
+		player, exists := g.players[color]
+		if exists {
+			playersCopy[color] = player.Copy()
+		}
 	}
 
 	var historyCopy = make([]History, 0, len(g.history))
@@ -1094,9 +1104,14 @@ func (g *game) CreatePlayerView(color PlayerColor) (PlayerView, error) {
 	copied := player.Copy()
 
 	opponents := make(map[PlayerColor]Player, len(g.players))
-	for i := range g.players {
-		if g.players[i].Color() != player.Color() {
-			opponents[g.players[i].Color()] = g.players[i].PublicData()
+
+	// range on a map explicitly does *not* return keys in a stable order, so we iterate on colors instead
+	for _, color := range PlayerColors.Members() {
+		opponent, exists := g.players[color]
+		if exists {
+			if opponent.Color() != player.Color() {
+				opponents[color] = opponent.PublicData()
+			}
 		}
 	}
 

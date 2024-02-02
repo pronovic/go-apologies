@@ -870,8 +870,8 @@ func TestConstructLegalMovesCard11(t *testing.T) {
 	_ = game.Players()[Red].Pawns()[1].Position().MoveToSquare(32)  // can't be swapped, same color
 	_ = game.Players()[Green].Pawns()[0].Position().MoveToStart()  // can't be swapped, in start area
 	_ = game.Players()[Yellow].Pawns()[0].Position().MoveToSafe(0)  // can't be swapped, in safe area
-	_ = game.Players()[Yellow].Pawns()[3].Position().MoveToSquare(52)  // can't be swapped, on board
-	_ = game.Players()[Blue].Pawns()[1].Position().MoveToSquare(19)  // can't be swapped, on board
+	_ = game.Players()[Yellow].Pawns()[3].Position().MoveToSquare(52)  // can be swapped, on board
+	_ = game.Players()[Blue].Pawns()[1].Position().MoveToSquare(19)  // can be swapped, on board
 	card, pawn, view, moves = legalMoves(Red, game, 0, Card11)
 	expected = []Move {
 		NewMove(card, actionSwap(view, pawn, Yellow, 3), []Action {}),
