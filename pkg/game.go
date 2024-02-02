@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/pronovic/go-apologies/pkg/util/enum"
+	"github.com/pronovic/go-apologies/pkg/util/equality"
 	"github.com/pronovic/go-apologies/pkg/util/timestamp"
 	"math/big"
 	"slices"
@@ -205,6 +206,8 @@ func (p *splitPair) Right() int {
 // Card is a card in a deck or in a player's hand
 type Card interface {
 
+	equality.EqualsByValue[Card]  // This interface implements equality by value
+
 	// Id Unique identifier for this card
 	Id() string
 
@@ -213,9 +216,6 @@ type Card interface {
 
 	// Copy Return a fully-independent copy of the card.
 	Copy() Card
-
-	// Equals Checks for value equality on the interface
-	Equals(other Card) bool
 }
 
 type card struct {
@@ -354,6 +354,8 @@ func (d *deck) Discard(card Card) error {
 // Position is the position of a pawn on the board.
 type Position interface {
 
+	equality.EqualsByValue[Position]  // This interface implements equality by value
+
 	// Start Whether this pawn resides in its start area
 	Start() bool
 
@@ -368,9 +370,6 @@ type Position interface {
 
 	// Copy Return a fully-independent copy of the position.
 	Copy() Position
-
-	// Equals Checks for value equality on the interface
-	Equals(other Position) bool
 
 	// MoveToPosition Move the pawn to a specific position on the board.
 	MoveToPosition(position Position) error
@@ -456,8 +455,8 @@ func (p *position) Copy() Position {
 func (p *position) Equals(other Position) bool {
 	return p.start == other.Start() &&
 		p.home == other.Home() &&
-		p.safe == other.Safe() &&
-		p.square == other.Square()
+		equality.IntPointerEquals(p.safe, other.Safe()) &&
+		equality.IntPointerEquals(p.square, other.Square())
 }
 
 func (p *position) MoveToPosition(position Position) error {
@@ -557,6 +556,8 @@ func (p *position) String() string {
 // Pawn is a pawn on the board, belonging to a player.
 type Pawn interface {
 
+	equality.EqualsByValue[Pawn]  // This interface implements equality by value
+
 	// Color the color of this pawn
 	Color() PlayerColor
 
@@ -574,9 +575,6 @@ type Pawn interface {
 
 	// Copy Return a fully-independent copy of the pawn.
 	Copy() Pawn
-
-	// Equals Checks for value equality on the interface
-	Equals(other Pawn) bool
 }
 
 type pawn struct {
@@ -625,7 +623,7 @@ func (p *pawn) Equals(other Pawn) bool {
 	return p.color == other.Color() &&
 		p.index == other.Index() &&
 		p.name == other.Name() &&
-		p.position.Equals(other.Position())
+		equality.ByValueEquals[Position](p.position, other.Position())
 }
 
 func (p *pawn) SetPosition(position Position) {
@@ -753,7 +751,7 @@ func (p *player) AppendToHand(card Card) {
 func (p *player) RemoveFromHand(card Card) {
 	for i := 0; i < len(p.hand); i++ {
 		found := p.hand[i]
-		if found.Equals(card) {
+		if equality.ByValueEquals[Card](card, found) {
 			p.hand = slices.Delete(p.hand, i, i+1)
 			return
 		}

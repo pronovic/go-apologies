@@ -34,8 +34,13 @@ func TestCardCopy(t *testing.T) {
 func TestCardEquals(t *testing.T) {
 	c1 := NewCard("id1", CardApologies)
 	c2 := NewCard("id2", Card11)
+
 	assert.Equal(t, c1, c1)
 	assert.Equal(t, c2, c2)
+
+	assert.NotEqual(t, c1, nil)
+	assert.NotEqual(t, c2, nil)
+
 	assert.NotEqual(t, c1, c2)
 	assert.NotEqual(t, c2, c1)
 }
@@ -223,12 +228,39 @@ func TestPositionCopy(t *testing.T) {
 }
 
 func TestPositionEquals(t *testing.T) {
+	safe := 1
+	square := 2
+
 	p1 := NewPosition(true, false, nil, nil)
 	p2 := NewPosition(false, true, nil, nil)
+	p3 := NewPosition(false, false, &safe, nil)
+	p4 := NewPosition(false, false, nil, &square)
+
 	assert.Equal(t, p1, p1)
 	assert.Equal(t, p2, p2)
+	assert.Equal(t, p3, p3)
+	assert.Equal(t, p4, p4)
+
+	assert.NotEqual(t, p1, nil)
+	assert.NotEqual(t, p2, nil)
+	assert.NotEqual(t, p3, nil)
+	assert.NotEqual(t, p4, nil)
+
 	assert.NotEqual(t, p1, p2)
+	assert.NotEqual(t, p1, p3)
+	assert.NotEqual(t, p1, p4)
+
 	assert.NotEqual(t, p2, p1)
+	assert.NotEqual(t, p2, p3)
+	assert.NotEqual(t, p2, p4)
+
+	assert.NotEqual(t, p3, p1)
+	assert.NotEqual(t, p3, p2)
+	assert.NotEqual(t, p3, p4)
+
+	assert.NotEqual(t, p4, p1)
+	assert.NotEqual(t, p4, p2)
+	assert.NotEqual(t, p4, p3)
 }
 
 func TestPositionMoveToPositionValidStart(t *testing.T) {

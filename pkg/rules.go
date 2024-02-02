@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/pronovic/go-apologies/pkg/util/enum"
+	"github.com/pronovic/go-apologies/pkg/util/equality"
 	"github.com/pronovic/go-apologies/pkg/util/identifier"
 	"github.com/google/uuid"
 )
@@ -26,6 +27,8 @@ var ActionTypes = enum.NewValues[ActionType](MoveToStart, MoveToPosition)
 // Action is an action that can be taken as part of a move
 type Action interface {
 
+	equality.EqualsByValue[Action]  // This interface implements equality by value
+
 	// Type The type of the action
 	Type() ActionType
 
@@ -37,9 +40,6 @@ type Action interface {
 
 	// SetPosition Set the position on the action (can be nil)
 	SetPosition(position Position)
-
-	// Equals Checks for value equality on the interface
-	Equals(other Action) bool
 }
 
 type action struct {
@@ -75,8 +75,8 @@ func (a *action) SetPosition(position Position) {
 
 func (a *action) Equals(other Action) bool {
 	return a.actionType == other.Type() &&
-		a.pawn.Equals(other.Pawn()) &&
-		((a.position == nil && other.Position() == nil) || a.position.Equals(other.Position()))
+		equality.ByValueEquals[Pawn](a.pawn, other.Pawn()) &&
+		equality.ByValueEquals[Position](a.position, other.Position())
 }
 
 // Move is a player's move on the board, which consists of one or more actions
@@ -446,7 +446,7 @@ func constructLegalMoves1(color PlayerColor, card Card, pawn Pawn, allPawns []Pa
 func constructLegalMoves2(color PlayerColor, card Card, pawn Pawn, allPawns []Pawn) []Move {
 	moves := make([]Move, 0)
 	moveCircle(&moves, color, card, pawn, allPawns)
-	moveSimple(&moves, color, card, pawn, allPawns, 1)
+	moveSimple(&moves, color, card, pawn, allPawns, 2)
 	return moves
 }
 
@@ -596,7 +596,7 @@ func moveSplit(moves *[]Move, color PlayerColor, card Card, pawn Pawn, allPawns 
 				moveSimple(&left, color, card, pawn, filtered, legal.Left())
 
 				right := make([]Move, 0)
-				moveSimple(&right, color, card, pawn, filtered, legal.Right())
+				moveSimple(&right, color, card, other, filtered, legal.Right())
 
 				if len(left) > 0 && len(right) > 0 {
 					actions := make([]Action, 0)

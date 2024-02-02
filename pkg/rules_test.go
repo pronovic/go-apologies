@@ -51,6 +51,11 @@ func TestActionEquals(t *testing.T) {
 	assert.Equal(t, obj4, obj4)
 	assert.Equal(t, obj5, obj5)
 
+	assert.NotEqual(t, obj1, nil)
+	assert.NotEqual(t, obj1, nil)
+	assert.NotEqual(t, obj1, nil)
+	assert.NotEqual(t, obj1, nil)
+
 	assert.NotEqual(t, obj1, obj2)
 	assert.NotEqual(t, obj1, obj3)
 	assert.NotEqual(t, obj1, obj4)
@@ -423,7 +428,7 @@ func TestConstructLegalMovesCard1(t *testing.T) {
 	// Move pawn from start with conflict (different color)
 	game = setupGame()
 	_ = game.Players()[Red].Pawns()[0].Position().MoveToStart()
-	_ = game.Players()[Yellow].Pawns()[1].Position().MoveToSquare(4)
+	_ = game.Players()[Yellow].Pawns()[0].Position().MoveToSquare(4)
 	card, pawn, view, moves = legalMoves(Red, game, 0, Card1)
 	expected = []Move { NewMove(card, []Action { actionSquare(pawn, 4)}, []Action { actionBump(view, Yellow, 0)}) }
 	assert.Equal(t, expected, moves)
@@ -446,7 +451,7 @@ func TestConstructLegalMovesCard1(t *testing.T) {
 	// Move pawn on board with conflict (different color)
 	game = setupGame()
 	_ = game.Players()[Red].Pawns()[0].Position().MoveToSquare(6)
-	_ = game.Players()[Green].Pawns()[0].Position().MoveToSquare(7)
+	_ = game.Players()[Green].Pawns()[1].Position().MoveToSquare(7)
 	card, pawn, view, moves = legalMoves(Red, game, 0, Card1)
 	expected = []Move { NewMove(card, []Action { actionSquare(pawn, 7)}, []Action { actionBump(view, Green, 1)}) }
 	assert.Equal(t, expected, moves)
@@ -507,7 +512,7 @@ func TestConstructLegalMovesCard2(t *testing.T) {
 	// Move pawn on board with conflict (different color)
 	game = setupGame()
 	_ = game.Players()[Red].Pawns()[0].Position().MoveToSquare(6)
-	_ = game.Players()[Green].Pawns()[0].Position().MoveToSquare(8)
+	_ = game.Players()[Green].Pawns()[1].Position().MoveToSquare(8)
 	card, pawn, view, moves = legalMoves(Red, game, 0, Card2)
 	expected = []Move { NewMove(card, []Action { actionSquare(pawn, 8)}, []Action { actionBump(view, Green, 1)}) }
 	assert.Equal(t, expected, moves)
@@ -546,7 +551,7 @@ func TestConstructLegalMovesCard3(t *testing.T) {
 	// Move pawn on board with conflict (different color)
 	game = setupGame()
 	_ = game.Players()[Red].Pawns()[0].Position().MoveToSquare(6)
-	_ = game.Players()[Green].Pawns()[0].Position().MoveToSquare(9)
+	_ = game.Players()[Green].Pawns()[1].Position().MoveToSquare(9)
 	card, pawn, view, moves = legalMoves(Red, game, 0, Card3)
 	expected = []Move { NewMove(card, []Action { actionSquare(pawn, 9)}, []Action { actionBump(view, Green, 1)}) }
 	assert.Equal(t, expected, moves)
@@ -579,15 +584,15 @@ func TestConstructLegalMovesCard4(t *testing.T) {
 	_ = game.Players()[Red].Pawns()[0].Position().MoveToSquare(6)
 	_ = game.Players()[Red].Pawns()[1].Position().MoveToSquare(2)
 	card, pawn, view, moves = legalMoves(Red, game, 0, Card4)
-	expected = []Move{ NewMove(card, []Action { actionSquare(pawn, 2)}, []Action { actionBump(view, Green, 1)})}
-	assert.Equal(t, expected, moves)
+	expected = []Move{ }
+	assert.Equal(t, expected, moves) // can't move because we have a pawn there already
 
 	// Move pawn on board with conflict (different color)
 	game = setupGame()
 	_ = game.Players()[Red].Pawns()[0].Position().MoveToSquare(6)
-	_ = game.Players()[Green].Pawns()[0].Position().MoveToSquare(2)
+	_ = game.Players()[Green].Pawns()[1].Position().MoveToSquare(2)
 	card, pawn, view, moves = legalMoves(Red, game, 0, Card4)
-	expected = []Move { NewMove(card, []Action { actionSquare(pawn, 1)}, []Action { actionBump(view, Green, 1)}) }
+	expected = []Move { NewMove(card, []Action { actionSquare(pawn, 2)}, []Action { actionBump(view, Green, 1)}) }
 	assert.Equal(t, expected, moves)
 }
 
@@ -624,8 +629,8 @@ func TestConstructLegalMovesCard5(t *testing.T) {
 	// Move pawn on board with conflict (different color)
 	game = setupGame()
 	_ = game.Players()[Red].Pawns()[0].Position().MoveToSquare(6)
-	_ = game.Players()[Green].Pawns()[0].Position().MoveToSquare(11)
-	card, pawn, view, moves = legalMoves(Red, game, 0, Card4)
+	_ = game.Players()[Green].Pawns()[1].Position().MoveToSquare(11)
+	card, pawn, view, moves = legalMoves(Red, game, 0, Card5)
 	expected = []Move { NewMove(card, []Action { actionSquare(pawn, 11)}, []Action { actionBump(view, Green, 1)}) }
 	assert.Equal(t, expected, moves)
 }
@@ -748,7 +753,7 @@ func TestConstructLegalMovesCard8(t *testing.T) {
 	// Move pawn on board with conflict (different color)
 	game = setupGame()
 	_ = game.Players()[Red].Pawns()[0].Position().MoveToSquare(6)
-	_ = game.Players()[Green].Pawns()[0].Position().MoveToSquare(14)
+	_ = game.Players()[Green].Pawns()[1].Position().MoveToSquare(14)
 	card, pawn, view, moves = legalMoves(Red, game, 0, Card8)
 	expected = []Move { NewMove(card, []Action { actionSquare(pawn, 14)}, []Action { actionBump(view, Green, 1)}) }
 	assert.Equal(t, expected, moves)
@@ -851,10 +856,10 @@ func TestConstructLegalMovesCard11(t *testing.T) {
 	// Move pawn on board with conflict (different color), which also gets us a swap opportunity
 	game = setupGame()
 	_ = game.Players()[Red].Pawns()[0].Position().MoveToSquare(15)
-	_ = game.Players()[Red].Pawns()[1].Position().MoveToSquare(26)
+	_ = game.Players()[Green].Pawns()[1].Position().MoveToSquare(26)
 	card, pawn, view, moves = legalMoves(Red, game, 0, Card11)
 	expected = []Move {
-		NewMove(card, actionSwap(view, pawn, Yellow, 3), []Action {}),
+		NewMove(card, actionSwap(view, pawn, Green, 1), []Action {}),
 		NewMove(card, []Action { actionSquare(pawn, 26)}, []Action { actionBump(view, Green, 1)}),
 	}
 	assert.Equal(t, expected, moves)
@@ -909,8 +914,8 @@ func TestConstructLegalMovesCard12(t *testing.T) {
 	// Move pawn on board with conflict (different color)
 	game = setupGame()
 	_ = game.Players()[Red].Pawns()[0].Position().MoveToSquare(6)
-	_ = game.Players()[Green].Pawns()[0].Position().MoveToSquare(18)
-	card, pawn, view, moves = legalMoves(Red, game, 0, Card8)
+	_ = game.Players()[Green].Pawns()[1].Position().MoveToSquare(18)
+	card, pawn, view, moves = legalMoves(Red, game, 0, Card12)
 	expected = []Move { NewMove(card, []Action { actionSquare(pawn, 18)}, []Action { actionBump(view, Green, 1)}) }
 	assert.Equal(t, expected, moves)
 }
