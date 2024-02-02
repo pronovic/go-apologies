@@ -2,7 +2,7 @@ package reward
 
 import (
 	"github.com/pronovic/go-apologies/model"
-	"github.com/pronovic/go-apologies/pkg"
+	"github.com/pronovic/go-apologies/rules"
 )
 
 func Calculate(view model.PlayerView) float32 {
@@ -40,7 +40,7 @@ func calculateDistanceIncentive(player model.Player) int {
 	// Incentive of 1 point for each square closer to home for each of the player's 4 pawns
 	distance := 0
 	for _, pawn := range player.Pawns() {
-		distance += pkg.DistanceToHome(pawn)
+		distance += rules.DistanceToHome(pawn)
 	}
 	return 260 - distance  // 260 = 4*65, max distance for 4 pawns
 }
