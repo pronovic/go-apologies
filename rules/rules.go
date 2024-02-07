@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"github.com/pronovic/go-apologies/generator"
-	"github.com/pronovic/go-apologies/internal/identifier"
 	"github.com/pronovic/go-apologies/model"
 )
 
@@ -29,17 +28,17 @@ type Rules interface {
 }
 
 type rules struct {
-	generator generator.MoveGenerator
+	moveGenerator generator.MoveGenerator
 }
 
-// NewRules creates a new rules interface, optionally accepting an identifier factory
-func NewRules(factory identifier.Factory) Rules {
-	if factory == nil {
-		factory = identifier.NewFactory()
+// NewRules creates a new rules interface, optionally accepting a move generator
+func NewRules(moveGenerator generator.MoveGenerator) Rules {
+	if moveGenerator == nil {
+		moveGenerator = generator.NewGenerator(nil)
 	}
 
 	return &rules {
-		generator: generator.NewGenerator(factory),
+		moveGenerator: moveGenerator,
 	}
 }
 
@@ -137,7 +136,7 @@ func (r *rules) ConstructLegalMoves(view model.PlayerView, card model.Card) ([]m
 	moves := make([]model.Move, 0)
 	for _, played := range cards {
 		for _, pawn := range view.Player().Pawns() {
-			for _, move := range r.generator.LegalMoves(view.Player().Color(), played, pawn, allPawns) {
+			for _, move := range r.moveGenerator.LegalMoves(view.Player().Color(), played, pawn, allPawns) {
 				moves = append(moves, move)  // TODO: filter out duplicates?
 			}
 		}
