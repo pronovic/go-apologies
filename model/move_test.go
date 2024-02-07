@@ -6,10 +6,6 @@ import (
 	"testing"
 )
 
-func init() {
-	identifier.UseStubbedId()   // once this has been called, it takes effect permanently for all unit tests
-}
-
 func TestNewAction(t *testing.T) {
 	pawn := NewPawn(Red, 0)
 	position := NewPosition(false, false, nil, nil)
@@ -68,11 +64,13 @@ func TestActionEquals(t *testing.T) {
 }
 
 func TestNewMove(t *testing.T) {
+	var factory identifier.MockFactory
+	factory.On("Id").Return("id")
 	card := NewCard("1", Card1)
 	actions := make([]Action, 1, 2)
 	sideEffects := make([]Action, 2, 3)
 	obj := NewMove(card, actions, sideEffects)
-	assert.NotEmptyf(t, identifier.StubbedId, obj.Id()) // filled in with a UUID
+	assert.NotEmptyf(t, "id", obj.Id()) // filled in with a UUID
 	assert.Equal(t, card, obj.Card())
 	assert.Equal(t, actions, obj.Actions())
 	assert.Equal(t, sideEffects, obj.SideEffects())

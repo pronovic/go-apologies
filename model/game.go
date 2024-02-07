@@ -45,11 +45,16 @@ type history struct {
 
 // NewHistory constructs a new History
 func NewHistory(action string, color *PlayerColor, card *CardType) History {
+	return newHistory(action, color, card, timestamp.NewFactory())
+}
+
+// newHistory constructs a new History while accepting a timestamp factory (intended for unit testing)
+func newHistory(action string, color *PlayerColor, card *CardType, factory timestamp.Factory) History {
 	return &history{
 		action: action,
 		color: color,
 		card: card,
-		timestamp: timestamp.CurrentTime(),
+		timestamp: factory.CurrentTime(),
 	}
 }
 

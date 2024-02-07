@@ -95,9 +95,15 @@ type move struct {
 	sideEffects []Action
 }
 
+// NewMove constructs a new move
 func NewMove(card Card, actions []Action, sideEffects []Action) Move {
+	return newMove(card, actions, sideEffects, identifier.NewFactory())
+}
+
+// newMove constructs a new move while accepting an identifier factory (intended for unit testing)
+func newMove(card Card, actions []Action, sideEffects []Action, factory identifier.Factory) Move {
 	return &move{
-		id: identifier.NewId(),
+		id: factory.RandomId(),
 		card: card,
 		actions: actions,
 		sideEffects: sideEffects,

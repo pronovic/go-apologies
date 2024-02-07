@@ -7,33 +7,34 @@ import (
 	"testing"
 )
 
-func init() {
-	timestamp.UseStubbedTime()  // once this has been called, it takes effect permanently for all unit tests
-}
-
 func TestNewHistory(t *testing.T) {
 	var obj History
+
+	var stubbedString = "2024-01-31T08:15:03.221Z"
+	var stubbedTimestamp, _ = timestamp.ParseTime(stubbedString)
+	var factory timestamp.MockFactory
+	factory.On("CurrentTime").Return(stubbedTimestamp)
 
 	obj = NewHistory("action", nil, nil)
 	assert.Equal(t, "action", obj.Action())
 	assert.Nil(t, obj.Color())
 	assert.Nil(t, obj.Card())
-	assert.Equal(t, timestamp.GetStubbedTime(), obj.Timestamp())
-	assert.Equal(t, fmt.Sprintf("[%s] General - action", timestamp.StubbedTime), fmt.Sprintf("%s", obj))
+	assert.Equal(t, stubbedTimestamp, obj.Timestamp())
+	assert.Equal(t, fmt.Sprintf("[%s] General - action", stubbedString), fmt.Sprintf("%s", obj))
 
 	color := Blue
 	obj = NewHistory("action", &color, nil)
 	assert.Equal(t, &color, obj.Color())
 	assert.Nil(t, obj.Card())
-	assert.Equal(t, timestamp.GetStubbedTime(), obj.Timestamp())
-	assert.Equal(t, fmt.Sprintf("[%s] Blue - action", timestamp.StubbedTime), fmt.Sprintf("%s", obj))
+	assert.Equal(t, stubbedTimestamp, obj.Timestamp())
+	assert.Equal(t, fmt.Sprintf("[%s] Blue - action", stubbedString), fmt.Sprintf("%s", obj))
 
 	card1 := Card12
 	obj = NewHistory("action", nil, &card1)
 	assert.Nil(t, obj.Color())
 	assert.Equal(t, &card1, obj.Card())
-	assert.Equal(t, timestamp.GetStubbedTime(), obj.Timestamp())
-	assert.Equal(t, fmt.Sprintf("[%s] General - action", timestamp.StubbedTime), fmt.Sprintf("%s", obj))
+	assert.Equal(t, stubbedTimestamp, obj.Timestamp())
+	assert.Equal(t, fmt.Sprintf("[%s] General - action", stubbedString), fmt.Sprintf("%s", obj))
 }
 
 func TestHistoryCopy(t *testing.T) {
