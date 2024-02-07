@@ -3,11 +3,46 @@ package rules
 import (
 	"errors"
 	"fmt"
+	"github.com/pronovic/go-apologies/internal/identifier"
 	"github.com/pronovic/go-apologies/model"
 )
 
-// StartGame starts a game using the passed-in mode
-func StartGame(game model.Game, mode model.GameMode) error {
+// Rules provides high-level game rules
+type Rules interface {
+
+	// StartGame starts a game using the passed-in mode
+	StartGame(game model.Game, mode model.GameMode) error
+
+	// ExecuteMove Execute a player's move, updating game state
+	ExecuteMove(game model.Game, player model.Player, move model.Move) error
+
+	// EvaluateMove constructs a new player view that results from executing the passed-in move.
+	// This is equivalent to execute_move() but has no permanent effect on the game.  It's intended for
+	// use by a character, to evaluate the results of each legal move.
+	EvaluateMove(view model.PlayerView, move model.Move) (model.PlayerView, error)
+
+	// ConstructLegalMoves returns the set of all legal moves for a player and its opponents
+	// Pass the card to play, or nil if the move should come from the player's hand
+	ConstructLegalMoves(view model.PlayerView, card model.Card) ([]model.Move, error)
+
+}
+
+type rules struct {
+	factory identifier.Factory
+}
+
+// NewRules creates a new rules interface, optionally accepting an identifier factory
+func NewRules(factory identifier.Factory) Rules {
+	if factory == nil {
+		factory = identifier.NewFactory()
+	}
+
+	return &rules {
+		factory: factory,
+	}
+}
+
+func (r *rules) StartGame(game model.Game, mode model.GameMode) error {
 	if game.Started() {
 		return errors.New("game is already started")
 	}
@@ -37,8 +72,7 @@ func StartGame(game model.Game, mode model.GameMode) error {
 	return nil
 }
 
-// ExecuteMove Execute a player's move, updating game state
-func ExecuteMove(game model.Game, player model.Player, move model.Move) error {
+func (r *rules) ExecuteMove(game model.Game, player model.Player, move model.Move) error {
 	for _, action := range move.MergedActions() { // execute actions, then side effects, in order
 		// keep in mind that the pawn on the action is a different object than the pawn in the game
 		pawn := game.Players()[action.Pawn().Color()].Pawns()[action.Pawn().Index()]
@@ -65,10 +99,7 @@ func ExecuteMove(game model.Game, player model.Player, move model.Move) error {
 	return nil
 }
 
-// EvaluateMove constructs a new player view that results from executing the passed-in move.
-// This is equivalent to execute_move() but has no permanent effect on the game.  It's intended for
-// use by a character, to evaluate the results of each legal move.
-func EvaluateMove(view model.PlayerView, move model.Move) (model.PlayerView, error) {
+func (r *rules) EvaluateMove(view model.PlayerView, move model.Move) (model.PlayerView, error) {
 	result := view.Copy()
 
 	for _, action := range move.MergedActions() { // execute actions, then side effects, in order
@@ -92,9 +123,7 @@ func EvaluateMove(view model.PlayerView, move model.Move) (model.PlayerView, err
 	return result, nil
 }
 
-// ConstructLegalMoves returns the set of all legal moves for a player and its opponents
-// Pass the card to play, or nil if the move should come from the player's hand
-func ConstructLegalMoves(view model.PlayerView, card model.Card) ([]model.Move, error) {
+func (r *rules) ConstructLegalMoves(view model.PlayerView, card model.Card) ([]model.Move, error) {
 	allPawns := view.AllPawns()  // pre-calculate this once up-front
 
 	var cards []model.Card

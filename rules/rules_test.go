@@ -8,7 +8,7 @@ import (
 
 func TestStartGameStandardMode(t *testing.T) {
 	game, _ := model.NewGame(2, nil)
-	err := StartGame(game, model.StandardMode)
+	err := NewRules(nil).StartGame(game, model.StandardMode)
 
 	assert.Nil(t, err)
 	assert.True(t, game.Started())
@@ -19,13 +19,13 @@ func TestStartGameStandardMode(t *testing.T) {
 	assert.Equal(t, model.Yellow, game.Players()[model.Yellow].Color())
 	assert.Equal(t, 0, len(game.Players()[model.Yellow].Hand()))
 
-	err = StartGame(game, model.StandardMode)
+	err = NewRules(nil).StartGame(game, model.StandardMode)
 	assert.EqualError(t, err, "game is already started")
 }
 
 func TestStartGameAdultMode(t *testing.T) {
 	game, _ := model.NewGame(4, nil)
-	err := StartGame(game, model.AdultMode)
+	err := NewRules(nil).StartGame(game, model.AdultMode)
 
 	assert.Equal(t, model.Red, game.Players()[model.Red].Color())
 	assert.Equal(t, model.AdultHand, len(game.Players()[model.Red].Hand()))
@@ -43,7 +43,7 @@ func TestStartGameAdultMode(t *testing.T) {
 	assert.Equal(t, model.AdultHand, len(game.Players()[model.Blue].Hand()))
 	assert.Equal(t, 19, *game.Players()[model.Blue].Pawns()[0].Position().Square())
 
-	err = StartGame(game, model.AdultMode)
+	err = NewRules(nil).StartGame(game, model.AdultMode)
 	assert.EqualError(t, err, "game is already started")
 }
 
@@ -63,7 +63,7 @@ func TestExecuteMove(t *testing.T) {
 	game, _ := model.NewGame(4, nil)
 	player := game.Players()[model.Red]
 
-	err := ExecuteMove(game, player, move)
+	err := NewRules(nil).ExecuteMove(game, player, move)
 	assert.Nil(t, err)
 
 	assert.Equal(t, 10, *game.Players()[model.Red].Pawns()[1].Position().Square())
@@ -106,7 +106,7 @@ func TestEvaluateMove(t *testing.T) {
 	err = expected.Opponents()[model.Green].Pawns()[0].Position().MoveToSquare(12)
 	assert.Nil(t, err)
 
-	result, err = EvaluateMove(view, move)
+	result, err = NewRules(nil).EvaluateMove(view, move)
 	assert.Equal(t, expected, result)
 }
 
