@@ -7,7 +7,7 @@ import (
 )
 
 func TestStartGameStandardMode(t *testing.T) {
-	game, _ := model.NewGame(2)
+	game, _ := model.NewGame(2, nil)
 	err := StartGame(game, model.StandardMode)
 
 	assert.Nil(t, err)
@@ -24,7 +24,7 @@ func TestStartGameStandardMode(t *testing.T) {
 }
 
 func TestStartGameAdultMode(t *testing.T) {
-	game, _ := model.NewGame(4)
+	game, _ := model.NewGame(4, nil)
 	err := StartGame(game, model.AdultMode)
 
 	assert.Equal(t, model.Red, game.Players()[model.Red].Color())
@@ -58,9 +58,9 @@ func TestExecuteMove(t *testing.T) {
 		model.NewAction(model.MoveToPosition, model.NewPawn(model.Green, 0), positionSquare(12)),
 	}
 
-	move := model.NewMove(model.NewCard("1", model.Card1), actions, sideEffects)
+	move := model.NewMove(model.NewCard("1", model.Card1), actions, sideEffects, nil)
 
-	game, _ := model.NewGame(4)
+	game, _ := model.NewGame(4, nil)
 	player := game.Players()[model.Red]
 
 	err := ExecuteMove(game, player, move)
@@ -86,9 +86,9 @@ func TestEvaluateMove(t *testing.T) {
 		model.NewAction(model.MoveToPosition, model.NewPawn(model.Green, 0), positionSquare(12)),
 	}
 
-	move := model.NewMove(model.NewCard("1", model.Card1), actions, sideEffects)
+	move := model.NewMove(model.NewCard("1", model.Card1), actions, sideEffects, nil)
 
-	game, _ := model.NewGame(4)
+	game, _ := model.NewGame(4, nil)
 	view, err := game.CreatePlayerView(model.Red)
 	assert.Nil(t, err)
 

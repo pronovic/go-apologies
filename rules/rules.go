@@ -107,7 +107,7 @@ func ConstructLegalMoves(view model.PlayerView, card model.Card) ([]model.Move, 
 	moves := make([]model.Move, 0)
 	for _, played := range cards {
 		for _, pawn := range view.Player().Pawns() {
-			for _, move := range legalMoves(view.Player().Color(), played, pawn, allPawns) {
+			for _, move := range moveGenerator(nil).legalMoves(view.Player().Color(), played, pawn, allPawns) {
 				moves = append(moves, move)  // TODO: filter out duplicates?
 			}
 		}
@@ -116,7 +116,7 @@ func ConstructLegalMoves(view model.PlayerView, card model.Card) ([]model.Move, 
 	// if there are no legal moves, then forfeit (discarding one card) becomes the only allowable move
 	if len(moves) == 0 {
 		for _, played := range cards {
-			moves = append(moves, model.NewMove(played, []model.Action{}, []model.Action{}))
+			moves = append(moves, model.NewMove(played, []model.Action{}, []model.Action{}, nil))
 		}
 	}
 

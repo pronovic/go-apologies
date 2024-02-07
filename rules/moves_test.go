@@ -7,9 +7,13 @@ import (
 	"testing"
 )
 
+var factory identifier.MockFactory
+
 func init() {
-	identifier.UseStubbedId()  // once this has been called, it takes effect permanently for all unit tests
+	factory.On("RandomId").Return("id")
 }
+
+var emptyMoves = make([]model.Move, 0)
 
 func TestCalculatePositionHome(t *testing.T) {
 	for _, color := range model.PlayerColors.Members() {
@@ -139,14 +143,14 @@ func TestLegalMovesCard1(t *testing.T) {
 	// No legal moves if no pawn in start, on the board, or in safe
 	game = setupGame()
 	_, _, _, moves = buildMoves(model.Red, game, 0, model.Card1)
-	expected = []model.Move{}
+	expected = emptyMoves
 	assert.Equal(t, expected, moves)
 
 	// Move pawn from start with no conflicts
 	game = setupGame()
 	_ = game.Players()[model.Red].Pawns()[0].Position().MoveToStart()
 	card, pawn, _, moves = buildMoves(model.Red, game, 0, model.Card1)
-	expected = []model.Move { model.NewMove(card, []model.Action {actionSquare(pawn, 4)}, []model.Action {}) }
+	expected = []model.Move {move(card, []model.Action {actionSquare(pawn, 4) }, nil) }
 	assert.Equal(t, expected, moves)
 
 	// Move pawn from start with conflict (same color)
@@ -154,7 +158,7 @@ func TestLegalMovesCard1(t *testing.T) {
 	_ = game.Players()[model.Red].Pawns()[0].Position().MoveToStart()
 	_ = game.Players()[model.Red].Pawns()[1].Position().MoveToSquare(4)
 	_, _, _, moves = buildMoves(model.Red, game, 0, model.Card1)
-	expected = []model.Move{}  // can't start because we have a pawn there already
+	expected = emptyMoves // can't start because we have a pawn there already
 	assert.Equal(t, expected, moves)
 
 	// Move pawn from start with conflict (different color)
@@ -162,14 +166,14 @@ func TestLegalMovesCard1(t *testing.T) {
 	_ = game.Players()[model.Red].Pawns()[0].Position().MoveToStart()
 	_ = game.Players()[model.Yellow].Pawns()[0].Position().MoveToSquare(4)
 	card, pawn, view, moves = buildMoves(model.Red, game, 0, model.Card1)
-	expected = []model.Move { model.NewMove(card, []model.Action {actionSquare(pawn, 4)}, []model.Action {actionBump(view, model.Yellow, 0)}) }
+	expected = []model.Move {move(card, []model.Action {actionSquare(pawn, 4)}, []model.Action {actionBump(view, model.Yellow, 0)}) }
 	assert.Equal(t, expected, moves)
 
 	// Move pawn on board
 	game = setupGame()
 	_ = game.Players()[model.Red].Pawns()[0].Position().MoveToSquare(6)
 	card, pawn, _, moves = buildMoves(model.Red, game, 0, model.Card1)
-	expected = []model.Move { model.NewMove(card, []model.Action {actionSquare(pawn, 7)}, []model.Action {}) }
+	expected = []model.Move {move(card, []model.Action {actionSquare(pawn, 7)}, nil) }
 	assert.Equal(t, expected, moves)
 
 	// Move pawn on board with conflict (same color)
@@ -177,7 +181,7 @@ func TestLegalMovesCard1(t *testing.T) {
 	_ = game.Players()[model.Red].Pawns()[0].Position().MoveToSquare(6)
 	_ = game.Players()[model.Red].Pawns()[1].Position().MoveToSquare(7)
 	_, _, _, moves = buildMoves(model.Red, game, 0, model.Card1)
-	expected = []model.Move{}  // can't move because we have a pawn there already
+	expected = emptyMoves // can't move because we have a pawn there already
 	assert.Equal(t, expected, moves)
 
 	// Move pawn on board with conflict (different color)
@@ -185,7 +189,7 @@ func TestLegalMovesCard1(t *testing.T) {
 	_ = game.Players()[model.Red].Pawns()[0].Position().MoveToSquare(6)
 	_ = game.Players()[model.Green].Pawns()[1].Position().MoveToSquare(7)
 	card, pawn, view, moves = buildMoves(model.Red, game, 0, model.Card1)
-	expected = []model.Move { model.NewMove(card, []model.Action {actionSquare(pawn, 7)}, []model.Action {actionBump(view, model.Green, 1)}) }
+	expected = []model.Move {move(card, []model.Action {actionSquare(pawn, 7)}, []model.Action {actionBump(view, model.Green, 1)}) }
 	assert.Equal(t, expected, moves)
 }
 
@@ -200,14 +204,14 @@ func TestLegalMovesCard2(t *testing.T) {
 	// No legal moves if no pawn in start, on the board, or in safe
 	game = setupGame()
 	_, _, _, moves = buildMoves(model.Red, game, 0, model.Card2)
-	expected = []model.Move{}
+	expected = emptyMoves
 	assert.Equal(t, expected, moves)
 
 	// Move pawn from start with no conflicts
 	game = setupGame()
 	_ = game.Players()[model.Red].Pawns()[0].Position().MoveToStart()
 	card, pawn, _, moves = buildMoves(model.Red, game, 0, model.Card2)
-	expected = []model.Move { model.NewMove(card, []model.Action {actionSquare(pawn, 4)}, []model.Action {}) }
+	expected = []model.Move {move(card, []model.Action {actionSquare(pawn, 4)}, nil) }
 	assert.Equal(t, expected, moves)
 
 	// Move pawn from start with conflict (same color)
@@ -215,7 +219,7 @@ func TestLegalMovesCard2(t *testing.T) {
 	_ = game.Players()[model.Red].Pawns()[0].Position().MoveToStart()
 	_ = game.Players()[model.Red].Pawns()[1].Position().MoveToSquare(4)
 	_, _, _, moves = buildMoves(model.Red, game, 0, model.Card2)
-	expected = []model.Move{}  // can't start because we have a pawn there already
+	expected = emptyMoves // can't start because we have a pawn there already
 	assert.Equal(t, expected, moves)
 
 	// Move pawn from start with conflict (different color)
@@ -223,14 +227,14 @@ func TestLegalMovesCard2(t *testing.T) {
 	_ = game.Players()[model.Red].Pawns()[0].Position().MoveToStart()
 	_ = game.Players()[model.Yellow].Pawns()[0].Position().MoveToSquare(4)
 	card, pawn, view, moves = buildMoves(model.Red, game, 0, model.Card2)
-	expected = []model.Move { model.NewMove(card, []model.Action {actionSquare(pawn, 4)}, []model.Action {actionBump(view, model.Yellow, 0)}) }
+	expected = []model.Move {move(card, []model.Action {actionSquare(pawn, 4)}, []model.Action {actionBump(view, model.Yellow, 0)}) }
 	assert.Equal(t, expected, moves)
 
 	// Move pawn on board
 	game = setupGame()
 	_ = game.Players()[model.Red].Pawns()[0].Position().MoveToSquare(6)
 	card, pawn, _, moves = buildMoves(model.Red, game, 0, model.Card2)
-	expected = []model.Move { model.NewMove(card, []model.Action {actionSquare(pawn, 8)}, []model.Action {}) }
+	expected = []model.Move {move(card, []model.Action {actionSquare(pawn, 8)}, nil) }
 	assert.Equal(t, expected, moves)
 
 	// Move pawn on board with conflict (same color)
@@ -238,7 +242,7 @@ func TestLegalMovesCard2(t *testing.T) {
 	_ = game.Players()[model.Red].Pawns()[0].Position().MoveToSquare(6)
 	_ = game.Players()[model.Red].Pawns()[1].Position().MoveToSquare(8)
 	_, _, _, moves = buildMoves(model.Red, game, 0, model.Card2)
-	expected = []model.Move{}  // can't move because we have a pawn there already
+	expected = emptyMoves // can't move because we have a pawn there already
 	assert.Equal(t, expected, moves)
 
 	// Move pawn on board with conflict (different color)
@@ -246,7 +250,7 @@ func TestLegalMovesCard2(t *testing.T) {
 	_ = game.Players()[model.Red].Pawns()[0].Position().MoveToSquare(6)
 	_ = game.Players()[model.Green].Pawns()[1].Position().MoveToSquare(8)
 	card, pawn, view, moves = buildMoves(model.Red, game, 0, model.Card2)
-	expected = []model.Move { model.NewMove(card, []model.Action {actionSquare(pawn, 8)}, []model.Action {actionBump(view, model.Green, 1)}) }
+	expected = []model.Move {move(card, []model.Action {actionSquare(pawn, 8)}, []model.Action {actionBump(view, model.Green, 1)}) }
 	assert.Equal(t, expected, moves)
 }
 
@@ -262,14 +266,14 @@ func TestLegalMovesCard3(t *testing.T) {
 	game = setupGame()
 	_ = game.Players()[model.Red].Pawns()[0].Position().MoveToHome()
 	_, _, _, moves = buildMoves(model.Red, game, 0, model.Card3)
-	expected = []model.Move{}
+	expected = emptyMoves
 	assert.Equal(t, expected, moves)
 
 	// Move pawn on board
 	game = setupGame()
 	_ = game.Players()[model.Red].Pawns()[0].Position().MoveToSquare(6)
 	card, pawn, _, moves = buildMoves(model.Red, game, 0, model.Card3)
-	expected = []model.Move { model.NewMove(card, []model.Action {actionSquare(pawn, 9)}, []model.Action {}) }
+	expected = []model.Move {move(card, []model.Action {actionSquare(pawn, 9)}, nil) }
 	assert.Equal(t, expected, moves)
 
 	// Move pawn on board with conflict (same color)
@@ -277,7 +281,7 @@ func TestLegalMovesCard3(t *testing.T) {
 	_ = game.Players()[model.Red].Pawns()[0].Position().MoveToSquare(6)
 	_ = game.Players()[model.Red].Pawns()[1].Position().MoveToSquare(9)
 	_, _, _, moves = buildMoves(model.Red, game, 0, model.Card3)
-	expected = []model.Move{}  // can't move because we have a pawn there already
+	expected = emptyMoves // can't move because we have a pawn there already
 	assert.Equal(t, expected, moves)
 
 	// Move pawn on board with conflict (different color)
@@ -285,7 +289,7 @@ func TestLegalMovesCard3(t *testing.T) {
 	_ = game.Players()[model.Red].Pawns()[0].Position().MoveToSquare(6)
 	_ = game.Players()[model.Green].Pawns()[1].Position().MoveToSquare(9)
 	card, pawn, view, moves = buildMoves(model.Red, game, 0, model.Card3)
-	expected = []model.Move { model.NewMove(card, []model.Action {actionSquare(pawn, 9)}, []model.Action {actionBump(view, model.Green, 1)}) }
+	expected = []model.Move {move(card, []model.Action {actionSquare(pawn, 9)}, []model.Action {actionBump(view, model.Green, 1)}) }
 	assert.Equal(t, expected, moves)
 }
 
@@ -301,14 +305,14 @@ func TestLegalMovesCard4(t *testing.T) {
 	game = setupGame()
 	_ = game.Players()[model.Red].Pawns()[0].Position().MoveToHome()
 	_, _, _, moves = buildMoves(model.Red, game, 0, model.Card4)
-	expected = []model.Move{}
+	expected = emptyMoves
 	assert.Equal(t, expected, moves)
 
 	// Move pawn on board
 	game = setupGame()
 	_ = game.Players()[model.Red].Pawns()[0].Position().MoveToSquare(6)
 	card, pawn, _, moves = buildMoves(model.Red, game, 0, model.Card4)
-	expected = []model.Move { model.NewMove(card, []model.Action {actionSquare(pawn, 2)}, []model.Action {}) }
+	expected = []model.Move {move(card, []model.Action {actionSquare(pawn, 2)}, nil) }
 	assert.Equal(t, expected, moves)
 
 	// Move pawn on board with conflict (same color)
@@ -316,7 +320,7 @@ func TestLegalMovesCard4(t *testing.T) {
 	_ = game.Players()[model.Red].Pawns()[0].Position().MoveToSquare(6)
 	_ = game.Players()[model.Red].Pawns()[1].Position().MoveToSquare(2)
 	card, pawn, view, moves = buildMoves(model.Red, game, 0, model.Card4)
-	expected = []model.Move{ }
+	expected = emptyMoves
 	assert.Equal(t, expected, moves) // can't move because we have a pawn there already
 
 	// Move pawn on board with conflict (different color)
@@ -324,7 +328,7 @@ func TestLegalMovesCard4(t *testing.T) {
 	_ = game.Players()[model.Red].Pawns()[0].Position().MoveToSquare(6)
 	_ = game.Players()[model.Green].Pawns()[1].Position().MoveToSquare(2)
 	card, pawn, view, moves = buildMoves(model.Red, game, 0, model.Card4)
-	expected = []model.Move { model.NewMove(card, []model.Action {actionSquare(pawn, 2)}, []model.Action {actionBump(view, model.Green, 1)}) }
+	expected = []model.Move {move(card, []model.Action {actionSquare(pawn, 2)}, []model.Action {actionBump(view, model.Green, 1)}) }
 	assert.Equal(t, expected, moves)
 }
 
@@ -340,14 +344,14 @@ func TestLegalMovesCard5(t *testing.T) {
 	game = setupGame()
 	_ = game.Players()[model.Red].Pawns()[0].Position().MoveToHome()
 	_, _, _, moves = buildMoves(model.Red, game, 0, model.Card5)
-	expected = []model.Move{}
+	expected = emptyMoves
 	assert.Equal(t, expected, moves)
 
 	// Move pawn on board
 	game = setupGame()
 	_ = game.Players()[model.Red].Pawns()[0].Position().MoveToSquare(6)
 	card, pawn, _, moves = buildMoves(model.Red, game, 0, model.Card5)
-	expected = []model.Move { model.NewMove(card, []model.Action {actionSquare(pawn, 11)}, []model.Action {}) }
+	expected = []model.Move {move(card, []model.Action {actionSquare(pawn, 11)}, nil) }
 	assert.Equal(t, expected, moves)
 
 	// Move pawn on board with conflict (same color)
@@ -355,7 +359,7 @@ func TestLegalMovesCard5(t *testing.T) {
 	_ = game.Players()[model.Red].Pawns()[0].Position().MoveToSquare(6)
 	_ = game.Players()[model.Red].Pawns()[1].Position().MoveToSquare(11)
 	_, _, _, moves = buildMoves(model.Red, game, 0, model.Card5)
-	expected = []model.Move{}  // can't move because we have a pawn there already
+	expected = emptyMoves // can't move because we have a pawn there already
 	assert.Equal(t, expected, moves)
 
 	// Move pawn on board with conflict (different color)
@@ -363,7 +367,7 @@ func TestLegalMovesCard5(t *testing.T) {
 	_ = game.Players()[model.Red].Pawns()[0].Position().MoveToSquare(6)
 	_ = game.Players()[model.Green].Pawns()[1].Position().MoveToSquare(11)
 	card, pawn, view, moves = buildMoves(model.Red, game, 0, model.Card5)
-	expected = []model.Move { model.NewMove(card, []model.Action {actionSquare(pawn, 11)}, []model.Action {actionBump(view, model.Green, 1)}) }
+	expected = []model.Move {move(card, []model.Action {actionSquare(pawn, 11)}, []model.Action {actionBump(view, model.Green, 1)}) }
 	assert.Equal(t, expected, moves)
 }
 
@@ -380,14 +384,14 @@ func TestLegalMovesCard7(t *testing.T) {
 	game = setupGame()
 	_ = game.Players()[model.Red].Pawns()[0].Position().MoveToHome()
 	_, _, _, moves = buildMoves(model.Red, game, 0, model.Card7)
-	expected = []model.Move{}
+	expected = emptyMoves
 	assert.Equal(t, expected, moves)
 
 	// One move available if there is one pawn on the board
 	game = setupGame()
 	_ = game.Players()[model.Red].Pawns()[0].Position().MoveToSquare(6)
 	card, pawn, _, moves = buildMoves(model.Red, game, 0, model.Card7)
-	expected = []model.Move { model.NewMove(card, []model.Action {actionSquare(pawn, 13)}, []model.Action {}) }
+	expected = []model.Move {move(card, []model.Action {actionSquare(pawn, 13)}, nil) }
 	assert.Equal(t, expected, moves)
 
 	// Multiple moves available if there is more than one pawn on the board
@@ -397,13 +401,13 @@ func TestLegalMovesCard7(t *testing.T) {
 	card, pawn, view, moves = buildMoves(model.Red, game, 0, model.Card7)
 	other = view.Player().Pawns()[2]
 	expected = []model.Move {
-		model.NewMove(card, []model.Action {actionSquare(pawn, 13)}, []model.Action {}),                           // move our pawn 7
-		model.NewMove(card, []model.Action {actionSquare(pawn, 7), actionSquare(other, 1) }, []model.Action {}),   // split (1, 6)
-		model.NewMove(card, []model.Action {actionSquare(pawn, 8), actionSquare(other, 0) }, []model.Action {}),   // split (2, 5)
-		model.NewMove(card, []model.Action {actionSquare(pawn, 9), actionSquare(other, 59) }, []model.Action {}),  // split (3, 4)
-		model.NewMove(card, []model.Action {actionSquare(pawn, 10), actionSquare(other, 58) }, []model.Action {}), // split (4, 3)
-		model.NewMove(card, []model.Action {actionSquare(pawn, 11), actionSquare(other, 57) }, []model.Action {}), // split (5, 2)
-		model.NewMove(card, []model.Action {actionSquare(pawn, 12), actionSquare(other, 56) }, []model.Action {}), // split (6, 1)
+		move(card, []model.Action {actionSquare(pawn, 13)}, nil),                           // move our pawn 7
+		move(card, []model.Action {actionSquare(pawn, 7), actionSquare(other, 1) }, nil),   // split (1, 6)
+		move(card, []model.Action {actionSquare(pawn, 8), actionSquare(other, 0) }, nil),   // split (2, 5)
+		move(card, []model.Action {actionSquare(pawn, 9), actionSquare(other, 59) }, nil),  // split (3, 4)
+		move(card, []model.Action {actionSquare(pawn, 10), actionSquare(other, 58) }, nil), // split (4, 3)
+		move(card, []model.Action {actionSquare(pawn, 11), actionSquare(other, 57) }, nil), // split (5, 2)
+		move(card, []model.Action {actionSquare(pawn, 12), actionSquare(other, 56) }, nil), // split (6, 1)
 	}
 	assert.Equal(t, expected, moves)
 
@@ -416,13 +420,13 @@ func TestLegalMovesCard7(t *testing.T) {
 	card, pawn, view, moves = buildMoves(model.Red, game, 0, model.Card7)
 	other = view.Player().Pawns()[2]
 	expected = []model.Move {
-		model.NewMove(card, []model.Action {actionSquare(pawn, 13)}, []model.Action {}),                                                           // move our pawn 7
-		model.NewMove(card, []model.Action {actionSquare(pawn, 7), actionSquare(other, 1) }, []model.Action {}),                                   // split (1, 6)
-		model.NewMove(card, []model.Action {actionSquare(pawn, 8), actionSquare(other, 0) }, []model.Action {}),                                   // split (2, 5)
-		model.NewMove(card, []model.Action {actionSquare(pawn, 9), actionSquare(other, 59) }, []model.Action {}),                                  // split (3, 4)
-		model.NewMove(card, []model.Action {actionSquare(pawn, 10), actionSquare(other, 58) }, []model.Action {actionBump(view, model.Green, 1)}), // split (4, 3)
-		model.NewMove(card, []model.Action {actionSquare(pawn, 11), actionSquare(other, 57) }, []model.Action {}),                                 // split (5, 2)
-		model.NewMove(card, []model.Action {actionSquare(pawn, 12), actionSquare(other, 56) }, []model.Action {actionBump(view, model.Blue, 3)}),  // split (6, 1)
+		move(card, []model.Action {actionSquare(pawn, 13)}, nil),                                                                         // move our pawn 7
+		move(card, []model.Action {actionSquare(pawn, 7), actionSquare(other, 1) }, nil),                                                 // split (1, 6)
+		move(card, []model.Action {actionSquare(pawn, 8), actionSquare(other, 0) }, nil),                                                 // split (2, 5)
+		move(card, []model.Action {actionSquare(pawn, 9), actionSquare(other, 59) }, nil),                                                // split (3, 4)
+		move(card, []model.Action {actionSquare(pawn, 10), actionSquare(other, 58) }, []model.Action {actionBump(view, model.Green, 1)}), // split (4, 3)
+		move(card, []model.Action {actionSquare(pawn, 11), actionSquare(other, 57) }, nil),                                               // split (5, 2)
+		move(card, []model.Action {actionSquare(pawn, 12), actionSquare(other, 56) }, []model.Action {actionBump(view, model.Blue, 3)}),  // split (6, 1)
 	}
 	assert.Equal(t, expected, moves)
 
@@ -435,19 +439,19 @@ func TestLegalMovesCard7(t *testing.T) {
 	other1 := view.Player().Pawns()[1]
 	other2 := view.Player().Pawns()[2]
 	expected = []model.Move {
-		model.NewMove(card, []model.Action {actionSquare(pawn, 13)}, []model.Action {}),                             // move our pawn 7
-		model.NewMove(card, []model.Action {actionSquare(pawn, 7), actionSquare(other1, 15) }, []model.Action {}),   // split (1, 6)
-		model.NewMove(card, []model.Action {actionSquare(pawn, 8), actionSquare(other1, 14) }, []model.Action {}),   // split (2, 5)
-		model.NewMove(card, []model.Action {actionSquare(pawn, 9), actionSquare(other1, 13) }, []model.Action {}),   // split (3, 4)
-		model.NewMove(card, []model.Action {actionSquare(pawn, 10), actionSquare(other1, 12) }, []model.Action { }), // split (4, 3)
-		model.NewMove(card, []model.Action {actionSquare(pawn, 11), actionSquare(other1, 11) }, []model.Action {}),  // split (5, 2)
-		model.NewMove(card, []model.Action {actionSquare(pawn, 12), actionSquare(other1, 10) }, []model.Action { }), // split (6, 1)
-		model.NewMove(card, []model.Action {actionSquare(pawn, 7), actionSquare(other2, 1) }, []model.Action {}),    // split (1, 6)
-		model.NewMove(card, []model.Action {actionSquare(pawn, 8), actionSquare(other2, 0) }, []model.Action {}),    // split (2, 5)
+		move(card, []model.Action {actionSquare(pawn, 13)}, nil),                            // move our pawn 7
+		move(card, []model.Action {actionSquare(pawn, 7), actionSquare(other1, 15) }, nil),  // split (1, 6)
+		move(card, []model.Action {actionSquare(pawn, 8), actionSquare(other1, 14) }, nil),  // split (2, 5)
+		move(card, []model.Action {actionSquare(pawn, 9), actionSquare(other1, 13) }, nil),  // split (3, 4)
+		move(card, []model.Action {actionSquare(pawn, 10), actionSquare(other1, 12) }, nil), // split (4, 3)
+		move(card, []model.Action {actionSquare(pawn, 11), actionSquare(other1, 11) }, nil), // split (5, 2)
+		move(card, []model.Action {actionSquare(pawn, 12), actionSquare(other1, 10) }, nil), // split (6, 1)
+		move(card, []model.Action {actionSquare(pawn, 7), actionSquare(other2, 1) }, nil),   // split (1, 6)
+		move(card, []model.Action {actionSquare(pawn, 8), actionSquare(other2, 0) }, nil),   // split (2, 5)
 		// the move for square 9 is disallowed because pawn[1] already lives there, and isn't part of this action
-		model.NewMove(card, []model.Action {actionSquare(pawn, 10), actionSquare(other2, 58) }, []model.Action { }), // split (4, 3)
-		model.NewMove(card, []model.Action {actionSquare(pawn, 11), actionSquare(other2, 57) }, []model.Action {}),  // split (5, 2)
-		model.NewMove(card, []model.Action {actionSquare(pawn, 12), actionSquare(other2, 56) }, []model.Action { }), // split (6, 1)
+		move(card, []model.Action {actionSquare(pawn, 10), actionSquare(other2, 58) }, nil), // split (4, 3)
+		move(card, []model.Action {actionSquare(pawn, 11), actionSquare(other2, 57) }, nil), // split (5, 2)
+		move(card, []model.Action {actionSquare(pawn, 12), actionSquare(other2, 56) }, nil), // split (6, 1)
 	}
 	assert.Equal(t, expected, moves)
 }
@@ -464,14 +468,14 @@ func TestLegalMovesCard8(t *testing.T) {
 	game = setupGame()
 	_ = game.Players()[model.Red].Pawns()[0].Position().MoveToHome()
 	_, _, _, moves = buildMoves(model.Red, game, 0, model.Card8)
-	expected = []model.Move{}
+	expected = emptyMoves
 	assert.Equal(t, expected, moves)
 
 	// Move pawn on board
 	game = setupGame()
 	_ = game.Players()[model.Red].Pawns()[0].Position().MoveToSquare(6)
 	card, pawn, _, moves = buildMoves(model.Red, game, 0, model.Card8)
-	expected = []model.Move { model.NewMove(card, []model.Action {actionSquare(pawn, 14)}, []model.Action {}) }
+	expected = []model.Move {move(card, []model.Action {actionSquare(pawn, 14)}, nil) }
 	assert.Equal(t, expected, moves)
 
 	// Move pawn on board with conflict (same color)
@@ -479,7 +483,7 @@ func TestLegalMovesCard8(t *testing.T) {
 	_ = game.Players()[model.Red].Pawns()[0].Position().MoveToSquare(6)
 	_ = game.Players()[model.Red].Pawns()[1].Position().MoveToSquare(14)
 	_, _, _, moves = buildMoves(model.Red, game, 0, model.Card8)
-	expected = []model.Move{}  // can't move because we have a pawn there already
+	expected = emptyMoves // can't move because we have a pawn there already
 	assert.Equal(t, expected, moves)
 
 	// Move pawn on board with conflict (different color)
@@ -487,7 +491,7 @@ func TestLegalMovesCard8(t *testing.T) {
 	_ = game.Players()[model.Red].Pawns()[0].Position().MoveToSquare(6)
 	_ = game.Players()[model.Green].Pawns()[1].Position().MoveToSquare(14)
 	card, pawn, view, moves = buildMoves(model.Red, game, 0, model.Card8)
-	expected = []model.Move { model.NewMove(card, []model.Action {actionSquare(pawn, 14)}, []model.Action {actionBump(view, model.Green, 1)}) }
+	expected = []model.Move {move(card, []model.Action {actionSquare(pawn, 14)}, []model.Action {actionBump(view, model.Green, 1)}) }
 	assert.Equal(t, expected, moves)
 }
 
@@ -503,7 +507,7 @@ func TestLegalMovesCard10(t *testing.T) {
 	game = setupGame()
 	_ = game.Players()[model.Red].Pawns()[0].Position().MoveToHome()
 	_, _, _, moves = buildMoves(model.Red, game, 0, model.Card10)
-	expected = []model.Move{}
+	expected = emptyMoves
 	assert.Equal(t, expected, moves)
 
 	// Move pawn on board
@@ -511,8 +515,8 @@ func TestLegalMovesCard10(t *testing.T) {
 	_ = game.Players()[model.Red].Pawns()[0].Position().MoveToSquare(5)
 	card, pawn, _, moves = buildMoves(model.Red, game, 0, model.Card10)
 	expected = []model.Move {
-		model.NewMove(card, []model.Action {actionSquare(pawn, 15)}, []model.Action {}),
-		model.NewMove(card, []model.Action {actionSquare(pawn, 4)}, []model.Action {}),
+		move(card, []model.Action {actionSquare(pawn, 15)}, nil),
+		move(card, []model.Action {actionSquare(pawn, 4)}, nil),
 	}
 	assert.Equal(t, expected, moves)
 
@@ -521,7 +525,7 @@ func TestLegalMovesCard10(t *testing.T) {
 	_ = game.Players()[model.Red].Pawns()[0].Position().MoveToSquare(5)
 	_ = game.Players()[model.Red].Pawns()[1].Position().MoveToSquare(15)
 	card, pawn, _, moves = buildMoves(model.Red, game, 0, model.Card10)
-	expected = []model.Move { model.NewMove(card, []model.Action {actionSquare(pawn, 4)}, []model.Action {}) }
+	expected = []model.Move {move(card, []model.Action {actionSquare(pawn, 4)}, nil) }
 	assert.Equal(t, expected, moves)
 
 	// Move pawn on board with conflict (same color)
@@ -529,7 +533,7 @@ func TestLegalMovesCard10(t *testing.T) {
 	_ = game.Players()[model.Red].Pawns()[0].Position().MoveToSquare(5)
 	_ = game.Players()[model.Red].Pawns()[1].Position().MoveToSquare(4)
 	card, pawn, _, moves = buildMoves(model.Red, game, 0, model.Card10)
-	expected = []model.Move { model.NewMove(card, []model.Action {actionSquare(pawn, 15)}, []model.Action {}) }
+	expected = []model.Move {move(card, []model.Action {actionSquare(pawn, 15)}, nil) }
 	assert.Equal(t, expected, moves)
 
 	// Move pawn on board with conflict (different color)
@@ -538,8 +542,8 @@ func TestLegalMovesCard10(t *testing.T) {
 	_ = game.Players()[model.Green].Pawns()[1].Position().MoveToSquare(15)
 	card, pawn, view, moves = buildMoves(model.Red, game, 0, model.Card10)
 	expected = []model.Move {
-		model.NewMove(card, []model.Action {actionSquare(pawn, 15)}, []model.Action {actionBump(view, model.Green, 1)}),
-		model.NewMove(card, []model.Action {actionSquare(pawn, 4)}, []model.Action { }),
+		move(card, []model.Action {actionSquare(pawn, 15)}, []model.Action {actionBump(view, model.Green, 1)}),
+		move(card, []model.Action {actionSquare(pawn, 4)}, nil),
 	}
 	assert.Equal(t, expected, moves)
 
@@ -549,8 +553,8 @@ func TestLegalMovesCard10(t *testing.T) {
 	_ = game.Players()[model.Green].Pawns()[1].Position().MoveToSquare(4)
 	card, pawn, view, moves = buildMoves(model.Red, game, 0, model.Card10)
 	expected = []model.Move {
-		model.NewMove(card, []model.Action {actionSquare(pawn, 15)}, []model.Action { }),
-		model.NewMove(card, []model.Action {actionSquare(pawn, 4)}, []model.Action {actionBump(view, model.Green, 1) }),
+		move(card, []model.Action {actionSquare(pawn, 15)}, nil),
+		move(card, []model.Action {actionSquare(pawn, 4)}, []model.Action {actionBump(view, model.Green, 1) }),
 	}
 	assert.Equal(t, expected, moves)
 }
@@ -567,14 +571,14 @@ func TestLegalMovesCard11(t *testing.T) {
 	game = setupGame()
 	_ = game.Players()[model.Red].Pawns()[0].Position().MoveToHome()
 	_, _, _, moves = buildMoves(model.Red, game, 0, model.Card11)
-	expected = []model.Move{}
+	expected = emptyMoves
 	assert.Equal(t, expected, moves)
 
 	// Move pawn on board
 	game = setupGame()
 	_ = game.Players()[model.Red].Pawns()[0].Position().MoveToSquare(15)
 	card, pawn, _, moves = buildMoves(model.Red, game, 0, model.Card11)
-	expected = []model.Move { model.NewMove(card, []model.Action {actionSquare(pawn, 26)}, []model.Action {}) }
+	expected = []model.Move {move(card, []model.Action {actionSquare(pawn, 26)}, nil) }
 	assert.Equal(t, expected, moves)
 
 	// Move pawn on board with conflict (same color)
@@ -582,7 +586,7 @@ func TestLegalMovesCard11(t *testing.T) {
 	_ = game.Players()[model.Red].Pawns()[0].Position().MoveToSquare(15)
 	_ = game.Players()[model.Red].Pawns()[1].Position().MoveToSquare(26)
 	_, _, _, moves = buildMoves(model.Red, game, 0, model.Card11)
-	expected = []model.Move{}  // can't move because we have a pawn there already
+	expected = emptyMoves // can't move because we have a pawn there already
 	assert.Equal(t, expected, moves)
 
 	// Move pawn on board with conflict (different color), which also gets us a swap opportunity
@@ -591,8 +595,8 @@ func TestLegalMovesCard11(t *testing.T) {
 	_ = game.Players()[model.Green].Pawns()[1].Position().MoveToSquare(26)
 	card, pawn, view, moves = buildMoves(model.Red, game, 0, model.Card11)
 	expected = []model.Move {
-		model.NewMove(card, actionSwap(view, pawn, model.Green, 1), []model.Action {}),
-		model.NewMove(card, []model.Action {actionSquare(pawn, 26)}, []model.Action {actionBump(view, model.Green, 1)}),
+		move(card, actionSwap(view, pawn, model.Green, 1), nil),
+		move(card, []model.Action {actionSquare(pawn, 26)}, []model.Action {actionBump(view, model.Green, 1)}),
 	}
 	assert.Equal(t, expected, moves)
 
@@ -606,9 +610,9 @@ func TestLegalMovesCard11(t *testing.T) {
 	_ = game.Players()[model.Blue].Pawns()[1].Position().MoveToSquare(19)  // can be swapped, on board
 	card, pawn, view, moves = buildMoves(model.Red, game, 0, model.Card11)
 	expected = []model.Move {
-		model.NewMove(card, actionSwap(view, pawn, model.Yellow, 3), []model.Action {}),
-		model.NewMove(card, actionSwap(view, pawn, model.Blue, 1), []model.Action {}),
-		model.NewMove(card, []model.Action {actionSquare(pawn, 26)}, []model.Action { }),
+		move(card, actionSwap(view, pawn, model.Yellow, 3), nil),
+		move(card, actionSwap(view, pawn, model.Blue, 1), nil),
+		move(card, []model.Action {actionSquare(pawn, 26)}, nil),
 	}
 	assert.Equal(t, expected, moves)
 }
@@ -625,14 +629,14 @@ func TestLegalMovesCard12(t *testing.T) {
 	game = setupGame()
 	_ = game.Players()[model.Red].Pawns()[0].Position().MoveToHome()
 	_, _, _, moves = buildMoves(model.Red, game, 0, model.Card12)
-	expected = []model.Move{}
+	expected = emptyMoves
 	assert.Equal(t, expected, moves)
 
 	// Move pawn on board
 	game = setupGame()
 	_ = game.Players()[model.Red].Pawns()[0].Position().MoveToSquare(6)
 	card, pawn, _, moves = buildMoves(model.Red, game, 0, model.Card12)
-	expected = []model.Move { model.NewMove(card, []model.Action {actionSquare(pawn, 18)}, []model.Action {}) }
+	expected = []model.Move {move(card, []model.Action {actionSquare(pawn, 18)}, nil) }
 	assert.Equal(t, expected, moves)
 
 	// Move pawn on board with conflict (same color)
@@ -640,7 +644,7 @@ func TestLegalMovesCard12(t *testing.T) {
 	_ = game.Players()[model.Red].Pawns()[0].Position().MoveToSquare(6)
 	_ = game.Players()[model.Red].Pawns()[1].Position().MoveToSquare(18)
 	_, _, _, moves = buildMoves(model.Red, game, 0, model.Card12)
-	expected = []model.Move{}  // can't move because we have a pawn there already
+	expected = emptyMoves // can't move because we have a pawn there already
 	assert.Equal(t, expected, moves)
 
 	// Move pawn on board with conflict (different color)
@@ -648,7 +652,7 @@ func TestLegalMovesCard12(t *testing.T) {
 	_ = game.Players()[model.Red].Pawns()[0].Position().MoveToSquare(6)
 	_ = game.Players()[model.Green].Pawns()[1].Position().MoveToSquare(18)
 	card, pawn, view, moves = buildMoves(model.Red, game, 0, model.Card12)
-	expected = []model.Move { model.NewMove(card, []model.Action {actionSquare(pawn, 18)}, []model.Action {actionBump(view, model.Green, 1)}) }
+	expected = []model.Move {move(card, []model.Action {actionSquare(pawn, 18)}, []model.Action {actionBump(view, model.Green, 1)}) }
 	assert.Equal(t, expected, moves)
 }
 
@@ -665,7 +669,7 @@ func TestLegalMovesCardApologies(t *testing.T) {
 	card, pawn, _, moves = buildMoves(model.Red, game, 0, model.CardApologies)
 	_ = game.Players()[model.Yellow].Pawns()[3].Position().MoveToSquare(52) // can be swapped, on board
 	_ = game.Players()[model.Blue].Pawns()[1].Position().MoveToSquare(19) // can be swapped, on board
-	expected = []model.Move{}
+	expected = emptyMoves
 	assert.Equal(t, expected, moves)
 
 	// Swap pawns elsewhere on board
@@ -677,8 +681,8 @@ func TestLegalMovesCardApologies(t *testing.T) {
 	_ = game.Players()[model.Blue].Pawns()[1].Position().MoveToSquare(19) // can be swapped, on board
 	card, pawn, view, moves = buildMoves(model.Red, game, 0, model.CardApologies)
 	expected = []model.Move {
-		model.NewMove(card, []model.Action {actionSquare(pawn, 52), actionBump(view, model.Yellow, 3) }, []model.Action { }),
-		model.NewMove(card, []model.Action {actionSquare(pawn, 19), actionBump(view, model.Blue, 1) }, []model.Action { }),
+		move(card, []model.Action {actionSquare(pawn, 52), actionBump(view, model.Yellow, 3) }, nil),
+		move(card, []model.Action {actionSquare(pawn, 19), actionBump(view, model.Blue, 1) }, nil),
 	}
 	assert.Equal(t, expected, moves)
 }
@@ -695,28 +699,28 @@ func TestLegalMovesSpecial(t *testing.T) {
 	game = setupGame()
 	_ = game.Players()[model.Red].Pawns()[0].Position().MoveToSquare(2)
 	card, pawn, _, moves = buildMoves(model.Red, game, 0, model.Card1)
-	expected = []model.Move { model.NewMove(card, []model.Action {actionSafe(pawn, 0) }, []model.Action {})}
+	expected = []model.Move {move(card, []model.Action {actionSafe(pawn, 0) }, nil)}
 	assert.Equal(t, expected, moves)
 
 	// Move pawn to home
 	game = setupGame()
 	_ = game.Players()[model.Red].Pawns()[0].Position().MoveToSafe(4)
 	card, pawn, _, moves = buildMoves(model.Red, game, 0, model.Card1)
-	expected = []model.Move { model.NewMove(card, []model.Action {actionHome(pawn) }, []model.Action {})}
+	expected = []model.Move {move(card, []model.Action {actionHome(pawn) }, nil)}
 	assert.Equal(t, expected, moves)
 
 	// Move pawn past home
 	game = setupGame()
 	_ = game.Players()[model.Red].Pawns()[0].Position().MoveToSafe(4)
 	card, pawn, _, moves = buildMoves(model.Red, game, 0, model.Card2)
-	expected = []model.Move{}
+	expected = emptyMoves
 	assert.Equal(t, expected, moves) // no moves, because it isn't legal
 
 	// Slide of the same color
 	game = setupGame()
 	_ = game.Players()[model.Red].Pawns()[0].Position().MoveToSquare(8)
 	card, pawn, _, moves = buildMoves(model.Red, game, 0, model.Card1)
-	expected = []model.Move { model.NewMove(card, []model.Action {actionSquare(pawn, 9) }, []model.Action {})}
+	expected = []model.Move {move(card, []model.Action {actionSquare(pawn, 9) }, nil)}
 	assert.Equal(t, expected, moves)
 
 	// Slide of a different color
@@ -725,12 +729,12 @@ func TestLegalMovesSpecial(t *testing.T) {
 	_ = game.Players()[model.Red].Pawns()[1].Position().MoveToSquare(17)
 	_ = game.Players()[model.Yellow].Pawns()[2].Position().MoveToSquare(18)
 	card, pawn, view, moves = buildMoves(model.Red, game, 0, model.Card1)
-	expected = []model.Move { model.NewMove(card, []model.Action {actionSquare(pawn, 19) }, []model.Action {actionBump(view, model.Red, 1), actionBump(view, model.Yellow, 2) })}
+	expected = []model.Move {move(card, []model.Action {actionSquare(pawn, 19) }, []model.Action {actionBump(view, model.Red, 1), actionBump(view, model.Yellow, 2) })}
 	assert.Equal(t, expected, moves)
 }
 
 func setupGame() model.Game {
-	game, _ := model.NewGame(4)
+	game, _ := model.NewGame(4, nil)
 
 	for _, color := range model.PlayerColors.Members() {
 		for pawn := 0; pawn < model.Pawns; pawn ++ {
@@ -745,18 +749,18 @@ func buildMoves(color model.PlayerColor, game model.Game, index int, cardType mo
 	card := model.NewCard("test", cardType)
 	view, _ := game.CreatePlayerView(color)
 	pawn := view.Player().Pawns()[index]
-	moves := legalMoves(view.Player().Color(), card, pawn, view.AllPawns())
+	moves := newMoveGenerator(&factory).legalMoves(view.Player().Color(), card, pawn, view.AllPawns())
 	return card, pawn, view, moves
 }
 
 func calculatePositionSuccess(t *testing.T, color model.PlayerColor, start model.Position, squares int, expected model.Position) {
-	result, err := calculatePosition(color, start, squares)
+	result, err := newMoveGenerator(&factory).calculatePosition(color, start, squares)
 	assert.Nil(t, err)
 	assert.Equal(t, expected, result)
 }
 
 func calculatePositionFailure(t *testing.T, color model.PlayerColor, start model.Position, squares int, expected string) {
-	_, err := calculatePosition(color, start, squares)
+	_, err := newMoveGenerator(&factory).calculatePosition(color, start, squares)
 	assert.EqualError(t, err, expected)
 }
 
@@ -809,3 +813,26 @@ func positionSquare(square int) model.Position {
 	return model.NewPosition(false, false, nil, &square)
 }
 
+func move(card model.Card, actions []model.Action, sideEffects []model.Action) model.Move {
+	return model.NewMove(card, actions, sideEffects, &factory)
+}
+
+func actions(actions ... model.Action) []model.Action {
+	result := make([]model.Action, len(actions))
+
+	for i := 0; i <= len(actions); i++ {
+		result = append(result, actions[i])
+	}
+
+	return result
+}
+
+func moves(moves ... model.Move) []model.Move {
+	result := make([]model.Move, len(moves))
+
+	for i := 0; i <= len(moves); i++ {
+		result = append(result, moves[i])
+	}
+
+	return result
+}

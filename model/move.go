@@ -95,13 +95,21 @@ type move struct {
 	sideEffects []Action
 }
 
-// NewMove constructs a new move
-func NewMove(card Card, actions []Action, sideEffects []Action) Move {
-	return newMove(card, actions, sideEffects, identifier.NewFactory())
-}
+// NewMove constructs a new move, optionally accepting an identify factory
+// If there are no actions or side effects, you may pass nil, which is equivalent to a newly-allocated empty slice
+func NewMove(card Card, actions []Action, sideEffects []Action, factory identifier.Factory) Move {
+	if factory == nil {
+		factory = identifier.NewFactory()
+	}
 
-// newMove constructs a new move while accepting an identifier factory (intended for unit testing)
-func newMove(card Card, actions []Action, sideEffects []Action, factory identifier.Factory) Move {
+	if actions == nil {
+		actions = make([]Action, 0)
+	}
+
+	if sideEffects == nil {
+		sideEffects = make([]Action, 0)
+	}
+
 	return &move{
 		id: factory.RandomId(),
 		card: card,

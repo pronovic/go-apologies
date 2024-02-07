@@ -7,15 +7,18 @@ import (
 	"testing"
 )
 
+var stubbedString = "2024-01-31T08:15:03.221Z"
+var stubbedTimestamp, _ = timestamp.ParseTime(stubbedString)
+var factory timestamp.MockFactory
+
+func init() {
+	factory.On("CurrentTime").Return(stubbedTimestamp)
+}
+
 func TestNewHistory(t *testing.T) {
 	var obj History
 
-	var stubbedString = "2024-01-31T08:15:03.221Z"
-	var stubbedTimestamp, _ = timestamp.ParseTime(stubbedString)
-	var factory timestamp.MockFactory
-	factory.On("CurrentTime").Return(stubbedTimestamp)
-
-	obj = NewHistory("action", nil, nil)
+	obj = NewHistory("action", nil, nil, &factory)
 	assert.Equal(t, "action", obj.Action())
 	assert.Nil(t, obj.Color())
 	assert.Nil(t, obj.Card())
@@ -23,14 +26,14 @@ func TestNewHistory(t *testing.T) {
 	assert.Equal(t, fmt.Sprintf("[%s] General - action", stubbedString), fmt.Sprintf("%s", obj))
 
 	color := Blue
-	obj = NewHistory("action", &color, nil)
+	obj = NewHistory("action", &color, nil, &factory)
 	assert.Equal(t, &color, obj.Color())
 	assert.Nil(t, obj.Card())
 	assert.Equal(t, stubbedTimestamp, obj.Timestamp())
 	assert.Equal(t, fmt.Sprintf("[%s] Blue - action", stubbedString), fmt.Sprintf("%s", obj))
 
 	card1 := Card12
-	obj = NewHistory("action", nil, &card1)
+	obj = NewHistory("action", nil, &card1, &factory)
 	assert.Nil(t, obj.Color())
 	assert.Equal(t, &card1, obj.Card())
 	assert.Equal(t, stubbedTimestamp, obj.Timestamp())
@@ -40,14 +43,14 @@ func TestNewHistory(t *testing.T) {
 func TestHistoryCopy(t *testing.T) {
 	color := Blue
 	card1 := Card12
-	obj := NewHistory("action", &color, &card1)
+	obj := NewHistory("action", &color, &card1, nil)
 	copied := obj.Copy()
 	assert.Equal(t, obj, copied)
 	assert.NotSame(t, obj, copied)
 }
 
 func TestNewGame2Players(t *testing.T) {
-	game, err := NewGame(2)
+	game, err := NewGame(2, nil)
 	assert.Nil(t, err)
 	assert.Equal(t, 2, len(game.Players()))
 	assert.Equal(t, 0, len(game.History()))
@@ -58,7 +61,7 @@ func TestNewGame2Players(t *testing.T) {
 }
 
 func TestNewGame3Players(t *testing.T) {
-	game, err := NewGame(3)
+	game, err := NewGame(3, nil)
 	assert.Nil(t, err)
 	assert.Equal(t, 3, len(game.Players()))
 	assert.Equal(t, 0, len(game.History()))
@@ -69,7 +72,7 @@ func TestNewGame3Players(t *testing.T) {
 }
 
 func TestNewGame4Players(t *testing.T) {
-	game, err := NewGame(4)
+	game, err := NewGame(4, nil)
 	assert.Nil(t, err)
 	assert.Equal(t, 4, len(game.Players()))
 	assert.Equal(t, 0, len(game.History()))
@@ -81,7 +84,7 @@ func TestNewGame4Players(t *testing.T) {
 
 func TestNewGameInvalidPlayers(t *testing.T) {
 	for _, playerCount := range []int { -2, -1, 0, 1, 5, 6  } {
-		_, err := NewGame(playerCount)
+		_, err := NewGame(playerCount, nil)
 		assert.EqualError(t, err, "invalid number of players")
 	}
 }
@@ -94,14 +97,14 @@ func TestGameCopy(t *testing.T) {
 }
 
 func TestGameStarted(t *testing.T) {
-	game, _ := NewGame(4)
+	game, _ := NewGame(4, nil)
 	assert.False(t, game.Started())
 	game.Track("whatever", nil, nil)
 	assert.True(t, game.Started())
 }
 
 func TestGameCompletedAndWinner(t *testing.T) {
-	game, _ := NewGame(4)
+	game, _ := NewGame(4, nil)
 
 	// move all but last pawn into home for all of the players; the game is not complete
 	for _, value := range game.Players() {
@@ -119,9 +122,9 @@ func TestGameCompletedAndWinner(t *testing.T) {
 }
 
 func TestGameTrackNoPlayer(t *testing.T) {
-	game, _ := NewGame(4)
+	game, _ := NewGame(4, &factory)
 	game.Track("action", nil, nil)
-	assert.Equal(t, NewHistory("action", nil, nil), game.History()[0])
+	assert.Equal(t, NewHistory("action", nil, nil, &factory), game.History()[0])
 	assert.Equal(t, 0, game.Players()[Red].Turns())
 	assert.Equal(t, 0, game.Players()[Yellow].Turns())
 	assert.Equal(t, 0, game.Players()[Blue].Turns())
@@ -129,11 +132,11 @@ func TestGameTrackNoPlayer(t *testing.T) {
 }
 
 func TestGameTrackWithColor(t *testing.T) {
-	game, _ := NewGame(4)
+	game, _ := NewGame(4, &factory)
 	player := NewPlayer(Red)
 	card := NewCard("x", Card12)
 	game.Track("action", player, card)
-	assert.Equal(t, NewHistory("action", &Red, &Card12), game.History()[0])
+	assert.Equal(t, NewHistory("action", &Red, &Card12, &factory), game.History()[0])
 	assert.Equal(t, 1, game.Players()[Red].Turns())
 	assert.Equal(t, 0, game.Players()[Yellow].Turns())
 	assert.Equal(t, 0, game.Players()[Blue].Turns())
@@ -141,7 +144,7 @@ func TestGameTrackWithColor(t *testing.T) {
 }
 
 func TestGameCreatePlayerViewInvalid(t *testing.T) {
-	game, _ := NewGame(2)
+	game, _ := NewGame(2, nil)
 	_, err := game.CreatePlayerView(Blue) // no blue player in 2-player game
 	assert.EqualError(t, err,"invalid color")
 }
@@ -150,7 +153,7 @@ func TestGameCreatePlayerView(t *testing.T) {
 	var card Card
 	var err error
 
-	game, _ := NewGame(4)
+	game, _ := NewGame(4, nil)
 
 	card, err = game.Deck().Draw()
 	assert.Nil(t, err)
@@ -185,7 +188,7 @@ func TestGameCreatePlayerView(t *testing.T) {
 
 func createRealisticGame() Game {
 	// creates a realistic game with changes to the defaults for all types of values
-	game, _ := NewGame(4)
+	game, _ := NewGame(4, nil)
 	game.Track("this happened", nil, nil)
 	game.Track("another thing", game.Players()[Red], nil)
 	card1, _ := game.Deck().Draw()

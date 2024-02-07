@@ -65,22 +65,44 @@ func TestActionEquals(t *testing.T) {
 
 func TestNewMove(t *testing.T) {
 	var factory identifier.MockFactory
-	factory.On("Id").Return("id")
+	factory.On("RandomId").Return("id")
 	card := NewCard("1", Card1)
 	actions := make([]Action, 1, 2)
 	sideEffects := make([]Action, 2, 3)
-	obj := NewMove(card, actions, sideEffects)
-	assert.NotEmptyf(t, "id", obj.Id()) // filled in with a UUID
+	obj := NewMove(card, actions, sideEffects, &factory)
+	assert.Equal(t, "id", obj.Id()) // filled in with the constant id from the mock factory
 	assert.Equal(t, card, obj.Card())
 	assert.Equal(t, actions, obj.Actions())
 	assert.Equal(t, sideEffects, obj.SideEffects())
+}
+
+func TestNewMoveEmptySlice(t *testing.T) {
+	card := NewCard("1", Card1)
+	var actions = make([]Action, 0)
+	var sideEffects = make([]Action, 0)
+	obj := NewMove(card, actions, sideEffects, nil)
+	assert.NotEmpty(t, obj.Id()) // filled in with an id from the standard identifier factory
+	assert.Equal(t, card, obj.Card())
+	assert.Equal(t, actions, obj.Actions())
+	assert.Equal(t, sideEffects, obj.SideEffects())
+}
+
+func TestNewMoveNilSlice(t *testing.T) {
+	card := NewCard("1", Card1)
+	var actions = make([]Action, 0)
+	var sideEffects = make([]Action, 0)
+	obj := NewMove(card, nil, nil, nil)
+	assert.NotEmpty(t, obj.Id()) // filled in with an id from the standard identifier factory
+	assert.Equal(t, card, obj.Card())
+	assert.Equal(t, actions, obj.Actions())  // nil is converted to a newly-allocated empty slice
+	assert.Equal(t, sideEffects, obj.SideEffects()) // nil is converted to a newly-allocated empty slice
 }
 
 func TestMoveAddSideEffect(t *testing.T) {
 	card := NewCard("1", Card1)
 	actions := make([]Action, 0)
 	sideEffects := make([]Action, 0)
-	obj := NewMove(card, actions, sideEffects)
+	obj := NewMove(card, actions, sideEffects, nil)
 
 	pawn := NewPawn(Red, 0)
 	position := NewPosition(false, false, nil, nil)
@@ -108,6 +130,6 @@ func TestMoveMergedActions(t *testing.T) {
 	actions := []Action { action1, action2 }
 	sideEffects := []Action { action3, action4 }
 	expected := []Action { action1, action2, action3, action4 }
-	obj := NewMove(card, actions, sideEffects)
+	obj := NewMove(card, actions, sideEffects, nil)
 	assert.Equal(t, expected, obj.MergedActions())
 }

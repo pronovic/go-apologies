@@ -43,13 +43,12 @@ type history struct {
 	timestamp time.Time
 }
 
-// NewHistory constructs a new History
-func NewHistory(action string, color *PlayerColor, card *CardType) History {
-	return newHistory(action, color, card, timestamp.NewFactory())
-}
+// NewHistory constructs a new History, optionally accepting a timestamp factory
+func NewHistory(action string, color *PlayerColor, card *CardType, factory timestamp.Factory) History {
+	if factory == nil {
+		factory = timestamp.NewFactory()
+	}
 
-// newHistory constructs a new History while accepting a timestamp factory (intended for unit testing)
-func newHistory(action string, color *PlayerColor, card *CardType, factory timestamp.Factory) History {
 	return &history{
 		action: action,
 		color: color,
@@ -133,10 +132,15 @@ type game struct {
 	players map[PlayerColor]Player
 	deck Deck
 	history []History
+	factory timestamp.Factory
 }
 
-// NewGame constructs a new Game
-func NewGame(playerCount int) (Game, error) {
+// NewGame constructs a new Game, optionally accepting a timestamp factory
+func NewGame(playerCount int, factory timestamp.Factory) (Game, error) {
+	if factory == nil {
+		factory = timestamp.NewFactory()
+	}
+
 	if playerCount < MinPlayers || playerCount > MaxPlayers {
 		return (*game)(nil), errors.New("invalid number of players")
 	}
@@ -152,6 +156,7 @@ func NewGame(playerCount int) (Game, error) {
 		players:     players,
 		deck:        NewDeck(),
 		history:     make([]History, 0),
+		factory:     factory,
 	}
 
 	return game, nil
@@ -194,6 +199,7 @@ func (g *game) Copy() Game {
 		players: playersCopy,
 		deck: g.deck.Copy(),
 		history: historyCopy,
+		factory: g.factory,
 	}
 }
 
@@ -234,7 +240,7 @@ func (g *game) Track(action string, player Player, card Card) {
 		cardtype = &tmp
 	}
 
-	var history = NewHistory(action, color, cardtype)
+	var history = NewHistory(action, color, cardtype, g.factory)
 	g.history = append(g.history, history)
 
 	if player != nil {
