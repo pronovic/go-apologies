@@ -1,9 +1,9 @@
-package rules
+package generator
 
 import (
 	"errors"
-	"github.com/pronovic/go-apologies/model"
 	"github.com/pronovic/go-apologies/internal/identifier"
+	"github.com/pronovic/go-apologies/model"
 )
 
 // splitPair defines a legal way to split up a move of 7
@@ -22,28 +22,28 @@ var legalSplits = []splitPair{
 	{6, 1},
 }
 
-type moveGenerator interface {
-	legalMoves(color model.PlayerColor, card model.Card, pawn model.Pawn, allPawns []model.Pawn) []model.Move
-	calculatePosition(color model.PlayerColor, position model.Position, squares int) (model.Position, error)
+type MoveGenerator interface {
+	LegalMoves(color model.PlayerColor, card model.Card, pawn model.Pawn, allPawns []model.Pawn) []model.Move
+	CalculatePosition(color model.PlayerColor, position model.Position, squares int) (model.Position, error)
 }
 
-type generator struct {
+type moveGenerator struct {
 	factory identifier.Factory
 }
 
-// newMoveGenerator constructs a new generator, optionally accepting an identifier factory
-func newMoveGenerator(factory identifier.Factory) moveGenerator {
+// NewGenerator constructs a new move generator, optionally accepting an identifier factory
+func NewGenerator(factory identifier.Factory) MoveGenerator {
 	if factory == nil {
 		factory = identifier.NewFactory()
 	}
 
-	return &generator {
+	return &moveGenerator{
 		factory: factory,
 	}
 }
 
-// legalMoves Generate the set of legal moves for a pawn using a card, possibly empty.
-func (g *generator) legalMoves(color model.PlayerColor, card model.Card, pawn model.Pawn, allPawns []model.Pawn) []model.Move {
+// LegalMoves Generate the set of legal moves for a pawn using a card, possibly empty.
+func (g *moveGenerator) LegalMoves(color model.PlayerColor, card model.Card, pawn model.Pawn, allPawns []model.Pawn) []model.Move {
 	var moves []model.Move
 	if pawn.Position().Home() {
 		moves = make([]model.Move, 0)
@@ -78,7 +78,7 @@ func (g *generator) legalMoves(color model.PlayerColor, card model.Card, pawn mo
 }
 
 // Return the set of legal moves for a pawn using Card1, possibly empty.
-func (g *generator) legalMovesCard1(color model.PlayerColor, card model.Card, pawn model.Pawn, allPawns []model.Pawn) []model.Move {
+func (g *moveGenerator) legalMovesCard1(color model.PlayerColor, card model.Card, pawn model.Pawn, allPawns []model.Pawn) []model.Move {
 	moves := make([]model.Move, 0)
 	g.moveCircle(&moves, color, card, pawn, allPawns)
 	g.moveSimple(&moves, color, card, pawn, allPawns, 1)
@@ -86,7 +86,7 @@ func (g *generator) legalMovesCard1(color model.PlayerColor, card model.Card, pa
 }
 
 // Return the set of legal moves for a pawn using Card2, possibly empty.
-func (g *generator) legalMovesCard2(color model.PlayerColor, card model.Card, pawn model.Pawn, allPawns []model.Pawn) []model.Move {
+func (g *moveGenerator) legalMovesCard2(color model.PlayerColor, card model.Card, pawn model.Pawn, allPawns []model.Pawn) []model.Move {
 	moves := make([]model.Move, 0)
 	g.moveCircle(&moves, color, card, pawn, allPawns)
 	g.moveSimple(&moves, color, card, pawn, allPawns, 2)
@@ -94,28 +94,28 @@ func (g *generator) legalMovesCard2(color model.PlayerColor, card model.Card, pa
 }
 
 // Return the set of legal moves for a pawn using Card3, possibly empty.
-func (g *generator) legalMovesCard3(color model.PlayerColor, card model.Card, pawn model.Pawn, allPawns []model.Pawn) []model.Move {
+func (g *moveGenerator) legalMovesCard3(color model.PlayerColor, card model.Card, pawn model.Pawn, allPawns []model.Pawn) []model.Move {
 	moves := make([]model.Move, 0)
 	g.moveSimple(&moves, color, card, pawn, allPawns, 3)
 	return moves
 }
 
 // Return the set of legal moves for a pawn using Card4, possibly empty.
-func (g *generator) legalMovesCard4(color model.PlayerColor, card model.Card, pawn model.Pawn, allPawns []model.Pawn) []model.Move {
+func (g *moveGenerator) legalMovesCard4(color model.PlayerColor, card model.Card, pawn model.Pawn, allPawns []model.Pawn) []model.Move {
 	moves := make([]model.Move, 0)
 	g.moveSimple(&moves, color, card, pawn, allPawns, -4)
 	return moves
 }
 
 // Return the set of legal moves for a pawn using Card5, possibly empty.
-func (g *generator) legalMovesCard5(color model.PlayerColor, card model.Card, pawn model.Pawn, allPawns []model.Pawn) []model.Move {
+func (g *moveGenerator) legalMovesCard5(color model.PlayerColor, card model.Card, pawn model.Pawn, allPawns []model.Pawn) []model.Move {
 	moves := make([]model.Move, 0)
 	g.moveSimple(&moves, color, card, pawn, allPawns, 5)
 	return moves
 }
 
 // Return the set of legal moves for a pawn using Card7, possibly empty.
-func (g *generator) legalMovesCard7(color model.PlayerColor, card model.Card, pawn model.Pawn, allPawns []model.Pawn) []model.Move {
+func (g *moveGenerator) legalMovesCard7(color model.PlayerColor, card model.Card, pawn model.Pawn, allPawns []model.Pawn) []model.Move {
 	moves := make([]model.Move, 0)
 	g.moveSimple(&moves, color, card, pawn, allPawns, 7)
 	g.moveSplit(&moves, color, card, pawn, allPawns)
@@ -123,14 +123,14 @@ func (g *generator) legalMovesCard7(color model.PlayerColor, card model.Card, pa
 }
 
 // Return the set of legal moves for a pawn using Card8, possibly empty.
-func (g *generator) legalMovesCard8(color model.PlayerColor, card model.Card, pawn model.Pawn, allPawns []model.Pawn) []model.Move {
+func (g *moveGenerator) legalMovesCard8(color model.PlayerColor, card model.Card, pawn model.Pawn, allPawns []model.Pawn) []model.Move {
 	moves := make([]model.Move, 0)
 	g.moveSimple(&moves, color, card, pawn, allPawns, 8)
 	return moves
 }
 
 // Return the set of legal moves for a pawn using Card10, possibly empty.
-func (g *generator) legalMovesCard10(color model.PlayerColor, card model.Card, pawn model.Pawn, allPawns []model.Pawn) []model.Move {
+func (g *moveGenerator) legalMovesCard10(color model.PlayerColor, card model.Card, pawn model.Pawn, allPawns []model.Pawn) []model.Move {
 	moves := make([]model.Move, 0)
 	g.moveSimple(&moves, color, card, pawn, allPawns, 10)
 	g.moveSimple(&moves, color, card, pawn, allPawns, -1)
@@ -138,7 +138,7 @@ func (g *generator) legalMovesCard10(color model.PlayerColor, card model.Card, p
 }
 
 // Return the set of legal moves for a pawn using Card11, possibly empty.
-func (g *generator) legalMovesCard11(color model.PlayerColor, card model.Card, pawn model.Pawn, allPawns []model.Pawn) []model.Move {
+func (g *moveGenerator) legalMovesCard11(color model.PlayerColor, card model.Card, pawn model.Pawn, allPawns []model.Pawn) []model.Move {
 	moves := make([]model.Move, 0)
 	g.moveSwap(&moves, color, card, pawn, allPawns)
 	g.moveSimple(&moves, color, card, pawn, allPawns, 11)
@@ -146,21 +146,21 @@ func (g *generator) legalMovesCard11(color model.PlayerColor, card model.Card, p
 }
 
 // Return the set of legal moves for a pawn using Card12, possibly empty.
-func (g *generator) legalMovesCard12(color model.PlayerColor, card model.Card, pawn model.Pawn, allPawns []model.Pawn) []model.Move {
+func (g *moveGenerator) legalMovesCard12(color model.PlayerColor, card model.Card, pawn model.Pawn, allPawns []model.Pawn) []model.Move {
 	moves := make([]model.Move, 0)
 	g.moveSimple(&moves, color, card, pawn, allPawns, 12)
 	return moves
 }
 
 // Return the set of legal moves for a pawn using CardApologies, possibly empty.
-func (g *generator) legalMovesApologies(color model.PlayerColor, card model.Card, pawn model.Pawn, allPawns []model.Pawn) []model.Move {
+func (g *moveGenerator) legalMovesApologies(color model.PlayerColor, card model.Card, pawn model.Pawn, allPawns []model.Pawn) []model.Move {
 	moves := make([]model.Move, 0)
 	g.moveApologies(&moves, color, card, pawn, allPawns)
 	return moves
 }
 
 // Return the first pawn at the indicated position, or None.
-func (g *generator) findPawn(allPawns []model.Pawn, position model.Position) model.Pawn {
+func (g *moveGenerator) findPawn(allPawns []model.Pawn, position model.Position) model.Pawn {
 	for _, p := range allPawns {
 		if p.Position().Equals(position) {
 			return p
@@ -170,7 +170,7 @@ func (g *generator) findPawn(allPawns []model.Pawn, position model.Position) mod
 	return nil
 }
 
-func (g *generator) moveCircle(moves *[]model.Move, color model.PlayerColor, card model.Card, pawn model.Pawn, allPawns []model.Pawn) {
+func (g *moveGenerator) moveCircle(moves *[]model.Move, color model.PlayerColor, card model.Card, pawn model.Pawn, allPawns []model.Pawn) {
 	// For start-related cards, a pawn in the start area can move to the associated
 	// circle position if that position is not occupied by another pawn of the same color.
 	if pawn.Position().Start() {
@@ -189,11 +189,11 @@ func (g *generator) moveCircle(moves *[]model.Move, color model.PlayerColor, car
 	}
 }
 
-func (g *generator) moveSimple(moves *[]model.Move, color model.PlayerColor, card model.Card, pawn model.Pawn, allPawns []model.Pawn, squares int) {
+func (g *moveGenerator) moveSimple(moves *[]model.Move, color model.PlayerColor, card model.Card, pawn model.Pawn, allPawns []model.Pawn, squares int) {
 	// For most cards, a pawn on the board can move forward or backward if the
 	// resulting position is not occupied by another pawn of the same color.
 	if pawn.Position().Square() != nil || pawn.Position().Safe() != nil {
-		target, err := g.calculatePosition(color, pawn.Position(), squares)
+		target, err := g.CalculatePosition(color, pawn.Position(), squares)
 		if err == nil { // if the requested position is not legal, then just ignore it
 			if target.Home() || target.Start() { // by definition, there can't be a conflict going to home or start
 				actions := []model.Action { model.NewAction(model.MoveToPosition, pawn, target) }
@@ -218,7 +218,7 @@ func (g *generator) moveSimple(moves *[]model.Move, color model.PlayerColor, car
 	}
 }
 
-func (g *generator) moveSplit(moves *[]model.Move, color model.PlayerColor, card model.Card, pawn model.Pawn, allPawns []model.Pawn) {
+func (g *moveGenerator) moveSplit(moves *[]model.Move, color model.PlayerColor, card model.Card, pawn model.Pawn, allPawns []model.Pawn) {
 	// For the 7 card, we can split up the move between two different pawns.
 	// Any combination of 7 forward moves is legal, as long as the resulting position
 	// is not occupied by another pawn of the same color.
@@ -269,7 +269,7 @@ func (g *generator) moveSplit(moves *[]model.Move, color model.PlayerColor, card
 	}
 }
 
-func (g *generator) moveSwap(moves *[]model.Move, color model.PlayerColor, card model.Card, pawn model.Pawn, allPawns []model.Pawn) {
+func (g *moveGenerator) moveSwap(moves *[]model.Move, color model.PlayerColor, card model.Card, pawn model.Pawn, allPawns []model.Pawn) {
 	// For the 11 card, a pawn on the board can swap with another pawn of a different
 	// color, as long as that pawn is outside of the start area, safe area, or home area.
 	if pawn.Position().Square() != nil { // pawn is on the board
@@ -287,7 +287,7 @@ func (g *generator) moveSwap(moves *[]model.Move, color model.PlayerColor, card 
 	}
 }
 
-func (g *generator) moveApologies(moves *[]model.Move, color model.PlayerColor, card model.Card, pawn model.Pawn, allPawns []model.Pawn) {
+func (g *moveGenerator) moveApologies(moves *[]model.Move, color model.PlayerColor, card model.Card, pawn model.Pawn, allPawns []model.Pawn) {
 	// For the Apologies card, a pawn in start can swap with another pawn of a different
 	// color, as long as that pawn is outside of the start area, safe area, or home area.
 	if pawn.Position().Start() {
@@ -306,7 +306,7 @@ func (g *generator) moveApologies(moves *[]model.Move, color model.PlayerColor, 
 }
 
 // Augment any legal moves with additional side-effects that occur as a result of model.Slides.
-func (g *generator) augmentWithSlides(allPawns []model.Pawn, moves []model.Move) {
+func (g *moveGenerator) augmentWithSlides(allPawns []model.Pawn, moves []model.Move) {
 	for _, move := range moves {
 		for _, action := range move.Actions() {
 			if action.Type() == model.MoveToPosition { // look at any move to a position on the board
@@ -333,8 +333,8 @@ func (g *generator) augmentWithSlides(allPawns []model.Pawn, moves []model.Move)
 	}
 }
 
-// Calculate the new position for a forward or backwards move, taking into account safe zone turns but disregarding Slides.
-func (g *generator) calculatePosition(color model.PlayerColor, position model.Position, squares int) (model.Position, error) {
+// CalculatePosition Calculate the new position for a forward or backwards move, taking into account safe zone turns but disregarding Slides.
+func (g *moveGenerator) CalculatePosition(color model.PlayerColor, position model.Position, squares int) (model.Position, error) {
 	if position.Home() || position.Start() {
 		return (model.Position)(nil), errors.New("pawn in home or start may not move")
 	} else if position.Safe() != nil {
@@ -372,7 +372,7 @@ func (g *generator) calculatePosition(color model.PlayerColor, position model.Po
 				if err != nil {
 					return (model.Position)(nil), err
 				}
-				return g.calculatePosition(color, copied, squares + *position.Safe() + 1)
+				return g.CalculatePosition(color, copied, squares + *position.Safe() + 1)
 			}
 		}
 	} else if position.Square() != nil {
@@ -386,7 +386,7 @@ func (g *generator) calculatePosition(color model.PlayerColor, position model.Po
 					if err != nil {
 						return (model.Position)(nil), err
 					}
-					return g.calculatePosition(color, copied, squares - (*model.TurnSquares[color].Square() - *position.Square()) - 1)
+					return g.CalculatePosition(color, copied, squares - (*model.TurnSquares[color].Square() - *position.Square()) - 1)
 				} else {
 					copied := position.Copy()
 					err := copied.MoveToSquare(*position.Square() + squares)
@@ -401,7 +401,7 @@ func (g *generator) calculatePosition(color model.PlayerColor, position model.Po
 				if err != nil {
 					return (model.Position)(nil), err
 				}
-				return g.calculatePosition(color, copied, squares - (model.BoardSquares - *position.Square()))
+				return g.CalculatePosition(color, copied, squares - (model.BoardSquares - *position.Square()))
 			}
 		} else { // squares < 0
 			if *position.Square() + squares >= 0 {
@@ -417,7 +417,7 @@ func (g *generator) calculatePosition(color model.PlayerColor, position model.Po
 				if err != nil {
 					return (model.Position)(nil), err
 				}
-				return g.calculatePosition(color, copied, squares + *position.Square() + 1)
+				return g.CalculatePosition(color, copied, squares + *position.Square() + 1)
 			}
 		}
 	} else {

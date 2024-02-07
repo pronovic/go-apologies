@@ -1,4 +1,4 @@
-package rules
+package generator
 
 import (
 	"github.com/pronovic/go-apologies/internal/identifier"
@@ -748,18 +748,18 @@ func buildMoves(color model.PlayerColor, game model.Game, index int, cardType mo
 	card := model.NewCard("test", cardType)
 	view, _ := game.CreatePlayerView(color)
 	pawn := view.Player().Pawns()[index]
-	moves := newMoveGenerator(&factory).legalMoves(view.Player().Color(), card, pawn, view.AllPawns())
+	moves := NewGenerator(&factory).LegalMoves(view.Player().Color(), card, pawn, view.AllPawns())
 	return card, pawn, view, moves
 }
 
 func calculatePositionSuccess(t *testing.T, color model.PlayerColor, start model.Position, squares int, expected model.Position) {
-	result, err := newMoveGenerator(&factory).calculatePosition(color, start, squares)
+	result, err := NewGenerator(&factory).CalculatePosition(color, start, squares)
 	assert.Nil(t, err)
 	assert.Equal(t, expected, result)
 }
 
 func calculatePositionFailure(t *testing.T, color model.PlayerColor, start model.Position, squares int, expected string) {
-	_, err := newMoveGenerator(&factory).calculatePosition(color, start, squares)
+	_, err := NewGenerator(&factory).CalculatePosition(color, start, squares)
 	assert.EqualError(t, err, expected)
 }
 

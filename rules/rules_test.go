@@ -125,3 +125,19 @@ func TestConstructLegalMovesWithMovesWithCard(t *testing.T) {
 func TestConstructLegalMovesWithMovesNoCard(t *testing.T) {
 	// TODO: implement test
 }
+
+func positionHome() model.Position {
+	return model.NewPosition(false, true, nil, nil)
+}
+
+func positionStart() model.Position {
+	return model.NewPosition(true, false, nil, nil)
+}
+
+func positionSafe(safe int) model.Position {
+	return model.NewPosition(false, false, &safe, nil)
+}
+
+func positionSquare(square int) model.Position {
+	return model.NewPosition(false, false, nil, &square)
+}
