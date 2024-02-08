@@ -54,6 +54,24 @@ func (_m *MockMove) Card() Card {
 	return r0
 }
 
+// Equals provides a mock function with given fields: other
+func (_m *MockMove) Equals(other Move) bool {
+	ret := _m.Called(other)
+
+	if len(ret) == 0 {
+		panic("no return value specified for Equals")
+	}
+
+	var r0 bool
+	if rf, ok := ret.Get(0).(func(Move) bool); ok {
+		r0 = rf(other)
+	} else {
+		r0 = ret.Get(0).(bool)
+	}
+
+	return r0
+}
+
 // Id provides a mock function with given fields:
 func (_m *MockMove) Id() string {
 	ret := _m.Called()
