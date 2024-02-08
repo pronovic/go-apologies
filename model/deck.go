@@ -15,10 +15,10 @@ const AdultHand = 5
 // CardType defines all legal types of cards
 // The "A" card (CardApologies) is like the "Sorry" card in the original game
 type CardType struct{ value string }
-
-// Value implements the enum.Enum interface for CardType.
 func (e CardType) Value() string { return e.value }
-
+func (e CardType) MarshalText() (text []byte, err error) { return enum.Marshal(e) }
+func (e *CardType) UnmarshalText(text []byte) error { return enum.Unmarshal(e, text, CardTypes) }
+var CardTypes = enum.NewValues[CardType](Card1, Card2, Card3, Card4, Card5, Card7, Card8, Card10, Card11, Card12, CardApologies)
 var Card1 = CardType{"1"}
 var Card2 = CardType{"2"}
 var Card3 = CardType{"3"}
@@ -30,9 +30,6 @@ var Card10 = CardType{"10"}
 var Card11 = CardType{"11"}
 var Card12 = CardType{"12"}
 var CardApologies = CardType{"A"}
-
-// CardTypes is the list of all legal CardType enumerations
-var CardTypes = enum.NewValues[CardType](Card1, Card2, Card3, Card4, Card5, Card7, Card8, Card10, Card11, Card12, CardApologies)
 
 // DeckCounts defines the number of each type of card is in the deck
 var DeckCounts = map[CardType]int{

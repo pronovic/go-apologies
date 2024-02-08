@@ -15,19 +15,16 @@ const MaxPlayers = 4
 // Pawns there are 4 pawns per player, numbered 0-3
 const Pawns = 4
 
-// PlayerColor defines all legal player colors
+// PlayerColor defines all legal player colors, enumerated in order of use
 type PlayerColor struct{ value string }
-
-// Value implements the enum.Enum interface for PlayerColor.
 func (e PlayerColor) Value() string { return e.value }
-
+func (e PlayerColor) MarshalText() (text []byte, err error) { return enum.Marshal(e) }
+func (e *PlayerColor) UnmarshalText(text []byte) error { return enum.Unmarshal(e, text, PlayerColors) }
+var PlayerColors = enum.NewValues[PlayerColor](Red, Yellow, Green, Blue)
 var Red = PlayerColor{"Red"}
 var Yellow = PlayerColor{"Yellow"}
 var Blue = PlayerColor{"Blue"}
 var Green = PlayerColor{"Green"}
-
-// PlayerColors is the list of all legal PlayerColor enumerations, in order of use
-var PlayerColors = enum.NewValues[PlayerColor](Red, Yellow, Green, Blue)
 
 // Player A player, which has a color and a set of pawns.
 type Player interface {

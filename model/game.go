@@ -3,16 +3,17 @@ package model
 import (
 	"errors"
 	"fmt"
+	"github.com/pronovic/go-apologies/internal/enum"
 	"github.com/pronovic/go-apologies/internal/timestamp"
 	"time"
 )
 
 // GameMode defines legal game modes
 type GameMode struct{ value string }
-
-// Value implements the enum.Enum interface for GameMode.
 func (e GameMode) Value() string { return e.value }
-
+func (e GameMode) MarshalText() (text []byte, err error) { return enum.Marshal(e) }
+func (e *GameMode) UnmarshalText(text []byte) error { return enum.Unmarshal(e, text, GameModes) }
+var GameModes = enum.NewValues[GameMode](AdultMode, StandardMode)
 var StandardMode = GameMode{"StandardMode"}
 var AdultMode = GameMode{"AdultMode"}
 

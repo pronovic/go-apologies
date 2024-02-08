@@ -1,20 +1,18 @@
 package model
 
 import (
+	"github.com/pronovic/go-apologies/internal/enum"
 	"github.com/pronovic/go-apologies/internal/equality"
 	"github.com/pronovic/go-apologies/internal/identifier"
 )
 
 // ActionType defines all actions that a character can take
 type ActionType struct{ value string }
-
-// Value implements the enum.Enum interface for ActionType
 func (e ActionType) Value() string { return e.value }
-
-// MoveToStart move a pawn back to its start area
+func (e ActionType) MarshalText() (text []byte, err error) { return enum.Marshal(e) }
+func (e *ActionType) UnmarshalText(text []byte) error { return enum.Unmarshal(e, text, ActionTypes) }
+var ActionTypes = enum.NewValues[ActionType](MoveToStart, MoveToPosition)
 var MoveToStart = ActionType{"MoveToStart"}
-
-// MoveToPosition move a pawn to a specific position on the board
 var MoveToPosition = ActionType{"MoveToPosition"}
 
 // Action is an action that can be taken as part of a move
