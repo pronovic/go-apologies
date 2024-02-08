@@ -12,24 +12,34 @@ type MockCharacterInputSource struct {
 	mock.Mock
 }
 
-// ChooseMove provides a mock function with given fields:
-func (_m *MockCharacterInputSource) ChooseMove() model.Move {
-	ret := _m.Called()
+// ChooseMove provides a mock function with given fields: mode, view, legalMoves
+func (_m *MockCharacterInputSource) ChooseMove(mode model.GameMode, view model.PlayerView, legalMoves []model.Move) (model.Move, error) {
+	ret := _m.Called(mode, view, legalMoves)
 
 	if len(ret) == 0 {
 		panic("no return value specified for ChooseMove")
 	}
 
 	var r0 model.Move
-	if rf, ok := ret.Get(0).(func() model.Move); ok {
-		r0 = rf()
+	var r1 error
+	if rf, ok := ret.Get(0).(func(model.GameMode, model.PlayerView, []model.Move) (model.Move, error)); ok {
+		return rf(mode, view, legalMoves)
+	}
+	if rf, ok := ret.Get(0).(func(model.GameMode, model.PlayerView, []model.Move) model.Move); ok {
+		r0 = rf(mode, view, legalMoves)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(model.Move)
 		}
 	}
 
-	return r0
+	if rf, ok := ret.Get(1).(func(model.GameMode, model.PlayerView, []model.Move) error); ok {
+		r1 = rf(mode, view, legalMoves)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
 }
 
 // Name provides a mock function with given fields:

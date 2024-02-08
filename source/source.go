@@ -16,11 +16,11 @@ type CharacterInputSource interface {
 	// choice (since there is only one card in play), but in adult mode the character can choose
 	// which to discard.  If a move has an empty list of actions, then this is a forfeit.
 	//
-	// The source `must` return a move from among the passed-in set of legal moves.  If a source
+	// The source must return a move from among the passed-in set of legal moves.  If a source
 	// returns an illegal move, then a legal move will be chosen at random and executed.  This way,
 	// a misbehaving source (or a source attempting to cheat) does not get an advantage.  The game
 	// rules require a player to make a legal move if one is available, even if that move is
 	// disadvantageous.
-	ChooseMove() model.Move
+	ChooseMove(mode model.GameMode, view model.PlayerView, legalMoves []model.Move) (model.Move, error)
 
 }
