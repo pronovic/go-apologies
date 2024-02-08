@@ -165,7 +165,8 @@ func (p *position) Copy() Position {
 }
 
 func (p *position) Equals(other Position) bool {
-	return p.start == other.Start() &&
+	return other != nil &&
+		p.start == other.Start() &&
 		p.home == other.Home() &&
 		equality.IntPointerEquals(p.safe, other.Safe()) &&
 		equality.IntPointerEquals(p.square, other.Square())
@@ -332,7 +333,8 @@ func (p *pawn) Copy() Pawn {
 }
 
 func (p *pawn) Equals(other Pawn) bool {
-	return p.color == other.Color() &&
+	return other != nil &&
+		p.color == other.Color() &&
 		p.index == other.Index() &&
 		p.name == other.Name() &&
 		equality.ByValueEquals[Position](p.position, other.Position())

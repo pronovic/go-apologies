@@ -94,31 +94,34 @@ func TestPositionEquals(t *testing.T) {
 	p3 := NewPosition(false, false, &safe, nil)
 	p4 := NewPosition(false, false, nil, &square)
 
-	assert.Equal(t, p1, p1)
-	assert.Equal(t, p2, p2)
-	assert.Equal(t, p3, p3)
-	assert.Equal(t, p4, p4)
+	// note: it is important to test with assert.True()/assert.False() and x.Equals(y)
+	// because assert.Equals() and assert.NotEquals() are not aware of our equality by value concept
 
-	assert.NotEqual(t, p1, nil)
-	assert.NotEqual(t, p2, nil)
-	assert.NotEqual(t, p3, nil)
-	assert.NotEqual(t, p4, nil)
+	assert.True(t, p1.Equals(p1))
+	assert.True(t, p2.Equals(p2))
+	assert.True(t, p3.Equals(p3))
+	assert.True(t, p4.Equals(p4))
 
-	assert.NotEqual(t, p1, p2)
-	assert.NotEqual(t, p1, p3)
-	assert.NotEqual(t, p1, p4)
+	assert.False(t, p1.Equals(nil))
+	assert.False(t, p2.Equals(nil))
+	assert.False(t, p3.Equals(nil))
+	assert.False(t, p4.Equals(nil))
 
-	assert.NotEqual(t, p2, p1)
-	assert.NotEqual(t, p2, p3)
-	assert.NotEqual(t, p2, p4)
+	assert.False(t, p1.Equals(p2))
+	assert.False(t, p1.Equals(p3))
+	assert.False(t, p1.Equals(p4))
 
-	assert.NotEqual(t, p3, p1)
-	assert.NotEqual(t, p3, p2)
-	assert.NotEqual(t, p3, p4)
+	assert.False(t, p2.Equals(p1))
+	assert.False(t, p2.Equals(p3))
+	assert.False(t, p2.Equals(p4))
 
-	assert.NotEqual(t, p4, p1)
-	assert.NotEqual(t, p4, p2)
-	assert.NotEqual(t, p4, p3)
+	assert.False(t, p3.Equals(p1))
+	assert.False(t, p3.Equals(p2))
+	assert.False(t, p3.Equals(p4))
+
+	assert.False(t, p4.Equals(p1))
+	assert.False(t, p4.Equals(p2))
+	assert.False(t, p4.Equals(p3))
 }
 
 func TestPositionMoveToPositionValidStart(t *testing.T) {
@@ -263,6 +266,23 @@ func TestNewPawn(t *testing.T) {
 	assert.Equal(t, "Red13", obj.Name())
 	assert.Equal(t, NewPosition(true, false, nil, nil), obj.Position())
 	assert.Equal(t, "Red13->start", fmt.Sprintf("%s", obj))
+}
+
+func TestPawnEquals(t *testing.T) {
+	p1 := NewPawn(Red, 13)
+	p2 := NewPawn(Blue, 4)
+
+	// note: it is important to test with assert.True()/assert.False() and x.Equals(y)
+	// because assert.Equals() and assert.NotEquals() are not aware of our equality by value concept
+
+	assert.True(t, p1.Equals(p1))
+	assert.True(t, p2.Equals(p2))
+
+	assert.False(t, p1.Equals(nil))
+	assert.False(t, p1.Equals(p2))
+
+	assert.False(t, p2.Equals(nil))
+	assert.False(t, p2.Equals(p1))
 }
 
 func TestPawnCopy(t *testing.T) {

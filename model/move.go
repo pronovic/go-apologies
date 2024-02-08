@@ -67,7 +67,8 @@ func (a *action) SetPosition(position Position) {
 }
 
 func (a *action) Equals(other Action) bool {
-	return a.actionType == other.Type() &&
+	return other != nil &&
+		a.actionType == other.Type() &&
 		equality.ByValueEquals[Pawn](a.pawn, other.Pawn()) &&
 		equality.ByValueEquals[Position](a.position, other.Position())
 }
@@ -80,6 +81,7 @@ func (a *action) Equals(other Action) bool {
 // executing a move becomes very easy and no validation is required.  All of the work is done
 // up-front.
 type Move interface {
+	equality.EqualsByValue[Move]  // This interface implements equality by value
 	Id() string
 	Card() Card
 	Actions() []Action
@@ -116,6 +118,14 @@ func NewMove(card Card, actions []Action, sideEffects []Action, factory identifi
 		actions: actions,
 		sideEffects: sideEffects,
 	}
+}
+
+func (m *move) Equals(other Move) bool {
+	// note that identifier is not included in eqa
+	return other != nil &&
+		equality.ByValueEquals[Card](m.card, other.Card()) &&
+		equality.SliceByValueEquals(m.actions, other.Actions()) &&
+		equality.SliceByValueEquals(m.sideEffects, other.SideEffects())
 }
 
 func (m *move) Id() string {

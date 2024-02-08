@@ -41,26 +41,29 @@ func TestActionEquals(t *testing.T) {
 
 	obj5 := NewAction(MoveToPosition, nil, nil)
 
-	assert.Equal(t, obj1, obj1)
-	assert.Equal(t, obj2, obj2)
-	assert.Equal(t, obj3, obj3)
-	assert.Equal(t, obj4, obj4)
-	assert.Equal(t, obj5, obj5)
+	// note: it is important to test with assert.True()/assert.False() and x.Equals(y)
+	// because assert.Equals() and assert.NotEquals() are not aware of our equality by value concept
 
-	assert.NotEqual(t, obj1, nil)
-	assert.NotEqual(t, obj1, nil)
-	assert.NotEqual(t, obj1, nil)
-	assert.NotEqual(t, obj1, nil)
+	assert.True(t, obj1.Equals(obj1))
+	assert.True(t, obj2.Equals(obj2))
+	assert.True(t, obj3.Equals(obj3))
+	assert.True(t, obj4.Equals(obj4))
+	assert.True(t, obj5.Equals(obj5))
 
-	assert.NotEqual(t, obj1, obj2)
-	assert.NotEqual(t, obj1, obj3)
-	assert.NotEqual(t, obj1, obj4)
-	assert.NotEqual(t, obj1, obj5)
+	assert.False(t, obj1.Equals(nil))
+	assert.False(t, obj1.Equals( nil))
+	assert.False(t, obj1.Equals( nil))
+	assert.False(t, obj1.Equals( nil))
 
-	assert.NotEqual(t, obj5, obj1)
-	assert.NotEqual(t, obj5, obj2)
-	assert.NotEqual(t, obj5, obj3)
-	assert.NotEqual(t, obj5, obj4)
+	assert.False(t, obj1.Equals(obj2))
+	assert.False(t, obj1.Equals(obj3))
+	assert.False(t, obj1.Equals(obj4))
+	assert.False(t, obj1.Equals(obj5))
+
+	assert.False(t, obj5.Equals(obj1))
+	assert.False(t, obj5.Equals(obj2))
+	assert.False(t, obj5.Equals(obj3))
+	assert.False(t, obj5.Equals(obj4))
 }
 
 func TestNewMove(t *testing.T) {
@@ -74,6 +77,85 @@ func TestNewMove(t *testing.T) {
 	assert.Equal(t, card, obj.Card())
 	assert.Equal(t, actions, obj.Actions())
 	assert.Equal(t, sideEffects, obj.SideEffects())
+}
+
+func TestMoveEquals(t *testing.T) {
+	card1 := NewCard("1", Card1)
+	card2 := NewCard("2", Card2)
+	card3 := NewCard("3", Card3)
+	card4 := NewCard("4", Card4)
+
+	pawn1 := NewPawn(Red, 0)
+	position1 := NewPosition(false, false, nil, nil)
+	action1 := NewAction(MoveToPosition, pawn1, position1)
+
+	pawn2 := NewPawn(Red, 0)
+	position2 := NewPosition(false, false, nil, nil)
+	action2 := NewAction(MoveToStart, pawn2, position2)
+
+	position3 := NewPosition(false, false, nil, nil)
+	action3 := NewAction(MoveToStart, nil, position3)
+
+	pawn4 := NewPawn(Red, 0)
+	action4 := NewAction(MoveToStart, pawn4, nil)
+
+	obj1 := NewMove(card1, nil, nil, nil)
+	obj2 := NewMove(card1, nil, nil, nil)  // note: equivalent to obj1, but will have a different id
+	obj3 := NewMove(card2, []Action { action1 }, nil, nil)
+	obj4 := NewMove(card3, nil, []Action { action2 }, nil)
+	obj5 := NewMove(card4, []Action { action3 }, []Action { action4 }, nil)
+	obj6 := NewMove(card4, []Action { action3 }, []Action { action4 }, nil)  // note: equivalent to obj6, but will have different id
+
+	// note: it is important to test with assert.True()/assert.False() and x.Equals(y)
+	// because assert.Equals() and assert.NotEquals() are not aware of our equality by value concept
+
+	assert.False(t, obj1.Equals(nil))
+	assert.True(t, obj1.Equals(obj1))
+	assert.True(t, obj1.Equals(obj2))
+	assert.False(t, obj1.Equals(obj3))
+	assert.False(t, obj1.Equals(obj4))
+	assert.False(t, obj1.Equals(obj5))
+	assert.False(t, obj1.Equals(obj6))
+
+	assert.False(t, obj2.Equals(nil))
+	assert.True(t, obj2.Equals(obj1))
+	assert.True(t, obj2.Equals(obj2))
+	assert.False(t, obj2.Equals(obj3))
+	assert.False(t, obj2.Equals(obj4))
+	assert.False(t, obj2.Equals(obj5))
+	assert.False(t, obj2.Equals(obj6))
+
+	assert.False(t, obj3.Equals(nil))
+	assert.False(t, obj3.Equals(obj1))
+	assert.False(t, obj3.Equals(obj2))
+	assert.True(t, obj3.Equals(obj3))
+	assert.False(t, obj3.Equals(obj4))
+	assert.False(t, obj3.Equals(obj5))
+	assert.False(t, obj3.Equals(obj6))
+
+	assert.False(t, obj4.Equals(nil))
+	assert.False(t, obj4.Equals(obj1))
+	assert.False(t, obj4.Equals(obj2))
+	assert.False(t, obj4.Equals(obj3))
+	assert.True(t, obj4.Equals(obj4))
+	assert.False(t, obj4.Equals(obj5))
+	assert.False(t, obj4.Equals(obj6))
+
+	assert.False(t, obj5.Equals(nil))
+	assert.False(t, obj5.Equals(obj1))
+	assert.False(t, obj5.Equals(obj2))
+	assert.False(t, obj5.Equals(obj3))
+	assert.False(t, obj5.Equals(obj4))
+	assert.True(t, obj5.Equals(obj5))
+	assert.True(t, obj5.Equals(obj6))
+
+	assert.False(t, obj6.Equals(nil))
+	assert.False(t, obj6.Equals(obj1))
+	assert.False(t, obj6.Equals(obj2))
+	assert.False(t, obj6.Equals(obj3))
+	assert.False(t, obj6.Equals(obj4))
+	assert.True(t, obj6.Equals(obj5))
+	assert.True(t, obj6.Equals(obj6))
 }
 
 func TestNewMoveEmptySlice(t *testing.T) {

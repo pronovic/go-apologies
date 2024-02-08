@@ -117,7 +117,8 @@ func (c *card) Copy() Card {
 }
 
 func (c *card) Equals(other Card) bool {
-	return c.id == other.Id() &&
+	return other != nil &&
+		c.id == other.Id() &&
 		c.cardType == other.Type()
 }
 

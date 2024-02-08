@@ -23,14 +23,17 @@ func TestCardEquals(t *testing.T) {
 	c1 := NewCard("id1", CardApologies)
 	c2 := NewCard("id2", Card11)
 
-	assert.Equal(t, c1, c1)
-	assert.Equal(t, c2, c2)
+	// note: it is important to test with assert.True()/assert.False() and x.Equals(y)
+	// because assert.Equals() and assert.NotEquals() are not aware of our equality by value concept
 
-	assert.NotEqual(t, c1, nil)
-	assert.NotEqual(t, c2, nil)
+	assert.True(t, c1.Equals(c1))
+	assert.True(t, c2.Equals(c2))
 
-	assert.NotEqual(t, c1, c2)
-	assert.NotEqual(t, c2, c1)
+	assert.False(t, c1.Equals(nil))
+	assert.False(t, c2.Equals(nil))
+
+	assert.False(t, c1.Equals(c2))
+	assert.False(t, c2.Equals(c1))
 }
 
 func TestNewDeck(t *testing.T) {
