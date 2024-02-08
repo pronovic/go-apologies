@@ -34,9 +34,9 @@ import (
 //
 // Next, we define values of the enumeration:
 //
-//    var Standard = GameMode{"Standard"}
-//    var Adult = GameMode{"Adult"}
-//    var GameModes = enum.NewValues[GameMode](Standard, Adult)
+//    var GameModes = enum.NewValues[GameMode](StandardMode, AdultMode)
+//    var StandardMode = GameMode{"Standard"}
+//    var AdultMode = GameMode{"Adult"}
 //
 // The convention I am following is that the enumeration itself (GameMode) is singular, and the
 // variable that holds its values is plural (GameModes). Unfortunately, these all need to be var
@@ -44,7 +44,16 @@ import (
 // won't be a conflict with names like Standard and Adult, but if there were I could prefix the
 // enumeration name (i.e. GameModeStandard) at the cost of some readability.
 //
-// This isn't nearly as full-featured as the implementation of Enum in Python, but it gets me enough
+// Finally, if you want to use the enumeration in JSON, you should implement two additional methods:
+//
+//   func (e GameMode) MarshalText() (text []byte, err error) { return enum.Marshal(e) }
+//   func (e *GameMode) UnmarshalText(text []byte) error { return enum.Unmarshal(e, text, GameModes) }
+//
+// Note that the unmarshal interfaces always expect a pointer receiver, so you can change the receiver
+// to point at the resulting unmarshalled value.  This is a bit awkward, because the receiver for
+// Value() must be a non-pointer.  There's no good way around this, so I ignore the Goland warning.
+//
+// Overall, this implementation isn't nearly as full-featured as Enum in Python, but it gets me enough
 // type-safety for my purposes, plus most of the functionality I rely on regularly.
 
 // Enum is a member of an enumeration
@@ -117,9 +126,6 @@ func Marshal(e Enum) (text []byte, err error) {
 }
 
 // Unmarshal unmarshals text into an enum value, useful when implementing UnmarshalText or UnmarshalJSON
-// Note that the unmarshal interfaces always expect a pointer receiver, so you can change the receiver to
-// point at the resulting unmarshalled value.  This is a bit awkward, because your receiver for Value has
-// to be a non-pointer.  I don't see a way around that.
 func Unmarshal[T Enum](e *T, text []byte, values Values[T]) error {
 	value, err := values.GetMember(string(text[:]))
 	if err != nil {
