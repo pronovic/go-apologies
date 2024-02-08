@@ -14,11 +14,27 @@ func TestFactoryCurrentTime(t *testing.T) {
 	assert.Equal(t, 0, offset)  // zero offset means UTC
 }
 
-func TestParseTime(t *testing.T) {
+func TestParseFormatTime(t *testing.T) {
 	input := "2024-01-31T08:15:03.221Z"
+
 	parsed, err := ParseTime(input)
 	assert.Nil(t, err)
 	assert.Equal(t, time.Date(2024, time.January, 31, 8, 15, 3, 221000000, time.UTC), parsed)
 	_, offset := parsed.Zone()
 	assert.Equal(t, 0, offset)  // zero offset means UTC
+
+	formatted := FormatTime(parsed)
+	assert.Equal(t, input, formatted)
+}
+
+func TestMarshalUnmarshal(t *testing.T) {
+	input := "2024-01-31T08:15:03.221Z"
+	parsed, _ := ParseTime(input)
+
+	marshalled, err := Marshal(parsed)
+	assert.Nil(t, err)
+	var unmarshalled time.Time
+	err = Unmarshal(&unmarshalled, marshalled)
+	assert.Nil(t, err)
+	assert.True(t, parsed == unmarshalled)
 }
