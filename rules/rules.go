@@ -43,6 +43,10 @@ func NewRules(moveGenerator generator.MoveGenerator) Rules {
 }
 
 func (r *rules) StartGame(game model.Game, mode model.GameMode) error {
+	if game == nil {
+		return errors.New("game is nil")
+	}
+
 	if game.Started() {
 		return errors.New("game is already started")
 	}
@@ -73,6 +77,18 @@ func (r *rules) StartGame(game model.Game, mode model.GameMode) error {
 }
 
 func (r *rules) ExecuteMove(game model.Game, player model.Player, move model.Move) error {
+	if game == nil {
+		return errors.New("game is nil")
+	}
+
+	if player == nil {
+		return errors.New("player is nil")
+	}
+
+	if move == nil {
+		return errors.New("move is nil")
+	}
+
 	for _, action := range move.MergedActions() { // execute actions, then side effects, in order
 		// keep in mind that the pawn on the action is a different object than the pawn in the game
 		pawn := game.Players()[action.Pawn().Color()].Pawns()[action.Pawn().Index()]
@@ -100,6 +116,14 @@ func (r *rules) ExecuteMove(game model.Game, player model.Player, move model.Mov
 }
 
 func (r *rules) EvaluateMove(view model.PlayerView, move model.Move) (model.PlayerView, error) {
+	if view == nil {
+		return nil, errors.New("view is nil")
+	}
+
+	if move == nil {
+		return nil, errors.New("move is nil")
+	}
+
 	result := view.Copy()
 
 	for _, action := range move.MergedActions() { // execute actions, then side effects, in order
@@ -124,6 +148,10 @@ func (r *rules) EvaluateMove(view model.PlayerView, move model.Move) (model.Play
 }
 
 func (r *rules) ConstructLegalMoves(view model.PlayerView, card model.Card) ([]model.Move, error) {
+	if view == nil {
+		return nil, errors.New("view is nil")
+	}
+
 	allPawns := view.AllPawns()  // pre-calculate this once up-front
 
 	var cards []model.Card
@@ -137,7 +165,9 @@ func (r *rules) ConstructLegalMoves(view model.PlayerView, card model.Card) ([]m
 	for _, played := range cards {
 		for _, pawn := range view.Player().Pawns() {
 			for _, move := range r.moveGenerator.LegalMoves(view.Player().Color(), played, pawn, allPawns) {
-				moves = append(moves, move)  // TODO: filter out duplicates?
+				if ! contains(moves, move) {
+					moves = append(moves, move)  // eliminate duplicates
+				}
 			}
 		}
 	}
@@ -145,7 +175,7 @@ func (r *rules) ConstructLegalMoves(view model.PlayerView, card model.Card) ([]m
 	// if there are no legal moves, then forfeit (discarding one card) becomes the only allowable move
 	if len(moves) == 0 {
 		for _, played := range cards {
-			moves = append(moves, model.NewMove(played, []model.Action{}, []model.Action{}, nil))
+			moves = append(moves, model.NewMove(played, []model.Action{}, []model.Action{}, r.moveGenerator.Factory()))
 		}
 	}
 
@@ -155,3 +185,14 @@ func (r *rules) ConstructLegalMoves(view model.PlayerView, card model.Card) ([]m
 
 	return moves, nil
 }
+
+func contains(moves []model.Move, move model.Move) bool {
+	for _, element := range moves {
+		if element.Equals(move) {
+			return true
+		}
+	}
+
+	return false
+}
+

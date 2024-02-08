@@ -1,10 +1,19 @@
 package rules
 
 import (
+	"github.com/pronovic/go-apologies/generator"
+	"github.com/pronovic/go-apologies/internal/identifier"
 	"github.com/pronovic/go-apologies/model"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
+
+var factory identifier.MockFactory
+var emptyMoves = make([]model.Move, 0)
+
+func init() {
+	factory.On("RandomId").Return("id")
+}
 
 func TestStartGameStandardMode(t *testing.T) {
 	game, _ := model.NewGame(2, nil)
@@ -110,34 +119,220 @@ func TestEvaluateMove(t *testing.T) {
 	assert.Equal(t, expected, result)
 }
 
+// For these ConstructLegalMoves() tests, I have replicated the test design from
+// the Python implementation, although it's a bit more awkward here in Go than
+// it was in Python.
+
 func TestConstructLegalMovesNoMovesWithCard(t *testing.T) {
-	// TODO: implement test
+	var card = model.NewCard("card",  model.Card10)
+
+	hand1 := model.NewCard("hand1", model.Card1)
+	hand2 := model.NewCard("hand2", model.Card2)
+	hand := []model.Card { hand1, hand2 }
+
+	var pawn1 = model.NewPawn(model.Red, 0)
+	var pawn2 = model.NewPawn(model.Red, 1)
+	playerPawns := []model.Pawn{ pawn1, pawn2 }
+
+	var dummy1 = model.MockPawn{}
+	var dummy2 = model.MockPawn{}
+	allPawns := []model.Pawn { &dummy1, &dummy2 }
+
+	var cardPawn1Moves = make([]model.Move, 0)
+	var cardPawn2Moves = make([]model.Move, 0)
+
+	// result is a forfeit for the only card
+	expectedMoves := []model.Move { move(card, nil, nil)}
+
+	var player = model.MockPlayer{}
+	player.On("Color").Return(model.Red)
+	player.On("Hand").Return(hand)
+	player.On("Pawns").Return(playerPawns)
+
+	var view = model.MockPlayerView {}
+	view.On("Player").Return(&player)
+	view.On("AllPawns").Return(allPawns)
+
+	var moveGenerator generator.MockMoveGenerator
+	moveGenerator.On("Factory").Return(&factory)
+	moveGenerator.On("LegalMoves", model.Red, card, pawn1, allPawns).Return(cardPawn1Moves).Once()
+	moveGenerator.On("LegalMoves", model.Red, card, pawn2, allPawns).Return(cardPawn2Moves).Once()
+
+	rules := NewRules(&moveGenerator)
+	result, err := rules.ConstructLegalMoves(&view, card)
+	assert.Nil(t, err)
+	assert.Equal(t, expectedMoves, result)
 }
 
 func TestConstructLegalMovesNoMovesNoCard(t *testing.T) {
-	// TODO: implement test
+	var card model.Card = nil
+
+	hand1 := model.NewCard("hand1", model.Card1)
+	hand2 := model.NewCard("hand2", model.Card2)
+	hand := []model.Card { hand1, hand2 }
+
+	var pawn1 = model.NewPawn(model.Red, 0)
+	var pawn2 = model.NewPawn(model.Red, 1)
+	playerPawns := []model.Pawn{ pawn1, pawn2 }
+
+	var dummy1 = model.MockPawn{}
+	var dummy2 = model.MockPawn{}
+	allPawns := []model.Pawn { &dummy1, &dummy2 }
+
+	var hand1Pawn1Moves = make([]model.Move, 0)
+	var hand1Pawn2Moves = make([]model.Move, 0)
+	var hand2Pawn1Moves = make([]model.Move, 0)
+	var hand2Pawn2Moves = make([]model.Move, 0)
+
+	// result is a forfeit for all cards in the hand
+	expectedMoves := []model.Move { move(hand1, nil, nil), move(hand2, nil, nil) }
+
+	var player = model.MockPlayer{}
+	player.On("Color").Return(model.Red)
+	player.On("Hand").Return(hand)
+	player.On("Pawns").Return(playerPawns)
+
+	var view = model.MockPlayerView {}
+	view.On("Player").Return(&player)
+	view.On("AllPawns").Return(allPawns)
+
+	var moveGenerator generator.MockMoveGenerator
+	moveGenerator.On("Factory").Return(&factory)
+	moveGenerator.On("LegalMoves", model.Red, hand1, pawn1, allPawns).Return(hand1Pawn1Moves).Once()
+	moveGenerator.On("LegalMoves", model.Red, hand1, pawn2, allPawns).Return(hand1Pawn2Moves).Once()
+	moveGenerator.On("LegalMoves", model.Red, hand2, pawn1, allPawns).Return(hand2Pawn1Moves).Once()
+	moveGenerator.On("LegalMoves", model.Red, hand2, pawn2, allPawns).Return(hand2Pawn2Moves).Once()
+
+	rules := NewRules(&moveGenerator)
+	result, err := rules.ConstructLegalMoves(&view, card)
+	assert.Nil(t, err)
+	assert.Equal(t, expectedMoves, result)
 }
 
 func TestConstructLegalMovesWithMovesWithCard(t *testing.T) {
-	// TODO: implement test
+	var card = model.NewCard("card",  model.Card10)
+
+	hand1 := model.NewCard("hand1", model.Card1)
+	hand2 := model.NewCard("hand2", model.Card2)
+	hand := []model.Card { hand1, hand2 }
+
+	var pawn1 = model.NewPawn(model.Red, 0)
+	var pawn2 = model.NewPawn(model.Red, 1)
+	playerPawns := []model.Pawn{ pawn1, pawn2 }
+
+	var dummy1 = model.MockPawn{}
+	var dummy2 = model.MockPawn{}
+	allPawns := []model.Pawn { &dummy1, &dummy2 }
+
+	var cardPawn1Moves = []model.Move {
+		move(card, []model.Action {actionStart(pawn1) }, nil),
+		move(card, []model.Action {actionStart(pawn1) }, nil),
+	}
+
+	var cardPawn2Moves = []model.Move {
+		move(card, []model.Action {actionPosition(pawn2), actionStart(pawn2) }, nil),
+	}
+
+	// result is a list of all returned moves, with duplicates removed
+	expectedMoves := []model.Move {
+		move(card, []model.Action {actionStart(pawn1) }, nil),
+		move(card, []model.Action {actionPosition(pawn2), actionStart(pawn2) }, nil),
+	}
+
+	var player = model.MockPlayer{}
+	player.On("Color").Return(model.Red)
+	player.On("Hand").Return(hand)
+	player.On("Pawns").Return(playerPawns)
+
+	var view = model.MockPlayerView {}
+	view.On("Player").Return(&player)
+	view.On("AllPawns").Return(allPawns)
+
+	var moveGenerator generator.MockMoveGenerator
+	moveGenerator.On("Factory").Return(&factory)
+	moveGenerator.On("LegalMoves", model.Red, card, pawn1, allPawns).Return(cardPawn1Moves).Once()
+	moveGenerator.On("LegalMoves", model.Red, card, pawn2, allPawns).Return(cardPawn2Moves).Once()
+
+	rules := NewRules(&moveGenerator)
+	result, err := rules.ConstructLegalMoves(&view, card)
+	assert.Nil(t, err)
+	assert.Equal(t, expectedMoves, result)
 }
 
 func TestConstructLegalMovesWithMovesNoCard(t *testing.T) {
-	// TODO: implement test
+	var card model.Card = nil
+
+	hand1 := model.NewCard("hand1", model.Card1)
+	hand2 := model.NewCard("hand2", model.Card2)
+	hand := []model.Card { hand1, hand2 }
+
+	var pawn1 = model.NewPawn(model.Red, 0)
+	var pawn2 = model.NewPawn(model.Red, 1)
+	playerPawns := []model.Pawn{ pawn1, pawn2 }
+
+	var dummy1 = model.MockPawn{}
+	var dummy2 = model.MockPawn{}
+	allPawns := []model.Pawn { &dummy1, &dummy2 }
+
+	var hand1Pawn1Moves = []model.Move {
+		move(card, []model.Action {actionStart(pawn1) }, nil),
+		move(card, []model.Action {actionStart(pawn1) }, nil),
+	}
+
+	var hand1Pawn2Moves = []model.Move {
+		move(card, []model.Action {actionStart(pawn2), actionPosition(pawn2) }, nil),
+	}
+
+	var hand2Pawn1Moves = []model.Move {
+		move(card, []model.Action {actionPosition(pawn1) }, nil),
+	}
+
+	var hand2Pawn2Moves = []model.Move {
+		move(card, []model.Action {actionPosition(pawn2) }, nil),
+	}
+
+	// result is a list of all returned moves, with duplicates removed
+	expectedMoves := []model.Move {
+		move(card, []model.Action {actionStart(pawn1) }, nil),
+		move(card, []model.Action {actionStart(pawn2), actionPosition(pawn2) }, nil),
+		move(card, []model.Action {actionPosition(pawn1) }, nil),
+		move(card, []model.Action {actionPosition(pawn2) }, nil),
+	}
+
+	var player = model.MockPlayer{}
+	player.On("Color").Return(model.Red)
+	player.On("Hand").Return(hand)
+	player.On("Pawns").Return(playerPawns)
+
+	var view = model.MockPlayerView {}
+	view.On("Player").Return(&player)
+	view.On("AllPawns").Return(allPawns)
+
+	var moveGenerator generator.MockMoveGenerator
+	moveGenerator.On("Factory").Return(&factory)
+	moveGenerator.On("LegalMoves", model.Red, hand1, pawn1, allPawns).Return(hand1Pawn1Moves).Once()
+	moveGenerator.On("LegalMoves", model.Red, hand1, pawn2, allPawns).Return(hand1Pawn2Moves).Once()
+	moveGenerator.On("LegalMoves", model.Red, hand2, pawn1, allPawns).Return(hand2Pawn1Moves).Once()
+	moveGenerator.On("LegalMoves", model.Red, hand2, pawn2, allPawns).Return(hand2Pawn2Moves).Once()
+
+	rules := NewRules(&moveGenerator)
+	result, err := rules.ConstructLegalMoves(&view, card)
+	assert.Nil(t, err)
+	assert.Equal(t, expectedMoves, result)
 }
 
-func positionHome() model.Position {
-	return model.NewPosition(false, true, nil, nil)
+func actionPosition(pawn model.Pawn) model.Action {
+	return model.NewAction(model.MoveToPosition, pawn, nil)
 }
 
-func positionStart() model.Position {
-	return model.NewPosition(true, false, nil, nil)
-}
-
-func positionSafe(safe int) model.Position {
-	return model.NewPosition(false, false, &safe, nil)
+func actionStart(pawn model.Pawn) model.Action {
+	return model.NewAction(model.MoveToStart, pawn, nil)
 }
 
 func positionSquare(square int) model.Position {
 	return model.NewPosition(false, false, nil, &square)
+}
+
+func move(card model.Card, actions []model.Action, sideEffects []model.Action) model.Move {
+	return model.NewMove(card, actions, sideEffects, &factory)
 }
