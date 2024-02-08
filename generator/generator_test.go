@@ -14,6 +14,11 @@ func init() {
 	factory.On("RandomId").Return("id")
 }
 
+func TestFactory(t *testing.T) {
+	generator := NewGenerator(&factory)
+	assert.Equal(t, &factory, generator.Factory())
+}
+
 func TestCalculatePositionHome(t *testing.T) {
 	for _, color := range model.PlayerColors.Members() {
 		calculatePositionFailure(t, color, positionHome(), 1, "pawn in home or start may not move")

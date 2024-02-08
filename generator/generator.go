@@ -23,6 +23,7 @@ var legalSplits = []splitPair{
 }
 
 type MoveGenerator interface {
+	Factory() identifier.Factory
 	LegalMoves(color model.PlayerColor, card model.Card, pawn model.Pawn, allPawns []model.Pawn) []model.Move
 	CalculatePosition(color model.PlayerColor, position model.Position, squares int) (model.Position, error)
 }
@@ -40,6 +41,11 @@ func NewGenerator(factory identifier.Factory) MoveGenerator {
 	return &moveGenerator{
 		factory: factory,
 	}
+}
+
+// Factory returns the identifier factory that is in use
+func (g *moveGenerator) Factory() identifier.Factory {
+	return g.factory
 }
 
 // LegalMoves Generate the set of legal moves for a pawn using a card, possibly empty.
