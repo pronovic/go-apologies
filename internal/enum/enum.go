@@ -1,6 +1,8 @@
 package enum
 
-import "errors"
+import (
+	"errors"
+)
 
 // GoLang does not have a concept of enumerations, like you would find in Java or Python.
 //
@@ -46,7 +48,9 @@ import "errors"
 // type-safety for my purposes, plus most of the functionality I rely on regularly.
 
 // Enum is a member of an enumeration
-type Enum interface{ Value() string }
+type Enum interface {
+	Value() string
+}
 
 // Values is a fixed collection of enumeration values
 type Values[T Enum] interface {
@@ -105,4 +109,23 @@ func (v *values[T]) GetMember(value string) (T, error) {
 	}
 
 	return *new(T), errors.New("member not found")
+}
+
+// Marshal marshals the enum value to text, useful when implementing MarshalText or MarshalJSON
+func Marshal(e Enum) (text []byte, err error) {
+	return []byte(e.Value()), nil
+}
+
+// Unmarshal unmarshals text into an enum value, useful when implementing UnmarshalText or UnmarshalJSON
+// Note that the unmarshal interfaces always expect a pointer receiver, so you can change the receiver to
+// point at the resulting unmarshalled value.  This is a bit awkward, because your receiver for Value has
+// to be a non-pointer.  I don't see a way around that.
+func Unmarshal[T Enum](e *T, text []byte, values Values[T]) error {
+	value, err := values.GetMember(string(text[:]))
+	if err != nil {
+		return err
+	}
+
+	*e = value
+	return nil
 }

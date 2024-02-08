@@ -1,6 +1,7 @@
 package enum
 
 import (
+	"encoding/json"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
@@ -8,6 +9,8 @@ import (
 type Sample struct{ value string }
 
 func (e Sample) Value() string { return e.value }
+func (e Sample) MarshalText() (text []byte, err error) { return Marshal(e) }
+func (e *Sample) UnmarshalText(text []byte) error {	return Unmarshal(e, text, SampleValues) }
 
 var Value1 = Sample{"Value1"}
 var Value2 = Sample{"Value2"}
@@ -45,4 +48,14 @@ func TestGetMember(t *testing.T) {
 	member, err = SampleValues.GetMember("Value2")
 	assert.Nil(t, err)
 	assert.Equal(t, Value2, member)
+}
+
+func TestJsonMarshalUnmarshal(t *testing.T) {
+	value := Value2
+	marshalled, err := json.Marshal(value)
+	assert.Nil(t, err)
+	var unmarshalled Sample
+	err = json.Unmarshal(marshalled, &unmarshalled)
+	assert.Nil(t, err)
+	assert.True(t, value == unmarshalled)
 }
