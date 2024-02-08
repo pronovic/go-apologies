@@ -8,31 +8,34 @@ import (
 
 func TestRewardRange(t *testing.T) {
 	var left, right float32
+	calc := NewCalculator()
 
-	left, right = Range(2)
+	left, right = calc.Range(2)
 	assert.Equal(t, float32(0), left)
 	assert.Equal(t, float32(400), right)
 
-	left, right = Range(3)
+	left, right = calc.Range(3)
 	assert.Equal(t, float32(0), left)
 	assert.Equal(t, float32(800), right)
 
-	left, right = Range(4)
+	left, right = calc.Range(4)
 	assert.Equal(t, float32(0), left)
 	assert.Equal(t, float32(1200), right)
 }
 
 func TestCalculateRewardEmptyGame(t *testing.T) {
+	calc := NewCalculator()
 	for _, count := range []int{ 2, 3, 4 } {
 		for _, color := range model.PlayerColors.Members()[0:count] {
 			game, _ := model.NewGame(count, nil)
 			view, _ := game.CreatePlayerView(color)
-			assert.Equal(t, float32(0.0), Calculate(view)) // score is always zero if all pawns are in start
+			assert.Equal(t, float32(0.0), calc.Calculate(view)) // score is always zero if all pawns are in start
 		}
 	}
 }
 
 func TestCalculateRewardEquivalentState(t *testing.T) {
+	calc := NewCalculator()
 	game, _ := model.NewGame(4, nil)
 	_ = game.Players()[model.Red].Pawns()[0].Position().MoveToSquare(4)
 	_ = game.Players()[model.Yellow].Pawns()[0].Position().MoveToSquare(34)
@@ -40,32 +43,35 @@ func TestCalculateRewardEquivalentState(t *testing.T) {
 	_ = game.Players()[model.Blue].Pawns()[0].Position().MoveToSquare(19)
 	for _, color := range model.PlayerColors.Members() {
 		view, _ := game.CreatePlayerView(color)
-		assert.Equal(t, float32(0.0), Calculate(view)) // score is always zero if all players are equivalent
+		assert.Equal(t, float32(0.0), calc.Calculate(view)) // score is always zero if all players are equivalent
 	}
 }
 
 func TestCalculateRewardSafeZone(t *testing.T) {
+	calc := NewCalculator()
 	game, _ := model.NewGame(4, nil)
 	_ = game.Players()[model.Red].Pawns()[0].Position().MoveToSafe(4) // last safe square before home
 	view, _ := game.CreatePlayerView(model.Red)
-	assert.Equal(t, float32(222), Calculate(view))
+	assert.Equal(t, float32(222), calc.Calculate(view))
 	for _, color := range []model.PlayerColor { model.Yellow, model.Green, model.Blue } {
 		view, _ = game.CreatePlayerView(color)
-		assert.Equal(t, float32(0), Calculate(view)) // score is always zero if all pawns are in start
+		assert.Equal(t, float32(0), calc.Calculate(view)) // score is always zero if all pawns are in start
 	}
 }
 
 func TestCalculateRewardWinner(t *testing.T) {
+	calc := NewCalculator()
+
 	game2, _ := model.NewGame(2, nil)
 	_ = game2.Players()[model.Red].Pawns()[0].Position().MoveToHome()
 	_ = game2.Players()[model.Red].Pawns()[1].Position().MoveToHome()
 	_ = game2.Players()[model.Red].Pawns()[2].Position().MoveToHome()
 	_ = game2.Players()[model.Red].Pawns()[3].Position().MoveToHome()
 	view2, _ := game2.CreatePlayerView(model.Red)
-	assert.Equal(t, float32(400), Calculate(view2))
+	assert.Equal(t, float32(400), calc.Calculate(view2))
 	for _, color := range []model.PlayerColor { model.Yellow } {
 		view2, _ = game2.CreatePlayerView(color)
-		assert.Equal(t, float32(0), Calculate(view2)) // score is always zero if all pawns are in start
+		assert.Equal(t, float32(0), calc.Calculate(view2)) // score is always zero if all pawns are in start
 	}
 
 	game3, _ := model.NewGame(3, nil)
@@ -74,10 +80,10 @@ func TestCalculateRewardWinner(t *testing.T) {
 	_ = game3.Players()[model.Red].Pawns()[2].Position().MoveToHome()
 	_ = game3.Players()[model.Red].Pawns()[3].Position().MoveToHome()
 	view3, _ := game3.CreatePlayerView(model.Red)
-	assert.Equal(t, float32(800), Calculate(view3))
+	assert.Equal(t, float32(800), calc.Calculate(view3))
 	for _, color := range []model.PlayerColor { model.Yellow, model.Green } {
 		view3, _ = game3.CreatePlayerView(color)
-		assert.Equal(t, float32(0), Calculate(view3)) // score is always zero if all pawns are in start
+		assert.Equal(t, float32(0), calc.Calculate(view3)) // score is always zero if all pawns are in start
 	}
 
 	game4, _ := model.NewGame(4, nil)
@@ -86,14 +92,15 @@ func TestCalculateRewardWinner(t *testing.T) {
 	_ = game4.Players()[model.Red].Pawns()[2].Position().MoveToHome()
 	_ = game4.Players()[model.Red].Pawns()[3].Position().MoveToHome()
 	view4, _ := game4.CreatePlayerView(model.Red)
-	assert.Equal(t, float32(1200), Calculate(view4))
+	assert.Equal(t, float32(1200), calc.Calculate(view4))
 	for _, color := range []model.PlayerColor { model.Yellow, model.Green, model.Blue } {
 		view4, _ = game4.CreatePlayerView(color)
-		assert.Equal(t, float32(0), Calculate(view4)) // score is always zero if all pawns are in start
+		assert.Equal(t, float32(0), calc.Calculate(view4)) // score is always zero if all pawns are in start
 	}
 }
 
 func TestCalculateRewardArbitrary(t *testing.T) {
+	calc := NewCalculator()
 	game, _ := model.NewGame(4, nil)
 
 	_ = game.Players()[model.Red].Pawns()[0].Position().MoveToHome()
@@ -121,10 +128,10 @@ func TestCalculateRewardArbitrary(t *testing.T) {
 	green, _ := game.CreatePlayerView(model.Green)
 	blue, _ := game.CreatePlayerView(model.Blue)
 
-	assert.Equal(t, float32(319), Calculate(red))
-	assert.Equal(t, float32(239), Calculate(yellow))
-	assert.Equal(t, float32(0), Calculate(green))
-	assert.Equal(t, float32(0), Calculate(blue))
+	assert.Equal(t, float32(319), calc.Calculate(red))
+	assert.Equal(t, float32(239), calc.Calculate(yellow))
+	assert.Equal(t, float32(0), calc.Calculate(green))
+	assert.Equal(t, float32(0), calc.Calculate(blue))
 }
 
 

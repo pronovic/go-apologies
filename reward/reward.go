@@ -1,14 +1,51 @@
 package reward
 
+// Version 1 of the reward algorithm was developed by hand following my own mental model for the
+// strength of a position.
+//
+// Basically, a pawn is worth more the closer it is to home.  It's worth incrementally more in the
+// safe zone (where it can't be hurt).  There's an additional bonus for winning, to incentivize the
+// engine to pick a move that ends the game as fast as possible.  The score is calculated by
+// comparing the player's position relative to the positions of all its opponents.  We want the
+// engine to pick the move that both maximizes the player's position and also minimizes the
+// positions of its opponents.
+//
+// In simulation runs in the original Python implementation, a reward-based character source vastly
+// out performs a source that picks its moves randomly.  The worst-case scenario is a 4-player
+// standard mode game between a single reward-based source and 3 random sources, where the
+// reward-based source wins about 70% of the time.  This is probably because in a standard mode
+// game, the possible moves in each turn are fairly limited, due to each player picking and playing
+// the top card off the deck.  This evens the playing field, because it's quite likely that any
+// player will have no good move on their turn.  In a 4-player adult mode game, where the engine has
+// the opportunity to choose between more possible moves for each turn, a reward-based source wins
+// more than 98% of the time against 3 random sources.
+
 import (
 	"github.com/pronovic/go-apologies/model"
 )
 
-func Calculate(view model.PlayerView) float32 {
+type Calculator interface {
+
+	// Calculate calculate the reward associated with a player view
+	Calculate(view model.PlayerView) float32
+
+	// Range Return the range of possible rewards for a game
+	Range(players int) (float32, float32)
+
+}
+
+type calculator struct {
+}
+
+func NewCalculator() Calculator {
+	return &calculator{}
+}
+
+func (c *calculator) Calculate(view model.PlayerView) float32 {
 	return float32(calculateReward(view))
 }
 
-func Range(players int) (float32, float32) {
+func (c *calculator) Range(players int) (float32, float32) {
 	return 0.0, float32((players - 1) * 400) // reward is up to 400 points per opponent
 }
 
