@@ -59,6 +59,56 @@ func TestByValueEquals(t *testing.T) {
 	assert.False(t, ByValueEquals[TestInterface](three, two))
 }
 
+func TestSliceByValueEquals(t *testing.T) {
+	one := newTestInterface(1, "X")
+	two := newTestInterface(2, "Y")
+	three := newTestInterface(3, "Z")
+
+	slice1 := []TestInterface { one }
+	slice2 := []TestInterface { one }
+	slice3 := []TestInterface { two, three }
+	slice4 := []TestInterface { two, one }
+	slice5 := []TestInterface { two, one }
+
+	assert.True(t, SliceByValueEquals[TestInterface](nil, nil))
+	assert.True(t, SliceByValueEquals[TestInterface](slice1, slice1))
+	assert.True(t, SliceByValueEquals[TestInterface](slice1, slice2))
+	assert.True(t, SliceByValueEquals[TestInterface](slice2, slice2))
+	assert.True(t, SliceByValueEquals[TestInterface](slice2, slice1))
+	assert.True(t, SliceByValueEquals[TestInterface](slice3, slice3))
+	assert.True(t, SliceByValueEquals[TestInterface](slice4, slice4))
+	assert.True(t, SliceByValueEquals[TestInterface](slice4, slice5))
+	assert.True(t, SliceByValueEquals[TestInterface](slice5, slice5))
+	assert.True(t, SliceByValueEquals[TestInterface](slice5, slice4))
+
+	assert.False(t, SliceByValueEquals[TestInterface](nil, slice1))
+	assert.False(t, SliceByValueEquals[TestInterface](nil, slice2))
+	assert.False(t, SliceByValueEquals[TestInterface](nil, slice3))
+	assert.False(t, SliceByValueEquals[TestInterface](nil, slice4))
+	assert.False(t, SliceByValueEquals[TestInterface](nil, slice5))
+
+	assert.False(t, SliceByValueEquals[TestInterface](slice1, nil))
+	assert.False(t, SliceByValueEquals[TestInterface](slice1, slice3))
+	assert.False(t, SliceByValueEquals[TestInterface](slice1, slice4))
+	assert.False(t, SliceByValueEquals[TestInterface](slice1, slice5))
+
+	assert.False(t, SliceByValueEquals[TestInterface](slice3, nil))
+	assert.False(t, SliceByValueEquals[TestInterface](slice3, slice1))
+	assert.False(t, SliceByValueEquals[TestInterface](slice3, slice2))
+	assert.False(t, SliceByValueEquals[TestInterface](slice3, slice4))
+	assert.False(t, SliceByValueEquals[TestInterface](slice3, slice5))
+
+	assert.False(t, SliceByValueEquals[TestInterface](slice4, nil))
+	assert.False(t, SliceByValueEquals[TestInterface](slice4, slice1))
+	assert.False(t, SliceByValueEquals[TestInterface](slice4, slice2))
+	assert.False(t, SliceByValueEquals[TestInterface](slice4, slice3))
+
+	assert.False(t, SliceByValueEquals[TestInterface](slice5, nil))
+	assert.False(t, SliceByValueEquals[TestInterface](slice5, slice1))
+	assert.False(t, SliceByValueEquals[TestInterface](slice5, slice2))
+	assert.False(t, SliceByValueEquals[TestInterface](slice5, slice3))
+}
+
 func TestIntPointerEquals(t *testing.T) {
 	one := 1
 	two := 2
