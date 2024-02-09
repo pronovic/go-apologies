@@ -9,32 +9,33 @@ import (
 func TestFactoryCurrentTime(t *testing.T) {
 	now := time.Now()
 	current := NewFactory().CurrentTime()
-	assert.True(t, current.After(now) || current.Equal(now))
-	_, offset := current.Zone()
+	assert.True(t, current.AsTime().After(now) || current.AsTime().Equal(now))
+	_, offset := current.AsTime().Zone()
 	assert.Equal(t, 0, offset)  // zero offset means UTC
 }
 
-func TestParseFormatTime(t *testing.T) {
+func TestParseFormat(t *testing.T) {
 	input := "2024-01-31T08:15:03.221Z"
 
-	parsed, err := ParseTime(input)
+	parsed, err := Parse(input)
 	assert.Nil(t, err)
-	assert.Equal(t, time.Date(2024, time.January, 31, 8, 15, 3, 221000000, time.UTC), parsed)
-	_, offset := parsed.Zone()
+	assert.Equal(t, time.Date(2024, time.January, 31, 8, 15, 3, 221000000, time.UTC), parsed.AsTime())
+	_, offset := parsed.AsTime().Zone()
 	assert.Equal(t, 0, offset)  // zero offset means UTC
 
-	formatted := FormatTime(parsed)
+	formatted := parsed.Format()
 	assert.Equal(t, input, formatted)
 }
 
 func TestMarshalUnmarshal(t *testing.T) {
 	input := "2024-01-31T08:15:03.221Z"
-	parsed, _ := ParseTime(input)
+	parsed, _ := Parse(input)
 
-	marshalled, err := Marshal(parsed)
+	marshalled, err := parsed.MarshalText()
 	assert.Nil(t, err)
-	var unmarshalled time.Time
-	err = Unmarshal(&unmarshalled, marshalled)
+	assert.Equal(t, input, string(marshalled))
+	var unmarshalled Timestamp
+	err = unmarshalled.UnmarshalText(marshalled)
 	assert.Nil(t, err)
-	assert.True(t, parsed == unmarshalled)
+	assert.Equal(t, parsed, unmarshalled)
 }
