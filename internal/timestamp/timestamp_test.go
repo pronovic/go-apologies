@@ -7,15 +7,21 @@ import (
 )
 
 func TestFactoryCurrentTime(t *testing.T) {
-	now := time.Now()
+	// The check vs. now needs to be for a millisecond before the current time, because
+	// our timestamp format stores only millisecond precision.  If the current time has
+	// 561093000ns, then we'll end up with 561000000ns.  That means we can't reliably
+	// test against After(now) unless we subtract one 1ms from now (getting us 560000000ns).
+	now := time.Now().Add(-1 * time.Millisecond)
 	current := NewFactory().CurrentTime()
-	assert.True(t, current.AsTime().After(now) || current.AsTime().Equal(now))
+	assert.True(t, current.AsTime().After(now))
 	_, offset := current.AsTime().Zone()
 	assert.Equal(t, 0, offset)  // zero offset means UTC
 }
 
 func TestParseFormatCurrent(t *testing.T) {
-	// it's important that we can reliably round-trip without spurious differences
+	// It's important that we can reliably round-trip without spurious differences.
+	// The string format only has millisecond precision, so nanoseconds are removed
+	// from the returned timestamp.  This test confirms that round-trip works.
 	current := NewFactory().CurrentTime()
 	parsed, _ := Parse(current.Format())
 	assert.Equal(t, current, parsed)
