@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"github.com/pronovic/go-apologies/internal/enum"
 	"github.com/pronovic/go-apologies/internal/equality"
-	"github.com/pronovic/go-apologies/internal/identifier"
 	"github.com/pronovic/go-apologies/internal/jsonutil"
 	"io"
 )
@@ -20,8 +19,6 @@ var MoveToPosition = ActionType{"MoveToPosition"}
 
 // Action is an action that can be taken as part of a move
 type Action interface {
-
-	equality.EqualsByValue[Action]  // This interface implements equality by value
 
 	// Type The type of the action
 	Type() ActionType
@@ -102,13 +99,6 @@ func (a *action) SetPosition(position Position) {
 	a.Xposition = position
 }
 
-func (a *action) Equals(other Action) bool {
-	return other != nil &&
-		a.XactionType == other.Type() &&
-		equality.ByValueEquals[Pawn](a.Xpawn, other.Pawn()) &&
-		equality.ByValueEquals[Position](a.Xposition, other.Position())
-}
-
 // Move is a player's move on the board, which consists of one or more actions
 //
 // Note that the actions associated with a move include both the immediate actions that the player
@@ -117,8 +107,6 @@ func (a *action) Equals(other Action) bool {
 // executing a move becomes very easy and no validation is required.  All of the work is done
 // up-front.
 type Move interface {
-	equality.EqualsByValue[Move]  // This interface implements equality by value
-	Id() string
 	Card() Card
 	Actions() []Action
 	SideEffects() []Action
@@ -135,11 +123,7 @@ type move struct {
 
 // NewMove constructs a new move, optionally accepting an identify factory
 // If there are no actions or side effects, you may pass nil, which is equivalent to a newly-allocated empty slice
-func NewMove(card Card, actions []Action, sideEffects []Action, factory identifier.Factory) Move {
-	if factory == nil {
-		factory = identifier.NewFactory()
-	}
-
+func NewMove(card Card, actions []Action, sideEffects []Action) Move {
 	if actions == nil {
 		actions = make([]Action, 0)
 	}
@@ -149,7 +133,6 @@ func NewMove(card Card, actions []Action, sideEffects []Action, factory identifi
 	}
 
 	return &move{
-		Xid:          factory.RandomId(),
 		Xcard:        card,
 		Xactions:     actions,
 		XsideEffects: sideEffects,
@@ -199,14 +182,6 @@ func NewMoveFromJSON(reader io.Reader) (Move, error) {
 	return &obj, nil
 }
 
-func (m *move) Equals(other Move) bool {
-	// note that identifier is not included in eqa
-	return other != nil &&
-		equality.ByValueEquals[Card](m.Xcard, other.Card()) &&
-		equality.SliceByValueEquals(m.Xactions, other.Actions()) &&
-		equality.SliceByValueEquals(m.XsideEffects, other.SideEffects())
-}
-
 func (m *move) Id() string {
 	return m.Xid
 }
@@ -226,7 +201,7 @@ func (m *move) SideEffects() []Action {
 func (m *move) AddSideEffect(action Action) {
 	found := false
 	for _, a := range m.Xactions {
-		if a.Equals(action) {
+		if equality.EqualByValue(a, action) {
 			found = true
 			break
 		}

@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/pronovic/go-apologies/generator"
+	"github.com/pronovic/go-apologies/internal/equality"
 	"github.com/pronovic/go-apologies/model"
 )
 
@@ -34,7 +35,7 @@ type rules struct {
 // NewRules creates a new rules interface, optionally accepting a move generator
 func NewRules(moveGenerator generator.MoveGenerator) Rules {
 	if moveGenerator == nil {
-		moveGenerator = generator.NewGenerator(nil)
+		moveGenerator = generator.NewGenerator()
 	}
 
 	return &rules {
@@ -175,7 +176,7 @@ func (r *rules) ConstructLegalMoves(view model.PlayerView, card model.Card) ([]m
 	// if there are no legal moves, then forfeit (discarding one card) becomes the only allowable move
 	if len(moves) == 0 {
 		for _, played := range cards {
-			moves = append(moves, model.NewMove(played, []model.Action{}, []model.Action{}, r.moveGenerator.Factory()))
+			moves = append(moves, model.NewMove(played, []model.Action{}, []model.Action{}))
 		}
 	}
 
@@ -188,7 +189,7 @@ func (r *rules) ConstructLegalMoves(view model.PlayerView, card model.Card) ([]m
 
 func contains(moves []model.Move, move model.Move) bool {
 	for _, element := range moves {
-		if element.Equals(move) {
+		if equality.EqualByValue(element, move) {
 			return true
 		}
 	}

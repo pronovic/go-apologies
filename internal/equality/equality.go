@@ -1,63 +1,31 @@
 package equality
 
-// EqualsByValue identifies an interface that supports by-value equality via the Equals method
-type EqualsByValue[T any] interface {
-	// Equals Checks for value equality on the interface
-	Equals(other T) bool
-}
+import (
+	"bytes"
+	"reflect"
+)
 
-// ByValueEquals checks whether two interfaces that implement EqualsByValue are equal
-func ByValueEquals[T any](left EqualsByValue[T], right EqualsByValue[T]) bool {
-	if left == nil && right == nil {
-		return true
-	} else if (left == nil && right != nil) || (left != nil && right == nil) {
-		return false
-	} else {
-		return left.Equals(right.(T))
+// EqualByValue determines if two objects are considered equal.
+// This is based on testify's assert.Equal() implementation, which is general and seems to be reliable.
+// Original source: https://github.com/stretchr/testify/blob/c3b0c9b4f50cd8320ccdcdfd3ffd6afc5b109c4a/assert/assertions.go#L58
+func EqualByValue(left any, right any) bool {
+	if left == nil || right == nil {
+		return left == right
 	}
-}
 
-// SliceByValueEquals checks whether two slices of EqualsByValue are equal
-func SliceByValueEquals[T EqualsByValue[T]](left []T, right []T) bool {
-	if left == nil && right == nil {
-		return true
-	} else if (left == nil && right != nil) || (left != nil && right == nil) {
-		return false
-	} else {
-		if len(left) != len(right) {
-			return false
-		}
-
-		for i := 0; i < len(left); i++ {
-			var l EqualsByValue[T] = left[i]
-			var r EqualsByValue[T] = right[i]
-			if ! ByValueEquals(l, r) {
-				return false
-			}
-		}
-
-		return true
+	l, ok := left.([]byte)
+	if !ok {
+		return reflect.DeepEqual(left, right)
 	}
-}
 
-// IntPointerEquals checks whether two integer pointers have the same value
-func IntPointerEquals(left *int, right *int) bool {
-	if left == nil && right == nil {
-		return true
-	} else if (left == nil && right != nil) || (left != nil && right == nil) {
+	r, ok := right.([]byte)
+	if !ok {
 		return false
-	} else {
-		return *left == *right
 	}
-}
 
-// StringPointerEquals checks whether two string pointers have the same value
-func StringPointerEquals(left *string, right *string) bool {
-	if left == nil && right == nil {
-		return true
-	} else if (left == nil && right != nil) || (left != nil && right == nil) {
-		return false
-	} else {
-		return *left == *right
+	if l == nil || r == nil {
+		return l == nil && r == nil
 	}
+
+	return bytes.Equal(l, r)
 }

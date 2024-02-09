@@ -183,7 +183,7 @@ func (p *player) AppendToHand(card Card) {
 func (p *player) RemoveFromHand(card Card) {
 	for i := 0; i < len(p.Xhand); i++ {
 		found := p.Xhand[i]
-		if equality.ByValueEquals[Card](card, found) {
+		if equality.EqualByValue(card, found) {
 			p.Xhand = slices.Delete(p.Xhand, i, i+1)
 			return
 		}

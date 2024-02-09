@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/pronovic/go-apologies/internal/equality"
 	"github.com/pronovic/go-apologies/internal/jsonutil"
 	"io"
 )
@@ -68,8 +67,6 @@ func (s *slide) End() int {
 
 // Position is the position of a pawn on the board.
 type Position interface {
-
-	equality.EqualsByValue[Position]  // This interface implements equality by value
 
 	// Start Whether this pawn resides in its start area
 	Start() bool
@@ -172,14 +169,6 @@ func (p *position) Copy() Position {
 	}
 }
 
-func (p *position) Equals(other Position) bool {
-	return other != nil &&
-		p.Xstart == other.Start() &&
-		p.Xhome == other.Home() &&
-		equality.IntPointerEquals(p.Xsafe, other.Safe()) &&
-		equality.IntPointerEquals(p.Xsquare, other.Square())
-}
-
 func (p *position) MoveToPosition(position Position) error {
 	var fields = 0
 
@@ -277,8 +266,6 @@ func (p *position) String() string {
 // Pawn is a pawn on the board, belonging to a player.
 type Pawn interface {
 
-	equality.EqualsByValue[Pawn]  // This interface implements equality by value
-
 	// Color the color of this pawn
 	Color() PlayerColor
 
@@ -369,14 +356,6 @@ func (p *pawn) Copy() Pawn {
 		Xname:     p.Xname,
 		Xposition: p.Xposition.Copy(),
 	}
-}
-
-func (p *pawn) Equals(other Pawn) bool {
-	return other != nil &&
-		p.Xcolor == other.Color() &&
-		p.Xindex == other.Index() &&
-		p.Xname == other.Name() &&
-		equality.ByValueEquals[Position](p.Xposition, other.Position())
 }
 
 func (p *pawn) SetPosition(position Position) {

@@ -2,18 +2,12 @@ package rules
 
 import (
 	"github.com/pronovic/go-apologies/generator"
-	"github.com/pronovic/go-apologies/internal/identifier"
 	"github.com/pronovic/go-apologies/model"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
 
-var factory identifier.MockFactory
 var emptyMoves = make([]model.Move, 0)
-
-func init() {
-	factory.On("RandomId").Return("id")
-}
 
 func TestStartGameStandardMode(t *testing.T) {
 	game, _ := model.NewGame(2, nil)
@@ -67,7 +61,7 @@ func TestExecuteMove(t *testing.T) {
 		model.NewAction(model.MoveToPosition, model.NewPawn(model.Green, 0), positionSquare(12)),
 	}
 
-	move := model.NewMove(model.NewCard("1", model.Card1), actions, sideEffects, nil)
+	move := model.NewMove(model.NewCard("1", model.Card1), actions, sideEffects)
 
 	game, _ := model.NewGame(4, nil)
 	player := game.Players()[model.Red]
@@ -95,7 +89,7 @@ func TestEvaluateMove(t *testing.T) {
 		model.NewAction(model.MoveToPosition, model.NewPawn(model.Green, 0), positionSquare(12)),
 	}
 
-	move := model.NewMove(model.NewCard("1", model.Card1), actions, sideEffects, nil)
+	move := model.NewMove(model.NewCard("1", model.Card1), actions, sideEffects)
 
 	game, _ := model.NewGame(4, nil)
 	view, err := game.CreatePlayerView(model.Red)
@@ -154,7 +148,6 @@ func TestConstructLegalMovesNoMovesWithCard(t *testing.T) {
 	view.On("AllPawns").Return(allPawns)
 
 	var moveGenerator generator.MockMoveGenerator
-	moveGenerator.On("Factory").Return(&factory)
 	moveGenerator.On("LegalMoves", model.Red, card, pawn1, allPawns).Return(cardPawn1Moves).Once()
 	moveGenerator.On("LegalMoves", model.Red, card, pawn2, allPawns).Return(cardPawn2Moves).Once()
 
@@ -197,7 +190,6 @@ func TestConstructLegalMovesNoMovesNoCard(t *testing.T) {
 	view.On("AllPawns").Return(allPawns)
 
 	var moveGenerator generator.MockMoveGenerator
-	moveGenerator.On("Factory").Return(&factory)
 	moveGenerator.On("LegalMoves", model.Red, hand1, pawn1, allPawns).Return(hand1Pawn1Moves).Once()
 	moveGenerator.On("LegalMoves", model.Red, hand1, pawn2, allPawns).Return(hand1Pawn2Moves).Once()
 	moveGenerator.On("LegalMoves", model.Red, hand2, pawn1, allPawns).Return(hand2Pawn1Moves).Once()
@@ -249,7 +241,6 @@ func TestConstructLegalMovesWithMovesWithCard(t *testing.T) {
 	view.On("AllPawns").Return(allPawns)
 
 	var moveGenerator generator.MockMoveGenerator
-	moveGenerator.On("Factory").Return(&factory)
 	moveGenerator.On("LegalMoves", model.Red, card, pawn1, allPawns).Return(cardPawn1Moves).Once()
 	moveGenerator.On("LegalMoves", model.Red, card, pawn2, allPawns).Return(cardPawn2Moves).Once()
 
@@ -309,7 +300,6 @@ func TestConstructLegalMovesWithMovesNoCard(t *testing.T) {
 	view.On("AllPawns").Return(allPawns)
 
 	var moveGenerator generator.MockMoveGenerator
-	moveGenerator.On("Factory").Return(&factory)
 	moveGenerator.On("LegalMoves", model.Red, hand1, pawn1, allPawns).Return(hand1Pawn1Moves).Once()
 	moveGenerator.On("LegalMoves", model.Red, hand1, pawn2, allPawns).Return(hand1Pawn2Moves).Once()
 	moveGenerator.On("LegalMoves", model.Red, hand2, pawn1, allPawns).Return(hand2Pawn1Moves).Once()
@@ -334,5 +324,5 @@ func positionSquare(square int) model.Position {
 }
 
 func move(card model.Card, actions []model.Action, sideEffects []model.Action) model.Move {
-	return model.NewMove(card, actions, sideEffects, &factory)
+	return model.NewMove(card, actions, sideEffects)
 }

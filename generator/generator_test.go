@@ -1,23 +1,12 @@
 package generator
 
 import (
-	"github.com/pronovic/go-apologies/internal/identifier"
 	"github.com/pronovic/go-apologies/model"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
 
-var factory identifier.MockFactory
 var emptyMoves = make([]model.Move, 0)
-
-func init() {
-	factory.On("RandomId").Return("id")
-}
-
-func TestFactory(t *testing.T) {
-	generator := NewGenerator(&factory)
-	assert.Equal(t, &factory, generator.Factory())
-}
 
 func TestCalculatePositionHome(t *testing.T) {
 	for _, color := range model.PlayerColors.Members() {
@@ -753,18 +742,18 @@ func buildMoves(color model.PlayerColor, game model.Game, index int, cardType mo
 	card := model.NewCard("test", cardType)
 	view, _ := game.CreatePlayerView(color)
 	pawn := view.Player().Pawns()[index]
-	moves := NewGenerator(&factory).LegalMoves(view.Player().Color(), card, pawn, view.AllPawns())
+	moves := NewGenerator().LegalMoves(view.Player().Color(), card, pawn, view.AllPawns())
 	return card, pawn, view, moves
 }
 
 func calculatePositionSuccess(t *testing.T, color model.PlayerColor, start model.Position, squares int, expected model.Position) {
-	result, err := NewGenerator(&factory).CalculatePosition(color, start, squares)
+	result, err := NewGenerator().CalculatePosition(color, start, squares)
 	assert.Nil(t, err)
 	assert.Equal(t, expected, result)
 }
 
 func calculatePositionFailure(t *testing.T, color model.PlayerColor, start model.Position, squares int, expected string) {
-	_, err := NewGenerator(&factory).CalculatePosition(color, start, squares)
+	_, err := NewGenerator().CalculatePosition(color, start, squares)
 	assert.EqualError(t, err, expected)
 }
 
@@ -818,7 +807,7 @@ func positionSquare(square int) model.Position {
 }
 
 func move(card model.Card, actions []model.Action, sideEffects []model.Action) model.Move {
-	return model.NewMove(card, actions, sideEffects, &factory)
+	return model.NewMove(card, actions, sideEffects)
 }
 
 func actionSlice(actions ... model.Action) []model.Action {

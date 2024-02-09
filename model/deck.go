@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"github.com/pronovic/go-apologies/internal/enum"
-	"github.com/pronovic/go-apologies/internal/equality"
 	"github.com/pronovic/go-apologies/internal/jsonutil"
 	"io"
 	"math/big"
@@ -75,8 +74,6 @@ var DrawAgain = map[CardType]bool{
 
 // Card is a card in a deck or in a player's hand
 type Card interface {
-
-	equality.EqualsByValue[Card]  // This interface implements equality by value
 
 	// Id Unique identifier for this card
 	Id() string

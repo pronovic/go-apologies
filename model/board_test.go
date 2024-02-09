@@ -87,45 +87,6 @@ func TestPositionCopy(t *testing.T) {
 	assert.NotSame(t, obj, copied)
 }
 
-func TestPositionEquals(t *testing.T) {
-	safe := 1
-	square := 2
-
-	p1 := NewPosition(true, false, nil, nil)
-	p2 := NewPosition(false, true, nil, nil)
-	p3 := NewPosition(false, false, &safe, nil)
-	p4 := NewPosition(false, false, nil, &square)
-
-	// note: it is important to test with assert.True()/assert.False() and x.Equals(y)
-	// because assert.Equals() and assert.NotEquals() are not aware of our equality by value concept
-
-	assert.True(t, p1.Equals(p1))
-	assert.True(t, p2.Equals(p2))
-	assert.True(t, p3.Equals(p3))
-	assert.True(t, p4.Equals(p4))
-
-	assert.False(t, p1.Equals(nil))
-	assert.False(t, p2.Equals(nil))
-	assert.False(t, p3.Equals(nil))
-	assert.False(t, p4.Equals(nil))
-
-	assert.False(t, p1.Equals(p2))
-	assert.False(t, p1.Equals(p3))
-	assert.False(t, p1.Equals(p4))
-
-	assert.False(t, p2.Equals(p1))
-	assert.False(t, p2.Equals(p3))
-	assert.False(t, p2.Equals(p4))
-
-	assert.False(t, p3.Equals(p1))
-	assert.False(t, p3.Equals(p2))
-	assert.False(t, p3.Equals(p4))
-
-	assert.False(t, p4.Equals(p1))
-	assert.False(t, p4.Equals(p2))
-	assert.False(t, p4.Equals(p3))
-}
-
 func TestPositionJSON(t *testing.T) {
 	var obj Position
 	var err error
@@ -312,23 +273,6 @@ func TestNewPawn(t *testing.T) {
 	assert.Equal(t, "Red13", obj.Name())
 	assert.Equal(t, NewPosition(true, false, nil, nil), obj.Position())
 	assert.Equal(t, "Red13->start", fmt.Sprintf("%s", obj))
-}
-
-func TestPawnEquals(t *testing.T) {
-	p1 := NewPawn(Red, 13)
-	p2 := NewPawn(Blue, 4)
-
-	// note: it is important to test with assert.True()/assert.False() and x.Equals(y)
-	// because assert.Equals() and assert.NotEquals() are not aware of our equality by value concept
-
-	assert.True(t, p1.Equals(p1))
-	assert.True(t, p2.Equals(p2))
-
-	assert.False(t, p1.Equals(nil))
-	assert.False(t, p1.Equals(p2))
-
-	assert.False(t, p2.Equals(nil))
-	assert.False(t, p2.Equals(p1))
 }
 
 func TestPawnCopy(t *testing.T) {

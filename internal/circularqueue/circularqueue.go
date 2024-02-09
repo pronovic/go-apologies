@@ -3,12 +3,11 @@ package circularqueue
 import (
 	"errors"
 	"github.com/golang-ds/queue/circularqueue"
+	"github.com/pronovic/go-apologies/internal/equality"
 )
 
-// This relies on the `comparable` predfined identifier.  See: https://stackoverflow.com/a/68054461
-
 // CircularQueue is a fixed-sized queue that keeps returning its contents repeatedly, in order.
-type CircularQueue[T comparable] interface {
+type CircularQueue[T any] interface {
 	SetFirst(entry T) error
 	Next() (T, error)
 }
@@ -38,7 +37,7 @@ func (q *circularQueue[T]) SetFirst(entry T) error {
 	for i := 0; i < q.wrapped.Size(); i++ {
 		var first, _ = q.wrapped.First()
 
-		if entry == first {
+		if equality.EqualByValue(entry, first) {
 			return nil  // entry is found at front of queue
 		}
 

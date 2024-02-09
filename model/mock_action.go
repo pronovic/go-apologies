@@ -9,24 +9,6 @@ type MockAction struct {
 	mock.Mock
 }
 
-// Equals provides a mock function with given fields: other
-func (_m *MockAction) Equals(other Action) bool {
-	ret := _m.Called(other)
-
-	if len(ret) == 0 {
-		panic("no return value specified for Equals")
-	}
-
-	var r0 bool
-	if rf, ok := ret.Get(0).(func(Action) bool); ok {
-		r0 = rf(other)
-	} else {
-		r0 = ret.Get(0).(bool)
-	}
-
-	return r0
-}
-
 // Pawn provides a mock function with given fields:
 func (_m *MockAction) Pawn() Pawn {
 	ret := _m.Called()

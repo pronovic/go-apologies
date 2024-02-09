@@ -2,7 +2,7 @@ package generator
 
 import (
 	"errors"
-	"github.com/pronovic/go-apologies/internal/identifier"
+	"github.com/pronovic/go-apologies/internal/equality"
 	"github.com/pronovic/go-apologies/model"
 )
 
@@ -23,29 +23,17 @@ var legalSplits = []splitPair{
 }
 
 type MoveGenerator interface {
-	Factory() identifier.Factory
 	LegalMoves(color model.PlayerColor, card model.Card, pawn model.Pawn, allPawns []model.Pawn) []model.Move
 	CalculatePosition(color model.PlayerColor, position model.Position, squares int) (model.Position, error)
 }
 
 type moveGenerator struct {
-	factory identifier.Factory
 }
 
 // NewGenerator constructs a new move generator, optionally accepting an identifier factory
-func NewGenerator(factory identifier.Factory) MoveGenerator {
-	if factory == nil {
-		factory = identifier.NewFactory()
-	}
-
+func NewGenerator() MoveGenerator {
 	return &moveGenerator{
-		factory: factory,
 	}
-}
-
-// Factory returns the identifier factory that is in use
-func (g *moveGenerator) Factory() identifier.Factory {
-	return g.factory
 }
 
 // LegalMoves Generate the set of legal moves for a pawn using a card, possibly empty.
@@ -168,7 +156,7 @@ func (g *moveGenerator) legalMovesApologies(color model.PlayerColor, card model.
 // Return the first pawn at the indicated position, or None.
 func (g *moveGenerator) findPawn(allPawns []model.Pawn, position model.Position) model.Pawn {
 	for _, p := range allPawns {
-		if p.Position().Equals(position) {
+		if equality.EqualByValue(p.Position(), position) {
 			return p
 		}
 	}
@@ -184,12 +172,12 @@ func (g *moveGenerator) moveCircle(moves *[]model.Move, color model.PlayerColor,
 		if conflict == nil {
 			actions := []model.Action { model.NewAction(model.MoveToPosition, pawn, model.StartCircles[color].Copy()) }
 			sideEffects := make([]model.Action, 0)
-			move := model.NewMove(card, actions, sideEffects, g.factory)
+			move := model.NewMove(card, actions, sideEffects)
 			*moves = append(*moves, move)
 		} else if conflict != nil && conflict.Color() != color {
 			actions := []model.Action { model.NewAction(model.MoveToPosition, pawn, model.StartCircles[color].Copy())}
 			sideEffects := []model.Action { model.NewAction(model.MoveToStart, conflict, nil) }
-			move := model.NewMove(card, actions, sideEffects, g.factory)
+			move := model.NewMove(card, actions, sideEffects)
 			*moves = append(*moves, move)
 		}
 	}
@@ -204,19 +192,19 @@ func (g *moveGenerator) moveSimple(moves *[]model.Move, color model.PlayerColor,
 			if target.Home() || target.Start() { // by definition, there can't be a conflict going to home or start
 				actions := []model.Action { model.NewAction(model.MoveToPosition, pawn, target) }
 				sideEffects := make([]model.Action, 0)
-				move := model.NewMove(card, actions, sideEffects, g.factory)
+				move := model.NewMove(card, actions, sideEffects)
 				*moves = append(*moves, move)
 			} else {
 				conflict := g.findPawn(allPawns, target)
 				if conflict == nil {
 					actions := []model.Action { model.NewAction(model.MoveToPosition, pawn, target) }
 					sideEffects := make([]model.Action, 0)
-					move := model.NewMove(card, actions, sideEffects, g.factory)
+					move := model.NewMove(card, actions, sideEffects)
 					*moves = append(*moves, move)
 				} else if conflict != nil && conflict.Color() != color {
 					actions := []model.Action { model.NewAction(model.MoveToPosition, pawn, target)}
 					sideEffects := []model.Action { model.NewAction(model.MoveToStart, conflict, nil) }
-					move := model.NewMove(card, actions, sideEffects, g.factory)
+					move := model.NewMove(card, actions, sideEffects)
 					*moves = append(*moves, move)
 				}
 			}
@@ -230,12 +218,12 @@ func (g *moveGenerator) moveSplit(moves *[]model.Move, color model.PlayerColor, 
 	// is not occupied by another pawn of the same color.
 
 	for _, other := range allPawns {
-		if !other.Equals(pawn) && other.Color() == color && !other.Position().Home() && !other.Position().Start() {
+		if !equality.EqualByValue(other, pawn) && other.Color() == color && !other.Position().Home() && !other.Position().Start() {
 
 			// any pawn except other
 			filtered := make([]model.Pawn, 0)
 			for _, p := range allPawns {
-				if !p.Equals(other) {
+				if !equality.EqualByValue(p, other) {
 					filtered = append(filtered, p)
 				}
 			}
@@ -267,7 +255,7 @@ func (g *moveGenerator) moveSplit(moves *[]model.Move, color model.PlayerColor, 
 						sideEffects = append(sideEffects, r)
 					}
 
-					move := model.NewMove(card, actions, sideEffects, g.factory)
+					move := model.NewMove(card, actions, sideEffects)
 					*moves = append(*moves, move)
 				}
 			}
@@ -286,7 +274,7 @@ func (g *moveGenerator) moveSwap(moves *[]model.Move, color model.PlayerColor, c
 					 model.NewAction(model.MoveToPosition, swap, pawn.Position().Copy()),
 				 }
 				 sideEffects := make([]model.Action, 0)
-				 move := model.NewMove(card, actions, sideEffects, g.factory)
+				 move := model.NewMove(card, actions, sideEffects)
 				 *moves = append(*moves, move)
 			 }
 		 }
@@ -304,7 +292,7 @@ func (g *moveGenerator) moveApologies(moves *[]model.Move, color model.PlayerCol
 					model.NewAction(model.MoveToStart, swap, nil),
 				}
 				sideEffects := make([]model.Action, 0)
-				move := model.NewMove(card, actions, sideEffects, g.factory)
+				move := model.NewMove(card, actions, sideEffects)
 				*moves = append(*moves, move)
 			}
 		}

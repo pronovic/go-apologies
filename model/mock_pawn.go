@@ -47,24 +47,6 @@ func (_m *MockPawn) Copy() Pawn {
 	return r0
 }
 
-// Equals provides a mock function with given fields: other
-func (_m *MockPawn) Equals(other Pawn) bool {
-	ret := _m.Called(other)
-
-	if len(ret) == 0 {
-		panic("no return value specified for Equals")
-	}
-
-	var r0 bool
-	if rf, ok := ret.Get(0).(func(Pawn) bool); ok {
-		r0 = rf(other)
-	} else {
-		r0 = ret.Get(0).(bool)
-	}
-
-	return r0
-}
-
 // Index provides a mock function with given fields:
 func (_m *MockPawn) Index() int {
 	ret := _m.Called()
