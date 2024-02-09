@@ -7,6 +7,7 @@ import (
 	"errors"
 	"github.com/pronovic/go-apologies/internal/enum"
 	"github.com/pronovic/go-apologies/internal/equality"
+	"github.com/pronovic/go-apologies/internal/jsonutil"
 	"io"
 	"math/big"
 	"strconv"
@@ -103,14 +104,7 @@ func NewCard(id string, cardType CardType) Card {
 
 // NewCardFromJSON constructs a new object from JSON in an io.Reader
 func NewCardFromJSON(reader io.Reader) (Card, error) {
-	var obj card
-
-	err := json.NewDecoder(reader).Decode(&obj)
-	if err != nil {
-		return nil, err
-	}
-
-	return &obj, nil
+	return jsonutil.DecodeSimpleJSON[card](reader)
 }
 
 func (c *card) Id() string {

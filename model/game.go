@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/pronovic/go-apologies/internal/enum"
+	"github.com/pronovic/go-apologies/internal/jsonutil"
 	"github.com/pronovic/go-apologies/internal/timestamp"
 	"io"
 )
@@ -62,14 +63,7 @@ func NewHistory(action string, color *PlayerColor, card *CardType, factory times
 
 // NewHistoryFromJSON constructs a new object from JSON in an io.Reader
 func NewHistoryFromJSON(reader io.Reader) (History, error) {
-	var obj history
-
-	err := json.NewDecoder(reader).Decode(&obj)
-	if err != nil {
-		return nil, err
-	}
-
-	return &obj, nil
+	return jsonutil.DecodeSimpleJSON[history](reader)
 }
 
 func (h *history) Action() string {

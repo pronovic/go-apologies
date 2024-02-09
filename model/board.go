@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/pronovic/go-apologies/internal/equality"
+	"github.com/pronovic/go-apologies/internal/jsonutil"
 	"io"
 )
 
@@ -121,14 +122,7 @@ func NewPosition(start bool, home bool, safe *int, square *int) Position {
 
 // NewPositionFromJSON constructs a new object from JSON in an io.Reader
 func NewPositionFromJSON(reader io.Reader) (Position, error) {
-	var obj position
-
-	err := json.NewDecoder(reader).Decode(&obj)
-	if err != nil {
-		return nil, err
-	}
-
-	return &obj, nil
+	return jsonutil.DecodeSimpleJSON[position](reader)
 }
 
 // emptyPosition creates a new empty position in the start, for internal use
