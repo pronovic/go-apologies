@@ -21,8 +21,12 @@ func NewFactory() Factory {
 
 // CurrentTime returns the current time as from time.Now().UTC()
 func (f *factory) CurrentTime() Timestamp {
-	t := time.Now().UTC()
-	return Timestamp(t)
+	// The format/parse step normalizes the date, removing the nanosecond precision that we
+	// don't use in the standard layout (i.e. 561093000ns vs. 561000000ns).  Without this,
+	// serialization back and forth to text is lossy and we get spurious differences.
+	t := Timestamp(time.Now().UTC())
+	n, _ := Parse((&t).Format())
+	return n
 }
 
 // Parse parses a timestamp like "2024-01-31T08:15:03.221Z" in UTC

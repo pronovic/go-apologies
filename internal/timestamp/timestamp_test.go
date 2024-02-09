@@ -14,6 +14,13 @@ func TestFactoryCurrentTime(t *testing.T) {
 	assert.Equal(t, 0, offset)  // zero offset means UTC
 }
 
+func TestParseFormatCurrent(t *testing.T) {
+	// it's important that we can reliably round-trip without spurious differences
+	current := NewFactory().CurrentTime()
+	parsed, _ := Parse(current.Format())
+	assert.Equal(t, current, parsed)
+}
+
 func TestParseFormat(t *testing.T) {
 	input := "2024-01-31T08:15:03.221Z"
 
