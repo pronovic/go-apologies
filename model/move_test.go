@@ -15,6 +15,10 @@ func TestNewAction(t *testing.T) {
 	assert.Same(t, position, obj.Position())
 }
 
+func TestNewActionFromJSON(t *testing.T) {
+	t.Fail() // TODO: implement TestNewActionFromJSON()
+}
+
 func TestActionSetPosition(t *testing.T) {
 	pawn := NewPawn(Red, 0)
 	position1 := NewPosition(false, false, nil, nil)
@@ -77,6 +81,10 @@ func TestNewMove(t *testing.T) {
 	assert.Equal(t, card, obj.Card())
 	assert.Equal(t, actions, obj.Actions())
 	assert.Equal(t, sideEffects, obj.SideEffects())
+}
+
+func TestNewMoveFromJSON(t *testing.T) {
+	t.Fail() // TODO: implement TestNewMoveFromJSON()
 }
 
 func TestMoveEquals(t *testing.T) {

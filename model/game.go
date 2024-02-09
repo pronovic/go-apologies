@@ -1,11 +1,13 @@
 package model
 
 import (
+	"bytes"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/pronovic/go-apologies/internal/enum"
 	"github.com/pronovic/go-apologies/internal/timestamp"
-	"time"
+	"io"
 )
 
 // GameMode defines legal game modes
@@ -30,7 +32,7 @@ type History interface {
 	Card() *CardType	// optional
 
 	// Timestamp Timestamp tied to the action (defaults to current time)
-	Timestamp() time.Time
+	Timestamp() timestamp.Timestamp
 
 	// Copy Return a fully-independent copy of the history.
 	Copy() History
@@ -41,7 +43,7 @@ type history struct {
 	action string
 	color *PlayerColor
 	card *CardType
-	timestamp time.Time
+	timestamp timestamp.Timestamp
 }
 
 // NewHistory constructs a new History, optionally accepting a timestamp factory
@@ -58,6 +60,18 @@ func NewHistory(action string, color *PlayerColor, card *CardType, factory times
 	}
 }
 
+// NewHistoryFromJSON constructs a new object from JSON in an io.Reader
+func NewHistoryFromJSON(reader io.Reader) (History, error) {
+	var obj history
+
+	err := json.NewDecoder(reader).Decode(&obj)
+	if err != nil {
+		return nil, err
+	}
+
+	return &obj, nil
+}
+
 func (h *history) Action() string {
 	return h.action
 }
@@ -70,7 +84,7 @@ func (h *history) Card() *CardType { // optional
 	return h.card
 }
 
-func (h *history) Timestamp() time.Time {
+func (h *history) Timestamp() timestamp.Timestamp {
 	return h.timestamp
 }
 
@@ -84,7 +98,7 @@ func (h *history) Copy() History {
 }
 
 func (h *history) String() string {
-	now := h.timestamp.Format(timestamp.Layout)
+	now := h.timestamp.Format()
 	color := "General"
 	if h.color != nil {
 		color = h.color.Value()
@@ -129,11 +143,11 @@ type Game interface {
 }
 
 type game struct {
-	playerCount int
-	players map[PlayerColor]Player
-	deck Deck
-	history []History
-	factory timestamp.Factory
+	XplayerCount int  `json:"playercount"`
+	Xplayers map[PlayerColor]Player `json:"players"`
+	Xdeck    Deck      `json:"deck"`
+	Xhistory []History `json:"history"`
+	factory  timestamp.Factory
 }
 
 // NewGame constructs a new Game, optionally accepting a timestamp factory
@@ -153,63 +167,114 @@ func NewGame(playerCount int, factory timestamp.Factory) (Game, error) {
 	}
 
 	game := &game{
-		playerCount: playerCount,
-		players:     players,
-		deck:        NewDeck(),
-		history:     make([]History, 0),
-		factory:     factory,
+		XplayerCount: playerCount,
+		Xplayers:     players,
+		Xdeck:        NewDeck(),
+		Xhistory:     make([]History, 0),
+		factory:      factory,
 	}
 
 	return game, nil
 }
 
+// NewGameFromJSON constructs a new object from JSON in an io.Reader
+func NewGameFromJSON(reader io.Reader) (Game, error) {
+	type raw struct {
+		XplayerCount int  `json:"playercount"`
+		Xplayers map[PlayerColor]player `json:"players"`
+		Xdeck    json.RawMessage `json:"deck"`
+		Xhistory []json.RawMessage `json:"history"`
+	}
+
+	var temp raw
+	err := json.NewDecoder(reader).Decode(&temp)
+	if err != nil {
+		return nil, err
+	}
+
+	var Xplayers = make(map[PlayerColor]Player)
+	for key := range temp.Xplayers {
+		value := temp.Xplayers[key]
+		Xplayers[key] = &value
+	}
+
+	var Xdeck Deck
+	if temp.Xdeck != nil {
+		Xdeck, err = NewDeckFromJSON(bytes.NewReader(temp.Xdeck))
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	var Xhistory = make([]History, 0)
+	if temp.Xhistory != nil {
+		for i := 0; i < len(temp.Xhistory); i++ {
+			element, err := NewHistoryFromJSON(bytes.NewReader(temp.Xhistory[i]))
+			if err != nil {
+				return nil, err
+			}
+			Xhistory = append(Xhistory, element)
+		}
+	}
+
+	obj := game {
+		XplayerCount: temp.XplayerCount,
+		Xplayers:     Xplayers,
+		Xdeck:        Xdeck,
+		Xhistory:     Xhistory,
+		factory:      timestamp.NewFactory(),
+	}
+
+	return &obj, nil
+}
+
 func (g *game) PlayerCount() int {
-	return g.playerCount
+	return g.XplayerCount
 }
 
 func (g *game) Players() map[PlayerColor]Player {
-	return g.players
+	return g.Xplayers
 }
 
 func (g *game) Deck() Deck {
-	return g.deck
+	return g.Xdeck
 }
 
 func (g *game) History() []History {
-	return g.history
+	return g.Xhistory
 }
 
 func (g *game) Copy() Game {
-	var playersCopy = make(map[PlayerColor]Player, len(g.players))
+	var playersCopy = make(map[PlayerColor]Player, len(g.Xplayers))
 
 	// range on a map explicitly does *not* return keys in a stable order, so we iterate on colors instead
 	for _, color := range PlayerColors.Members() {
-		player, exists := g.players[color]
+		player, exists := g.Xplayers[color]
 		if exists {
 			playersCopy[color] = player.Copy()
 		}
 	}
 
-	var historyCopy = make([]History, 0, len(g.history))
-	for i := range g.history {
-		historyCopy = append(historyCopy, g.history[i])
+	var historyCopy = make([]History, 0, len(g.Xhistory))
+	for i := range g.Xhistory {
+		historyCopy = append(historyCopy, g.Xhistory[i])
 	}
 
 	return &game{
-		playerCount: g.playerCount,
-		players: playersCopy,
-		deck: g.deck.Copy(),
-		history: historyCopy,
-		factory: g.factory,
+		XplayerCount: g.XplayerCount,
+		Xplayers:     playersCopy,
+		Xdeck:        g.Xdeck.Copy(),
+		Xhistory:     historyCopy,
+		factory:      g.factory,
 	}
 }
 
 func (g *game) Started() bool {
-	return len(g.history) > 0 // if there is any history the game has been started
+	return len(g.Xhistory) > 0 // if there is any history the game has been started
 }
 
 func (g *game) Completed() bool {
-	for _, players := range g.players {
+	for _, players := range g.Xplayers {
 		if players.AllPawnsInHome() {
 			return true
 		}
@@ -219,7 +284,7 @@ func (g *game) Completed() bool {
 }
 
 func (g *game) Winner() *Player {
-	for _, players := range g.players {
+	for _, players := range g.Xplayers {
 		if players.AllPawnsInHome() {
 			return &players
 		}
@@ -242,26 +307,26 @@ func (g *game) Track(action string, player Player, card Card) {
 	}
 
 	var history = NewHistory(action, color, cardtype, g.factory)
-	g.history = append(g.history, history)
+	g.Xhistory = append(g.Xhistory, history)
 
 	if player != nil {
-		g.players[player.Color()].IncrementTurns()
+		g.Xplayers[player.Color()].IncrementTurns()
 	}
 }
 
 func (g *game) CreatePlayerView(color PlayerColor) (PlayerView, error) {
-	player, ok := g.players[color]
+	player, ok := g.Xplayers[color]
 	if ! ok {
 		return (PlayerView)(nil), errors.New("invalid color")
 	}
 
 	copied := player.Copy()
 
-	opponents := make(map[PlayerColor]Player, len(g.players))
+	opponents := make(map[PlayerColor]Player, len(g.Xplayers))
 
 	// range on a map explicitly does *not* return keys in a stable order, so we iterate on colors instead
 	for _, color := range PlayerColors.Members() {
-		opponent, exists := g.players[color]
+		opponent, exists := g.Xplayers[color]
 		if exists {
 			if opponent.Color() != player.Color() {
 				opponents[color] = opponent.PublicData()

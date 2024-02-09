@@ -1,9 +1,12 @@
 package model
 
 import (
+	"bytes"
+	"encoding/json"
 	"github.com/pronovic/go-apologies/internal/enum"
 	"github.com/pronovic/go-apologies/internal/equality"
 	"github.com/pronovic/go-apologies/internal/identifier"
+	"io"
 )
 
 // ActionType defines all actions that a character can take
@@ -34,41 +37,80 @@ type Action interface {
 }
 
 type action struct {
-	actionType ActionType
-	pawn Pawn
-	position Position
+	XactionType ActionType	`json:"type"`
+	Xpawn     Pawn `json:"pawn"`
+	Xposition Position `json:"position"`
 }
 
 // NewAction constructs a new Action
 func NewAction(actionType ActionType, pawn Pawn, position Position) Action {
 	return &action{
-		actionType: actionType,
-		pawn: pawn,
-		position: position,
+		XactionType: actionType,
+		Xpawn:       pawn,
+		Xposition:   position,
 	}
 }
 
+// NewActionFromJSON constructs a new object from JSON in an io.Reader
+func NewActionFromJSON(reader io.Reader) (Action, error) {
+	type raw struct {
+		XactionType ActionType	`json:"type"`
+		Xpawn     json.RawMessage `json:"pawn"`
+		Xposition json.RawMessage `json:"position"`
+	}
+
+	var temp raw
+	err := json.NewDecoder(reader).Decode(&temp)
+	if err != nil {
+		return nil, err
+	}
+
+	var Xpawn Pawn
+	if temp.Xpawn != nil {
+		Xpawn, err = NewPawnFromJSON(bytes.NewReader(temp.Xpawn))
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	var Xposition Position
+	if temp.Xposition != nil {
+		Xposition, err = NewPositionFromJSON(bytes.NewReader(temp.Xposition))
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	obj := action {
+		XactionType: temp.XactionType,
+		Xpawn: Xpawn,
+		Xposition: Xposition,
+	}
+
+	return &obj, nil
+}
+
 func (a *action) Type() ActionType {
-	return a.actionType
+	return a.XactionType
 }
 
 func (a *action) Pawn() Pawn {
-	return a.pawn
+	return a.Xpawn
 }
 
 func (a *action) Position() Position {
-	return a.position
+	return a.Xposition
 }
 
 func (a *action) SetPosition(position Position) {
-	a.position = position
+	a.Xposition = position
 }
 
 func (a *action) Equals(other Action) bool {
 	return other != nil &&
-		a.actionType == other.Type() &&
-		equality.ByValueEquals[Pawn](a.pawn, other.Pawn()) &&
-		equality.ByValueEquals[Position](a.position, other.Position())
+		a.XactionType == other.Type() &&
+		equality.ByValueEquals[Pawn](a.Xpawn, other.Pawn()) &&
+		equality.ByValueEquals[Position](a.Xposition, other.Position())
 }
 
 // Move is a player's move on the board, which consists of one or more actions
@@ -89,10 +131,10 @@ type Move interface {
 }
 
 type move struct {
-	id string
-	card Card
-	actions []Action
-	sideEffects []Action
+	Xid     string
+	Xcard       Card
+	Xactions     []Action
+	XsideEffects []Action
 }
 
 // NewMove constructs a new move, optionally accepting an identify factory
@@ -111,40 +153,45 @@ func NewMove(card Card, actions []Action, sideEffects []Action, factory identifi
 	}
 
 	return &move{
-		id: factory.RandomId(),
-		card: card,
-		actions: actions,
-		sideEffects: sideEffects,
+		Xid:          factory.RandomId(),
+		Xcard:        card,
+		Xactions:     actions,
+		XsideEffects: sideEffects,
 	}
+}
+
+// NewMoveFromJSON constructs a new object from JSON in an io.Reader
+func NewMoveFromJSON(reader io.Reader) (Move, error) {
+	return nil, nil // TODO: implement NewMoveFromJSON
 }
 
 func (m *move) Equals(other Move) bool {
 	// note that identifier is not included in eqa
 	return other != nil &&
-		equality.ByValueEquals[Card](m.card, other.Card()) &&
-		equality.SliceByValueEquals(m.actions, other.Actions()) &&
-		equality.SliceByValueEquals(m.sideEffects, other.SideEffects())
+		equality.ByValueEquals[Card](m.Xcard, other.Card()) &&
+		equality.SliceByValueEquals(m.Xactions, other.Actions()) &&
+		equality.SliceByValueEquals(m.XsideEffects, other.SideEffects())
 }
 
 func (m *move) Id() string {
-	return m.id
+	return m.Xid
 }
 
 func (m *move) Card() Card {
-	return m.card
+	return m.Xcard
 }
 
 func (m *move) Actions() []Action {
-	return m.actions
+	return m.Xactions
 }
 
 func (m *move) SideEffects() []Action {
-	return m.sideEffects
+	return m.XsideEffects
 }
 
 func (m *move) AddSideEffect(action Action) {
 	found := false
-	for _, a := range m.actions {
+	for _, a := range m.Xactions {
 		if a.Equals(action) {
 			found = true
 			break
@@ -152,18 +199,18 @@ func (m *move) AddSideEffect(action Action) {
 	}
 
 	if !found {
-		m.sideEffects = append(m.sideEffects, action)
+		m.XsideEffects = append(m.XsideEffects, action)
 	}
 }
 
 func (m *move) MergedActions() []Action {
-	merged := make([]Action, 0, len(m.actions) + len(m.sideEffects))
+	merged := make([]Action, 0, len(m.Xactions) + len(m.XsideEffects))
 
-	for _, action := range m.actions {
+	for _, action := range m.Xactions {
 		merged = append(merged, action)
 	}
 
-	for _, action := range m.sideEffects {
+	for _, action := range m.XsideEffects {
 		merged = append(merged, action)
 	}
 

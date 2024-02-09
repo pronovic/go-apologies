@@ -3,6 +3,7 @@ package model
 import (
 	"github.com/pronovic/go-apologies/internal/enum"
 	"github.com/pronovic/go-apologies/internal/equality"
+	"io"
 	"slices"
 )
 
@@ -83,6 +84,11 @@ func NewPlayer(color PlayerColor) Player {
 		pawns: pawns,
 		turns: 0,
 	}
+}
+
+// NewPlayerFromJSON constructs a new object from JSON in an io.Reader
+func NewPlayerFromJSON(reader io.Reader) (Player, error) {
+	return nil, nil // TODO: implement NewPlayerFromJSON
 }
 
 func (p *player) Color() PlayerColor {
@@ -206,6 +212,11 @@ func NewPlayerView(player Player, opponents map[PlayerColor]Player) PlayerView {
 		player: player,
 		opponents: opponents,
 	}
+}
+
+// NewPlayerViewFromJSON constructs a new object from JSON in an io.Reader
+func NewPlayerViewFromJSON(reader io.Reader) (PlayerView, error) {
+	return nil, nil // TODO: implement NewPlayerViewFromJSON
 }
 
 func (v *playerView) Player() Player {

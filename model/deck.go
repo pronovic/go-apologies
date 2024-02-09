@@ -2,9 +2,11 @@ package model
 
 import (
 	"crypto/rand"
+	"encoding/json"
 	"errors"
 	"github.com/pronovic/go-apologies/internal/enum"
 	"github.com/pronovic/go-apologies/internal/equality"
+	"io"
 	"math/big"
 	"strconv"
 )
@@ -86,37 +88,49 @@ type Card interface {
 }
 
 type card struct {
-	id       string
-	cardType CardType
+	Xid   string   `json:"id"`
+	Xtype CardType `json:"type"`
 }
 
 // NewCard constructs a new Card
 func NewCard(id string, cardType CardType) Card {
 	return &card{
-		id: id,
-		cardType: cardType,
+		Xid:   id,
+		Xtype: cardType,
 	}
 }
 
+// NewCardFromJSON constructs a new object from JSON in an io.Reader
+func NewCardFromJSON(reader io.Reader) (Card, error) {
+	var obj card
+
+	err := json.NewDecoder(reader).Decode(&obj)
+	if err != nil {
+		return nil, err
+	}
+
+	return &obj, nil
+}
+
 func (c *card) Id() string {
-	return c.id
+	return c.Xid
 }
 
 func (c *card) Type() CardType {
-	return c.cardType
+	return c.Xtype
 }
 
 func (c *card) Copy() Card {
 	return &card {
-		id: c.id,
-		cardType: c.cardType,
+		Xid:   c.Xid,
+		Xtype: c.Xtype,
 	}
 }
 
 func (c *card) Equals(other Card) bool {
 	return other != nil &&
-		c.id == other.Id() &&
-		c.cardType == other.Type()
+		c.Xid == other.Id() &&
+		c.Xtype == other.Type()
 }
 
 // Deck The deck of cards associated with a game.
@@ -134,8 +148,8 @@ type Deck interface {
 }
 
 type deck struct {
-	drawPile map[string]Card
-	discardPile map[string]Card
+	XdrawPile    map[string]Card `json:"draw"`
+	XdiscardPile map[string]Card `json:"discard"`
 }
 
 // NewDeck constructs a new Deck
@@ -153,46 +167,79 @@ func NewDeck() Deck {
 	}
 
 	return &deck{
-		drawPile: drawPile,
-		discardPile: discardPile,
+		XdrawPile:    drawPile,
+		XdiscardPile: discardPile,
 	}
+}
+
+// NewDeckFromJSON constructs a new object from JSON in an io.Reader
+func NewDeckFromJSON(reader io.Reader) (Deck, error) {
+	type raw struct {
+		XdrawPile    map[string]card `json:"draw"`
+		XdiscardPile map[string]card `json:"discard"`
+	}
+
+	var temp raw
+	err := json.NewDecoder(reader).Decode(&temp)
+	if err != nil {
+		return nil, err
+	}
+
+	var XdrawPile = make(map[string]Card)
+	for key := range temp.XdrawPile {
+		value := temp.XdrawPile[key]
+		XdrawPile[key] = &value
+	}
+
+	var XdiscardPile = make(map[string]Card)
+	for key := range temp.XdiscardPile {
+		value := temp.XdiscardPile[key]
+		XdiscardPile[key] = &value
+	}
+
+	obj := deck {
+		XdrawPile:    XdrawPile,
+		XdiscardPile: XdiscardPile,
+	}
+
+	return &obj, nil
 }
 
 // Copy Return a fully-independent copy of the deck.
 func (d *deck) Copy() Deck {
 	var drawPileCopy = make(map[string]Card, DeckSize)
-	for key := range d.drawPile {
-		drawPileCopy[key] = d.drawPile[key].Copy()
+	for key := range d.XdrawPile {
+		drawPileCopy[key] = d.XdrawPile[key].Copy()
 	}
 
 	var discardPileCopy = make(map[string]Card, DeckSize)
-	for key := range d.discardPile {
-		discardPileCopy[key] = d.discardPile[key].Copy()
+	for key := range d.XdiscardPile {
+		discardPileCopy[key] = d.XdiscardPile[key].Copy()
 	}
 
 	return &deck{
-		drawPile: drawPileCopy,
-		discardPile: discardPileCopy,
+		XdrawPile:    drawPileCopy,
+		XdiscardPile: discardPileCopy,
 	}
 }
 
 func (d *deck) Draw() (Card, error) {
-	if len(d.drawPile) < 1 {
+	if len(d.XdrawPile) < 1 {
 		// this is equivalent to shuffling the discard pile into the draw pile, because we draw randomly from the deck
-		for id, card := range d.discardPile {
-			delete(d.discardPile, id)
-			d.drawPile[id] = card
+		for id, card := range d.XdiscardPile {
+			delete(d.XdiscardPile, id)
+			d.XdrawPile[id] = card
 		}
 	}
 
-	if len(d.drawPile) < 1 {
+	if len(d.XdrawPile) < 1 {
 		// in any normal game, this should never happen
 		return (Card)(nil), errors.New("no cards available in deck")
 	}
 
 	// because range on a map is not stable, the order of keys will vary
-	keys := make([]string, 0, len(d.drawPile))
-	for k := range d.drawPile {
+	keys := make([]string, 0, len(d.XdrawPile))
+	for k := range d.XdrawPile {
 		keys = append(keys, k)
 	}
 
@@ -202,20 +249,20 @@ func (d *deck) Draw() (Card, error) {
 	}
 
 	key := keys[int(index.Int64())]
-	card, _ := d.drawPile[key]
-	delete(d.drawPile, key)
+	card, _ := d.XdrawPile[key]
+	delete(d.XdrawPile, key)
 
 	return card, nil
 }
 
 func (d *deck) Discard(card Card) error {
-	_, inDrawPile := d.drawPile[card.Id()]
-	_, inDiscardPile := d.discardPile[card.Id()]
+	_, inDrawPile := d.XdrawPile[card.Id()]
+	_, inDiscardPile := d.XdiscardPile[card.Id()]
 
 	if inDrawPile || inDiscardPile {
 		return errors.New("card already exists in deck")
 	}
 
-	d.discardPile[card.Id()] = card
+	d.XdiscardPile[card.Id()] = card
 	return nil
 }

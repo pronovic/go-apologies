@@ -13,6 +13,10 @@ func TestNewPlayer(t *testing.T) {
 	assert.Equal(t, Pawns, len(obj.Pawns()))
 }
 
+func TestNewPlayerFromJSON(t *testing.T) {
+	t.Fail() // TODO: implement TestNewPlayerFromJSON()
+}
+
 func TestPlayerCopy(t *testing.T) {
 	var err error
 
@@ -130,6 +134,10 @@ func TestNewPlayerView(t *testing.T) {
 	assert.Equal(t, player1, obj.Player())
 	assert.Equal(t, opponents, obj.Opponents())
 	assert.Equal(t, player2, obj.Opponents()[Red])
+}
+
+func TestNewPlayerViewFromJSON(t *testing.T) {
+	t.Fail() // TODO: implement TestNewPlayerViewFromJSON()
 }
 
 func TestPlayerViewCopy(t *testing.T) {

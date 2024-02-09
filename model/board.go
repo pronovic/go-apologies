@@ -1,9 +1,12 @@
 package model
 
 import (
+	"bytes"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/pronovic/go-apologies/internal/equality"
+	"io"
 )
 
 // SafeSquares there are 5 safe squares for each color, numbered 0-4
@@ -100,29 +103,41 @@ type Position interface {
 }
 
 type position struct {
-	start bool
-	home bool
-	safe *int
-	square *int
+	Xstart bool  `json:"start"`
+	Xhome  bool  `json:"home"`
+	Xsafe   *int `json:"safe"`
+	Xsquare *int `json:"square"`
 }
 
 // NewPosition constructs a new Position
 func NewPosition(start bool, home bool, safe *int, square *int) Position {
 	return &position{
-		start: start,
-		home: home,
-		safe: safe,
-		square: square,
+		Xstart:  start,
+		Xhome:   home,
+		Xsafe:   safe,
+		Xsquare: square,
 	}
+}
+
+// NewPositionFromJSON constructs a new object from JSON in an io.Reader
+func NewPositionFromJSON(reader io.Reader) (Position, error) {
+	var obj position
+
+	err := json.NewDecoder(reader).Decode(&obj)
+	if err != nil {
+		return nil, err
+	}
+
+	return &obj, nil
 }
 
 // emptyPosition creates a new empty position in the start, for internal use
 func emptyPosition() Position {
 	return &position{
-		start: true,
-		home: false,
-		safe: nil,
-		square: nil,
+		Xstart:  true,
+		Xhome:   false,
+		Xsafe:   nil,
+		Xsquare: nil,
 	}
 }
 
@@ -140,36 +155,36 @@ func newPositionAtSquare(square int) Position {
 }
 
 func (p *position) Start() bool {
-	return p.start
+	return p.Xstart
 }
 
 func (p *position) Home() bool {
-	return p.home
+	return p.Xhome
 }
 
 func (p *position) Safe() *int {
-	return p.safe
+	return p.Xsafe
 }
 
 func (p *position) Square() *int {
-	return p.square
+	return p.Xsquare
 }
 
 func (p *position) Copy() Position {
 	return &position {
-		start: p.start,
-		home: p.home,
-		safe: p.safe,
-		square: p.square,
+		Xstart:  p.Xstart,
+		Xhome:   p.Xhome,
+		Xsafe:   p.Xsafe,
+		Xsquare: p.Xsquare,
 	}
 }
 
 func (p *position) Equals(other Position) bool {
 	return other != nil &&
-		p.start == other.Start() &&
-		p.home == other.Home() &&
-		equality.IntPointerEquals(p.safe, other.Safe()) &&
-		equality.IntPointerEquals(p.square, other.Square())
+		p.Xstart == other.Start() &&
+		p.Xhome == other.Home() &&
+		equality.IntPointerEquals(p.Xsafe, other.Safe()) &&
+		equality.IntPointerEquals(p.Xsquare, other.Square())
 }
 
 func (p *position) MoveToPosition(position Position) error {
@@ -209,19 +224,19 @@ func (p *position) MoveToPosition(position Position) error {
 }
 
 func (p *position) MoveToStart() error {
-	p.start = true
-	p.home = false
-	p.safe = nil
-	p.square = nil
+	p.Xstart = true
+	p.Xhome = false
+	p.Xsafe = nil
+	p.Xsquare = nil
 
 	return nil
 }
 
 func (p *position) MoveToHome() error {
-	p.start = false
-	p.home = true
-	p.safe = nil
-	p.square = nil
+	p.Xstart = false
+	p.Xhome = true
+	p.Xsafe = nil
+	p.Xsquare = nil
 
 	return nil
 }
@@ -231,10 +246,10 @@ func (p *position) MoveToSafe(safe int) error {
 		return errors.New("invalid safe square")
 	}
 
-	p.start = false
-	p.home = false
-	p.safe = &safe
-	p.square = nil
+	p.Xstart = false
+	p.Xhome = false
+	p.Xsafe = &safe
+	p.Xsquare = nil
 
 	return nil
 }
@@ -244,23 +259,23 @@ func (p *position) MoveToSquare(square int) error {
 		return errors.New("invalid square")
 	}
 
-	p.start = false
-	p.home = false
-	p.safe = nil
-	p.square = &square
+	p.Xstart = false
+	p.Xhome = false
+	p.Xsafe = nil
+	p.Xsquare = &square
 
 	return nil
 }
 
 func (p *position) String() string {
-	if p.home {
+	if p.Xhome {
 		return "home"
-	} else if p.start {
+	} else if p.Xstart {
 		return "start"
-	} else if p.safe != nil {
-		return fmt.Sprintf("safe %v", *p.safe)
-	} else if p.square != nil {
-		return fmt.Sprintf("square %v", *p.square)
+	} else if p.Xsafe != nil {
+		return fmt.Sprintf("safe %v", *p.Xsafe)
+	} else if p.Xsquare != nil {
+		return fmt.Sprintf("square %v", *p.Xsquare)
 	} else {
 		return "uninitialized"
 	}
@@ -291,59 +306,92 @@ type Pawn interface {
 }
 
 type pawn struct {
-	color    PlayerColor
-	index    int
-	name     string
-	position Position
+	Xcolor PlayerColor `json:"playercolor"`
+	Xindex int		   `json:"index"`
+	Xname string	   `json:"name"`
+	Xposition Position `json:"position"`
 }
 
 // NewPawn constructs a new Pawn
 func NewPawn(color PlayerColor, index int) Pawn {
 	return &pawn{
-		color: color,
-		index: index,
-		name: fmt.Sprintf("%s%d", color.value, index),
-		position: emptyPosition(),
+		Xcolor:    color,
+		Xindex:    index,
+		Xname:     fmt.Sprintf("%s%d", color.value, index),
+		Xposition: emptyPosition(),
 	}
 }
 
+// NewPawnFromJSON constructs a new object from JSON in an io.Reader
+func NewPawnFromJSON(reader io.Reader) (Pawn, error) {
+	type raw struct {
+		Xcolor PlayerColor `json:"playercolor"`
+		Xindex int	`json:"index"`
+		Xname string `json:"name"`
+		Xposition json.RawMessage `json:"position"`
+	}
+
+	var temp raw
+	err := json.NewDecoder(reader).Decode(&temp)
+	if err != nil {
+		return nil, err
+	}
+
+	var Xposition Position
+	if temp.Xposition != nil {
+		Xposition, err = NewPositionFromJSON(bytes.NewReader(temp.Xposition))
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	obj := pawn {
+		Xcolor:    temp.Xcolor,
+		Xindex:    temp.Xindex,
+		Xname:     temp.Xname,
+		Xposition: Xposition,
+	}
+
+	return &obj, nil
+}
+
 func (p *pawn) Color() PlayerColor {
-	return p.color
+	return p.Xcolor
 }
 
 func (p *pawn) Index() int {
-	return p.index
+	return p.Xindex
 }
 
 func (p *pawn) Name() string {
-	return p.name
+	return p.Xname
 }
 
 func (p *pawn) Position() Position {
-	return p.position
+	return p.Xposition
 }
 
 func (p *pawn) Copy() Pawn {
 	return &pawn{
-		color: p.color,
-		index: p.index,
-		name: p.name,
-		position: p.position.Copy(),
+		Xcolor:    p.Xcolor,
+		Xindex:    p.Xindex,
+		Xname:     p.Xname,
+		Xposition: p.Xposition.Copy(),
 	}
 }
 
 func (p *pawn) Equals(other Pawn) bool {
 	return other != nil &&
-		p.color == other.Color() &&
-		p.index == other.Index() &&
-		p.name == other.Name() &&
-		equality.ByValueEquals[Position](p.position, other.Position())
+		p.Xcolor == other.Color() &&
+		p.Xindex == other.Index() &&
+		p.Xname == other.Name() &&
+		equality.ByValueEquals[Position](p.Xposition, other.Position())
 }
 
 func (p *pawn) SetPosition(position Position) {
-	p.position = position
+	p.Xposition = position
 }
 
 func (p *pawn) String() string {
-	return fmt.Sprintf("%s->%s", p.name, p.position)
+	return fmt.Sprintf("%s->%s", p.Xname, p.Xposition)
 }

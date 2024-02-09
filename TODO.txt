@@ -1,4 +1,6 @@
-go back and adjust interface to return error and check for nil anywhere that an interface is passed in (ugh)
+JSON serialization/deserialization of model
+engine implementation
+render, demo, and related CLI (maybe, if I can make it work fairly easily?)
 Need a makefile for CLI tasks
 Run fmt
 Run import organizer

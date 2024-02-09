@@ -3,8 +3,7 @@
 package model
 
 import (
-	time "time"
-
+	timestamp "github.com/pronovic/go-apologies/internal/timestamp"
 	mock "github.com/stretchr/testify/mock"
 )
 
@@ -92,18 +91,18 @@ func (_m *MockHistory) Copy() History {
 }
 
 // Timestamp provides a mock function with given fields:
-func (_m *MockHistory) Timestamp() time.Time {
+func (_m *MockHistory) Timestamp() timestamp.Timestamp {
 	ret := _m.Called()
 
 	if len(ret) == 0 {
 		panic("no return value specified for Timestamp")
 	}
 
-	var r0 time.Time
-	if rf, ok := ret.Get(0).(func() time.Time); ok {
+	var r0 timestamp.Timestamp
+	if rf, ok := ret.Get(0).(func() timestamp.Timestamp); ok {
 		r0 = rf()
 	} else {
-		r0 = ret.Get(0).(time.Time)
+		r0 = ret.Get(0).(timestamp.Timestamp)
 	}
 
 	return r0

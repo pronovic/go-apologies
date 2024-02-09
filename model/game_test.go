@@ -8,7 +8,7 @@ import (
 )
 
 var stubbedString = "2024-01-31T08:15:03.221Z"
-var stubbedTimestamp, _ = timestamp.ParseTime(stubbedString)
+var stubbedTimestamp, _ = timestamp.Parse(stubbedString)
 var factory timestamp.MockFactory
 
 func init() {
@@ -40,6 +40,10 @@ func TestNewHistory(t *testing.T) {
 	assert.Equal(t, fmt.Sprintf("[%s] General - action", stubbedString), fmt.Sprintf("%s", obj))
 }
 
+func TestNewHistoryFromJSON(t *testing.T) {
+	t.Fail() // TODO: implement TestNewHistoryFromJSON()
+}
+
 func TestHistoryCopy(t *testing.T) {
 	color := Blue
 	card1 := Card12
@@ -47,6 +51,10 @@ func TestHistoryCopy(t *testing.T) {
 	copied := obj.Copy()
 	assert.Equal(t, obj, copied)
 	assert.NotSame(t, obj, copied)
+}
+
+func TestNewGameFromJSON(t *testing.T) {
+	t.Fail() // TODO: implement TestNewGameFromJSON()
 }
 
 func TestNewGame2Players(t *testing.T) {

@@ -1,6 +1,8 @@
 package model
 
 import (
+	"bytes"
+	"encoding/json"
 	"fmt"
 	"github.com/stretchr/testify/assert"
 	"testing"
@@ -122,6 +124,50 @@ func TestPositionEquals(t *testing.T) {
 	assert.False(t, p4.Equals(p1))
 	assert.False(t, p4.Equals(p2))
 	assert.False(t, p4.Equals(p3))
+}
+
+func TestPositionJSON(t *testing.T) {
+	var obj Position
+	var err error
+	var marshalled []byte
+	var unmarshalled Position
+
+	obj = NewPosition(true, false, nil, nil)
+	marshalled, err = json.Marshal(obj)
+	assert.Nil(t, err)
+	unmarshalled, err = NewPositionFromJSON(bytes.NewReader(marshalled))
+	assert.Nil(t, err)
+	assert.Equal(t, obj, unmarshalled)
+
+	obj = NewPosition(false, true, nil, nil)
+	marshalled, err = json.Marshal(obj)
+	assert.Nil(t, err)
+	unmarshalled, err = NewPositionFromJSON(bytes.NewReader(marshalled))
+	assert.Nil(t, err)
+	assert.Equal(t, obj, unmarshalled)
+
+	obj = NewPosition(false, false, nil, nil)
+	marshalled, err = json.Marshal(obj)
+	assert.Nil(t, err)
+	unmarshalled, err = NewPositionFromJSON(bytes.NewReader(marshalled))
+	assert.Nil(t, err)
+	assert.Equal(t, obj, unmarshalled)
+
+	square := 5
+	obj = NewPosition(false, false, nil, &square)
+	marshalled, err = json.Marshal(obj)
+	assert.Nil(t, err)
+	unmarshalled, err = NewPositionFromJSON(bytes.NewReader(marshalled))
+	assert.Nil(t, err)
+	assert.Equal(t, obj, unmarshalled)
+
+	safe := 10
+	obj = NewPosition(false, false, &safe, nil)
+	marshalled, err = json.Marshal(obj)
+	assert.Nil(t, err)
+	unmarshalled, err = NewPositionFromJSON(bytes.NewReader(marshalled))
+	assert.Nil(t, err)
+	assert.Equal(t, obj, unmarshalled)
 }
 
 func TestPositionMoveToPositionValidStart(t *testing.T) {
@@ -298,4 +344,27 @@ func TestPawnSetPosition(t *testing.T) {
 	obj.SetPosition(target)
 	assert.Equal(t, target, obj.Position())
 	assert.Equal(t, "Red13->home", fmt.Sprintf("%s", obj))
+}
+
+func TestPawnJSON(t *testing.T) {
+	var obj Pawn
+	var err error
+	var marshalled []byte
+	var unmarshalled Pawn
+
+	obj = NewPawn(Red, 13)
+	marshalled, err = json.Marshal(obj)
+	assert.Nil(t, err)
+	unmarshalled, err = NewPawnFromJSON(bytes.NewReader(marshalled))
+	assert.Nil(t, err)
+	assert.Equal(t, obj, unmarshalled)
+
+	obj = NewPawn(Blue, 0)
+	target := NewPosition(false, true, nil, nil)
+	obj.SetPosition(target)
+	marshalled, err = json.Marshal(obj)
+	assert.Nil(t, err)
+	unmarshalled, err = NewPawnFromJSON(bytes.NewReader(marshalled))
+	assert.Nil(t, err)
+	assert.Equal(t, obj, unmarshalled)
 }
