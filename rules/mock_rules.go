@@ -42,6 +42,24 @@ func (_m *MockRules) ConstructLegalMoves(view model.PlayerView, card model.Card)
 	return r0, r1
 }
 
+// DrawAgain provides a mock function with given fields: card
+func (_m *MockRules) DrawAgain(card model.Card) bool {
+	ret := _m.Called(card)
+
+	if len(ret) == 0 {
+		panic("no return value specified for DrawAgain")
+	}
+
+	var r0 bool
+	if rf, ok := ret.Get(0).(func(model.Card) bool); ok {
+		r0 = rf(card)
+	} else {
+		r0 = ret.Get(0).(bool)
+	}
+
+	return r0
+}
+
 // EvaluateMove provides a mock function with given fields: view, move
 func (_m *MockRules) EvaluateMove(view model.PlayerView, move model.Move) (model.PlayerView, error) {
 	ret := _m.Called(view, move)
