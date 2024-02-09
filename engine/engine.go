@@ -21,6 +21,9 @@ type Engine interface {
 	// First The first player, chosen randomly
 	First() model.PlayerColor
 
+	// SetFirst Override the randomly-chosen first player
+	SetFirst(first model.PlayerColor)
+
 	// Players The number of players in the game
 	Players() int
 
@@ -115,9 +118,9 @@ func NewEngine(mode model.GameMode, characters []Character, evaluator rules.Rule
 
 	i := 0
 	colorMap := make(map[model.PlayerColor]Character, players)
-	for _, player := range game.Players() {
+	for _, color := range model.PlayerColors.Members()[0:players] {
 		c := characters[i]
-		c.SetColor(player.Color())
+		c.SetColor(color)
 		colorMap[c.Color()] = c
 		i += 1
 	}
@@ -147,6 +150,10 @@ func (e *engine) Characters() []Character {
 
 func (e *engine) First() model.PlayerColor {
 	return e.first
+}
+
+func (e *engine) SetFirst(first model.PlayerColor) {
+	e.first = first
 }
 
 func (e *engine) Players() int {
