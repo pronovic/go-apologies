@@ -1,13 +1,12 @@
 package model
 
 import (
-	"crypto/rand"
 	"encoding/json"
 	"errors"
 	"github.com/pronovic/go-apologies/internal/enum"
 	"github.com/pronovic/go-apologies/internal/jsonutil"
+	"github.com/pronovic/go-apologies/internal/randomutil"
 	"io"
-	"math/big"
 	"strconv"
 )
 
@@ -234,12 +233,12 @@ func (d *deck) Draw() (Card, error) {
 		keys = append(keys, k)
 	}
 
-	index, err := rand.Int(rand.Reader, big.NewInt(int64(len(keys))))
+	index, err := randomutil.RandomInt(len(keys))
 	if err != nil {
-		return (Card)(nil), errors.New("failed to generate random int for draw")
+		return (Card)(nil), err
 	}
 
-	key := keys[int(index.Int64())]
+	key := keys[index]
 	card, _ := d.XdrawPile[key]
 	delete(d.XdrawPile, key)
 
