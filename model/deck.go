@@ -1,7 +1,6 @@
 package model
 
 import (
-	"bytes"
 	"crypto/rand"
 	"encoding/json"
 	"errors"
@@ -180,32 +179,16 @@ func NewDeckFromJSON(reader io.Reader) (Deck, error) {
 		return nil, err
 	}
 
-	var XdrawPile = make(map[string]Card, len(temp.XdrawPile))
-	for key := range temp.XdrawPile {
-		value := temp.XdrawPile[key]
-		if value == nil || string(value) == "null" {
-			XdrawPile[key] = nil
-		} else {
-			element, err := NewCardFromJSON(bytes.NewReader(value))
-			if err != nil {
-				return nil, err
-			}
-			XdrawPile[key] = element
-		}
+	var XdrawPile map[string]Card
+	XdrawPile, err = jsonutil.DecodeMapJSON(temp.XdrawPile, NewCardFromJSON)
+	if err != nil {
+		return nil, err
 	}
 
-	var XdiscardPile = make(map[string]Card, len(temp.XdrawPile))
-	for key := range temp.XdiscardPile {
-		value := temp.XdiscardPile[key]
-		if value == nil || string(value) == "null" {
-			XdiscardPile[key] = nil
-		} else {
-			element, err := NewCardFromJSON(bytes.NewReader(value))
-			if err != nil {
-				return nil, err
-			}
-			XdiscardPile[key] = element
-		}
+	var XdiscardPile map[string]Card
+	XdiscardPile, err = jsonutil.DecodeMapJSON(temp.XdiscardPile, NewCardFromJSON)
+	if err != nil {
+		return nil, err
 	}
 
 	obj := deck {

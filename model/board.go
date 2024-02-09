@@ -1,7 +1,6 @@
 package model
 
 import (
-	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -332,11 +331,9 @@ func NewPawnFromJSON(reader io.Reader) (Pawn, error) {
 	}
 
 	var Xposition Position
-	if temp.Xposition != nil && string(temp.Xposition) != "null" {
-		Xposition, err = NewPositionFromJSON(bytes.NewReader(temp.Xposition))
-		if err != nil {
-			return nil, err
-		}
+	Xposition, err = jsonutil.DecodeInterfaceJSON(temp.Xposition, NewPositionFromJSON)
+	if err != nil {
+		return nil, err
 	}
 
 	obj := pawn {

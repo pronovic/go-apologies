@@ -29,6 +29,7 @@ func TestNewActionFromJSON(t *testing.T) {
 	marshalled, err = json.Marshal(obj)
 	assert.Nil(t, err)
 	unmarshalled, err = NewActionFromJSON(bytes.NewReader(marshalled))
+	marshalled, err = json.Marshal(unmarshalled)
 	assert.Nil(t, err)
 	assert.Equal(t, obj, unmarshalled)
 }

@@ -1,11 +1,11 @@
 package model
 
 import (
-	"bytes"
 	"encoding/json"
 	"github.com/pronovic/go-apologies/internal/enum"
 	"github.com/pronovic/go-apologies/internal/equality"
 	"github.com/pronovic/go-apologies/internal/identifier"
+	"github.com/pronovic/go-apologies/internal/jsonutil"
 	"io"
 )
 
@@ -66,19 +66,15 @@ func NewActionFromJSON(reader io.Reader) (Action, error) {
 	}
 
 	var Xpawn Pawn
-	if temp.Xpawn != nil && string(temp.Xpawn) != "null" {
-		Xpawn, err = NewPawnFromJSON(bytes.NewReader(temp.Xpawn))
-		if err != nil {
-			return nil, err
-		}
+	Xpawn, err = jsonutil.DecodeInterfaceJSON(temp.Xpawn, NewPawnFromJSON)
+	if err != nil {
+		return nil, err
 	}
 
 	var Xposition Position
-	if temp.Xposition != nil && string(temp.Xposition) != "null"{
-		Xposition, err = NewPositionFromJSON(bytes.NewReader(temp.Xposition))
-		if err != nil {
-			return nil, err
-		}
+	Xposition, err = jsonutil.DecodeInterfaceJSON(temp.Xposition, NewPositionFromJSON)
+	if err != nil {
+		return nil, err
 	}
 
 	obj := action {
@@ -176,39 +172,21 @@ func NewMoveFromJSON(reader io.Reader) (Move, error) {
 	}
 
 	var Xcard Card
-	if temp.Xcard != nil || string(temp.Xcard) == "null" {
-		Xcard, err = NewCardFromJSON(bytes.NewReader(temp.Xcard))
-		if err != nil {
-			return nil, err
-		}
+	Xcard, err = jsonutil.DecodeInterfaceJSON(temp.Xcard, NewCardFromJSON)
+	if err != nil {
+		return nil, err
 	}
 
-	var Xactions = make([]Action, len(temp.Xactions))
-	for i := range temp.Xactions {
-		value := temp.Xactions[i]
-		if value == nil || string(value) == "null" {
-			Xactions[i] = nil
-		} else {
-			element, err := NewActionFromJSON(bytes.NewReader(value))
-			if err != nil {
-				return nil, err
-			}
-			Xactions[i] = element
-		}
+	var Xactions []Action
+	Xactions, err = jsonutil.DecodeSliceJSON(temp.Xactions, NewActionFromJSON)
+	if err != nil {
+		return nil, err
 	}
 
-	var XsideEffects = make([]Action, len(temp.XsideEffects))
-	for i := range temp.XsideEffects {
-		value := temp.XsideEffects[i]
-		if value == nil || string(value) == "null" {
-			XsideEffects[i] = nil
-		} else {
-			element, err := NewActionFromJSON(bytes.NewReader(value))
-			if err != nil {
-				return nil, err
-			}
-			XsideEffects[i] = element
-		}
+	var XsideEffects []Action
+	XsideEffects, err = jsonutil.DecodeSliceJSON(temp.XsideEffects, NewActionFromJSON)
+	if err != nil {
+		return nil, err
 	}
 
 	obj := move {

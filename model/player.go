@@ -1,10 +1,10 @@
 package model
 
 import (
-	"bytes"
 	"encoding/json"
 	"github.com/pronovic/go-apologies/internal/enum"
 	"github.com/pronovic/go-apologies/internal/equality"
+	"github.com/pronovic/go-apologies/internal/jsonutil"
 	"io"
 	"slices"
 )
@@ -103,32 +103,16 @@ func NewPlayerFromJSON(reader io.Reader) (Player, error) {
 		return nil, err
 	}
 
-	var Xhand = make([]Card, len(temp.Xhand))
-	for i := range temp.Xhand {
-		value := temp.Xhand[i]
-		if value == nil || string(value) == "null" {
-			Xhand[i] = nil
-		} else {
-			element, err := NewCardFromJSON(bytes.NewReader(value))
-			if err != nil {
-				return nil, err
-			}
-			Xhand[i] = element
-		}
+	var Xhand []Card
+	Xhand, err = jsonutil.DecodeSliceJSON(temp.Xhand, NewCardFromJSON)
+	if err != nil {
+		return nil, err
 	}
 
-	var Xpawns = make([]Pawn, len(temp.Xpawns))
-	for i := range temp.Xpawns {
-		value := temp.Xpawns[i]
-		if value == nil || string(value) == "null" {
-			Xpawns[i] = nil
-		} else {
-			element, err := NewPawnFromJSON(bytes.NewReader(value))
-			if err != nil {
-				return nil, err
-			}
-			Xpawns[i] = element
-		}
+	var Xpawns []Pawn
+	Xpawns, err = jsonutil.DecodeSliceJSON(temp.Xpawns, NewPawnFromJSON)
+	if err != nil {
+		return nil, err
 	}
 
 	obj := player {
@@ -278,25 +262,15 @@ func NewPlayerViewFromJSON(reader io.Reader) (PlayerView, error) {
 	}
 
 	var Xplayer Player
-	if temp.Xplayer != nil || string(temp.Xplayer) == "null" {
-		Xplayer, err = NewPlayerFromJSON(bytes.NewReader(temp.Xplayer))
-		if err != nil {
-			return nil, err
-		}
+	Xplayer, err = jsonutil.DecodeInterfaceJSON(temp.Xplayer, NewPlayerFromJSON)
+	if err != nil {
+		return nil, err
 	}
 
-	var Xopponents = make(map[PlayerColor]Player, len(temp.Xopponents))
-	for key := range temp.Xopponents {
-		value := temp.Xopponents[key]
-		if value == nil || string(value) == "null" {
-			Xopponents[key] = nil
-		} else {
-			element, err := NewPlayerFromJSON(bytes.NewReader(value))
-			if err != nil {
-				return nil, err
-			}
-			Xopponents[key] = element
-		}
+	var Xopponents map[PlayerColor]Player
+	Xopponents, err = jsonutil.DecodeMapJSON(temp.Xopponents, NewPlayerFromJSON)
+	if err != nil {
+		return nil, err
 	}
 
 	obj := playerView {

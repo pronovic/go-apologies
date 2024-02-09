@@ -1,7 +1,6 @@
 package model
 
 import (
-	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -186,40 +185,22 @@ func NewGameFromJSON(reader io.Reader) (Game, error) {
 		return nil, err
 	}
 
-	var Xplayers = make(map[PlayerColor]Player, len(temp.Xplayers))
-	for key := range temp.Xplayers {
-		value := temp.Xplayers[key]
-		if value == nil || string(value) == "null" {
-			Xplayers[key] = nil
-		} else {
-			element, err := NewPlayerFromJSON(bytes.NewReader(value))
-			if err != nil {
-				return nil, err
-			}
-			Xplayers[key] = element
-		}
+	var Xplayers map[PlayerColor]Player
+	Xplayers, err = jsonutil.DecodeMapJSON(temp.Xplayers, NewPlayerFromJSON)
+	if err != nil {
+		return nil, err
 	}
 
 	var Xdeck Deck
-	if temp.Xdeck != nil || string(temp.Xdeck) == "null" {
-		Xdeck, err = NewDeckFromJSON(bytes.NewReader(temp.Xdeck))
-		if err != nil {
-			return nil, err
-		}
+	Xdeck, err = jsonutil.DecodeInterfaceJSON(temp.Xdeck, NewDeckFromJSON)
+	if err != nil {
+		return nil, err
 	}
 
-	var Xhistory = make([]History, len(temp.Xhistory))
-	for i := range temp.Xhistory {
-		value := temp.Xhistory[i]
-		if value == nil || string(value) == "null" {
-			Xhistory[i] = nil
-		} else {
-			element, err := NewHistoryFromJSON(bytes.NewReader(value))
-			if err != nil {
-				return nil, err
-			}
-			Xhistory[i] = element
-		}
+	var Xhistory []History
+	Xhistory, err = jsonutil.DecodeSliceJSON(temp.Xhistory, NewHistoryFromJSON)
+	if err != nil {
+		return nil, err
 	}
 
 	obj := game {

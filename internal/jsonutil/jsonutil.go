@@ -1,6 +1,7 @@
 package jsonutil
 
 import (
+	"bytes"
 	"encoding/json"
 	"io"
 )
@@ -130,4 +131,61 @@ func DecodeSimpleJSON[T any](reader io.Reader) (*T, error) {
 	}
 
 	return &obj, nil
+}
+
+// DecodeInterfaceJSON decodes (unmarshalls) an interface from a json.RawMessage
+func DecodeInterfaceJSON[T any](raw json.RawMessage, constructor func(reader io.Reader)(T, error)) (T, error) {
+	var result T
+	var err error
+
+	if raw != nil && string(raw) != "null" {
+		result, err = constructor(bytes.NewReader(raw))
+		if err != nil {
+			return *new(T), err
+		}
+	}
+
+	return result, nil
+}
+
+// DecodeMapJSON decodes (unmarshalls) a map[K]T from map[K]json.rawMessage
+func DecodeMapJSON[K comparable, T any](raw map[K]json.RawMessage, constructor func(reader io.Reader)(T, error)) (map[K]T, error) {
+	var result = make(map[K]T, len(raw))
+
+	for key := range raw {
+		value := raw[key]
+		if value == nil || string(value) == "null" {
+			var empty T
+			result[key] = empty
+		} else {
+			element, err := constructor(bytes.NewReader(value))
+			if err != nil {
+				return nil, err
+			}
+			result[key] = element
+		}
+	}
+
+	return result, nil
+}
+
+// DecodeSliceJSON decodes (unmarshalls) a []T from []json.rawMessage
+func DecodeSliceJSON[T any](raw []json.RawMessage, constructor func(reader io.Reader)(T, error)) ([]T, error) {
+	var result = make([]T, len(raw))
+
+	for i := range raw {
+		value := raw[i]
+		if value == nil || string(value) == "null" {
+			var empty T
+			result[i] = empty
+		} else {
+			element, err := constructor(bytes.NewReader(value))
+			if err != nil {
+				return nil, err
+			}
+			result[i] = element
+		}
+	}
+
+	return result, nil
 }
