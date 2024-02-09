@@ -1,6 +1,7 @@
 package model
 
 import (
+	"bytes"
 	"crypto/rand"
 	"encoding/json"
 	"errors"
@@ -175,8 +176,8 @@ func NewDeck() Deck {
 // NewDeckFromJSON constructs a new object from JSON in an io.Reader
 func NewDeckFromJSON(reader io.Reader) (Deck, error) {
 	type raw struct {
-		XdrawPile    map[string]card `json:"draw"`
-		XdiscardPile map[string]card `json:"discard"`
+		XdrawPile    map[string]json.RawMessage `json:"draw"`
+		XdiscardPile map[string]json.RawMessage `json:"discard"`
 	}
 
 	var temp raw
@@ -185,16 +186,32 @@ func NewDeckFromJSON(reader io.Reader) (Deck, error) {
 		return nil, err
 	}
 
-	var XdrawPile = make(map[string]Card)
+	var XdrawPile = make(map[string]Card, len(temp.XdrawPile))
 	for key := range temp.XdrawPile {
 		value := temp.XdrawPile[key]
-		XdrawPile[key] = &value
+		if value == nil || string(value) == "null" {
+			XdrawPile[key] = nil
+		} else {
+			element, err := NewCardFromJSON(bytes.NewReader(value))
+			if err != nil {
+				return nil, err
+			}
+			XdrawPile[key] = element
+		}
 	}
 
-	var XdiscardPile = make(map[string]Card)
+	var XdiscardPile = make(map[string]Card, len(temp.XdrawPile))
 	for key := range temp.XdiscardPile {
 		value := temp.XdiscardPile[key]
-		XdiscardPile[key] = &value
+		if value == nil || string(value) == "null" {
+			XdiscardPile[key] = nil
+		} else {
+			element, err := NewCardFromJSON(bytes.NewReader(value))
+			if err != nil {
+				return nil, err
+			}
+			XdiscardPile[key] = element
+		}
 	}
 
 	obj := deck {

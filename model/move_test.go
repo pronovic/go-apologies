@@ -1,6 +1,8 @@
 package model
 
 import (
+	"bytes"
+	"encoding/json"
 	"github.com/pronovic/go-apologies/internal/identifier"
 	"github.com/stretchr/testify/assert"
 	"testing"
@@ -16,7 +18,19 @@ func TestNewAction(t *testing.T) {
 }
 
 func TestNewActionFromJSON(t *testing.T) {
-	t.Fail() // TODO: implement TestNewActionFromJSON()
+	var obj Action
+	var err error
+	var marshalled []byte
+	var unmarshalled Action
+
+	pawn1 := NewPawn(Red, 0)
+	position1 := NewPosition(false, false, nil, nil)
+	obj = NewAction(MoveToPosition, pawn1, position1)
+	marshalled, err = json.Marshal(obj)
+	assert.Nil(t, err)
+	unmarshalled, err = NewActionFromJSON(bytes.NewReader(marshalled))
+	assert.Nil(t, err)
+	assert.Equal(t, obj, unmarshalled)
 }
 
 func TestActionSetPosition(t *testing.T) {
@@ -84,7 +98,24 @@ func TestNewMove(t *testing.T) {
 }
 
 func TestNewMoveFromJSON(t *testing.T) {
-	t.Fail() // TODO: implement TestNewMoveFromJSON()
+	var obj Move
+	var err error
+	var marshalled []byte
+	var unmarshalled Move
+
+	card1 := NewCard("4", Card4)
+	position1 := NewPosition(false, false, nil, nil)
+	action1 := NewAction(MoveToStart, nil, position1)
+	pawn2 := NewPawn(Red, 0)
+	action2 := NewAction(MoveToStart, pawn2, nil)
+	obj = NewMove(card1, []Action {action1}, []Action {action2}, nil)
+
+	marshalled, err = json.Marshal(obj)
+	assert.Nil(t, err)
+	unmarshalled, err = NewMoveFromJSON(bytes.NewReader(marshalled))
+	assert.Nil(t, err)
+	marshalled, err = json.Marshal(unmarshalled)
+	assert.Equal(t, obj, unmarshalled)
 }
 
 func TestMoveEquals(t *testing.T) {

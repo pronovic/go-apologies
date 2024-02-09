@@ -66,7 +66,7 @@ func NewActionFromJSON(reader io.Reader) (Action, error) {
 	}
 
 	var Xpawn Pawn
-	if temp.Xpawn != nil {
+	if temp.Xpawn != nil && string(temp.Xpawn) != "null" {
 		Xpawn, err = NewPawnFromJSON(bytes.NewReader(temp.Xpawn))
 		if err != nil {
 			return nil, err
@@ -74,7 +74,7 @@ func NewActionFromJSON(reader io.Reader) (Action, error) {
 	}
 
 	var Xposition Position
-	if temp.Xposition != nil {
+	if temp.Xposition != nil && string(temp.Xposition) != "null"{
 		Xposition, err = NewPositionFromJSON(bytes.NewReader(temp.Xposition))
 		if err != nil {
 			return nil, err
@@ -131,10 +131,10 @@ type Move interface {
 }
 
 type move struct {
-	Xid     string
-	Xcard       Card
-	Xactions     []Action
-	XsideEffects []Action
+	Xid     string	`json:"id"`
+	Xcard       Card `json:"card"`
+	Xactions     []Action `json:"actions"`
+	XsideEffects []Action `json:"sideeffects"`
 }
 
 // NewMove constructs a new move, optionally accepting an identify factory
@@ -162,7 +162,63 @@ func NewMove(card Card, actions []Action, sideEffects []Action, factory identifi
 
 // NewMoveFromJSON constructs a new object from JSON in an io.Reader
 func NewMoveFromJSON(reader io.Reader) (Move, error) {
-	return nil, nil // TODO: implement NewMoveFromJSON
+	type raw struct {
+		Xid     string	`json:"id"`
+		Xcard       json.RawMessage `json:"card"`
+		Xactions     []json.RawMessage `json:"actions"`
+		XsideEffects []json.RawMessage `json:"sideeffects"`
+	}
+
+	var temp raw
+	err := json.NewDecoder(reader).Decode(&temp)
+	if err != nil {
+		return nil, err
+	}
+
+	var Xcard Card
+	if temp.Xcard != nil || string(temp.Xcard) == "null" {
+		Xcard, err = NewCardFromJSON(bytes.NewReader(temp.Xcard))
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	var Xactions = make([]Action, len(temp.Xactions))
+	for i := range temp.Xactions {
+		value := temp.Xactions[i]
+		if value == nil || string(value) == "null" {
+			Xactions[i] = nil
+		} else {
+			element, err := NewActionFromJSON(bytes.NewReader(value))
+			if err != nil {
+				return nil, err
+			}
+			Xactions[i] = element
+		}
+	}
+
+	var XsideEffects = make([]Action, len(temp.XsideEffects))
+	for i := range temp.XsideEffects {
+		value := temp.XsideEffects[i]
+		if value == nil || string(value) == "null" {
+			XsideEffects[i] = nil
+		} else {
+			element, err := NewActionFromJSON(bytes.NewReader(value))
+			if err != nil {
+				return nil, err
+			}
+			XsideEffects[i] = element
+		}
+	}
+
+	obj := move {
+		Xid: temp.Xid,
+		Xcard:     Xcard,
+		Xactions: Xactions,
+		XsideEffects: XsideEffects,
+	}
+
+	return &obj, nil
 }
 
 func (m *move) Equals(other Move) bool {

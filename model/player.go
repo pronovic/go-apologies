@@ -1,6 +1,8 @@
 package model
 
 import (
+	"bytes"
+	"encoding/json"
 	"github.com/pronovic/go-apologies/internal/enum"
 	"github.com/pronovic/go-apologies/internal/equality"
 	"io"
@@ -65,10 +67,10 @@ type Player interface {
 }
 
 type player struct {
-	color    PlayerColor
-	hand     []Card
-	pawns    []Pawn
-	turns    int
+	Xcolor PlayerColor `json:"color"`
+	Xhand  []Card `json:"hand"`
+	Xpawns []Pawn `json:"pawns"`
+	Xturns int `json:"turns"`
 }
 
 // NewPlayer constructs a new Player
@@ -79,50 +81,98 @@ func NewPlayer(color PlayerColor) Player {
 	}
 
 	return &player{
-		color: color,
-		hand: make([]Card, 0, DeckSize),
-		pawns: pawns,
-		turns: 0,
+		Xcolor: color,
+		Xhand:  make([]Card, 0, DeckSize),
+		Xpawns: pawns,
+		Xturns: 0,
 	}
 }
 
 // NewPlayerFromJSON constructs a new object from JSON in an io.Reader
 func NewPlayerFromJSON(reader io.Reader) (Player, error) {
-	return nil, nil // TODO: implement NewPlayerFromJSON
+	type raw struct {
+		Xcolor PlayerColor `json:"color"`
+		Xhand  []json.RawMessage `json:"hand"`
+		Xpawns []json.RawMessage `json:"pawns"`
+		Xturns int `json:"turns"`
+	}
+
+	var temp raw
+	err := json.NewDecoder(reader).Decode(&temp)
+	if err != nil {
+		return nil, err
+	}
+
+	var Xhand = make([]Card, len(temp.Xhand))
+	for i := range temp.Xhand {
+		value := temp.Xhand[i]
+		if value == nil || string(value) == "null" {
+			Xhand[i] = nil
+		} else {
+			element, err := NewCardFromJSON(bytes.NewReader(value))
+			if err != nil {
+				return nil, err
+			}
+			Xhand[i] = element
+		}
+	}
+
+	var Xpawns = make([]Pawn, len(temp.Xpawns))
+	for i := range temp.Xpawns {
+		value := temp.Xpawns[i]
+		if value == nil || string(value) == "null" {
+			Xpawns[i] = nil
+		} else {
+			element, err := NewPawnFromJSON(bytes.NewReader(value))
+			if err != nil {
+				return nil, err
+			}
+			Xpawns[i] = element
+		}
+	}
+
+	obj := player {
+		Xcolor: temp.Xcolor,
+		Xhand:  Xhand,
+		Xpawns: Xpawns,
+		Xturns: temp.Xturns,
+	}
+
+	return &obj, nil
 }
 
 func (p *player) Color() PlayerColor {
-	return p.color
+	return p.Xcolor
 }
 
 func (p *player) Hand() []Card {
-	return p.hand
+	return p.Xhand
 }
 
 func (p *player) Pawns() []Pawn {
-	return p.pawns
+	return p.Xpawns
 }
 
 func (p *player) Turns() int {
-	return p.turns
+	return p.Xturns
 }
 
 func (p *player) Copy() Player {
 	handCopy := make([]Card, 0, DeckSize)
-	for i := range p.hand {
-		handCopy = append(handCopy, p.hand[i].Copy())
+	for i := range p.Xhand {
+		handCopy = append(handCopy, p.Xhand[i].Copy())
 	}
 
 	pawnsCopy := make([]Pawn, 0, Pawns)
-	for i := range p.pawns {
-		pawnsCopy = append(pawnsCopy, p.pawns[i].Copy())
+	for i := range p.Xpawns {
+		pawnsCopy = append(pawnsCopy, p.Xpawns[i].Copy())
 	}
 
 	return &player{
-		color: p.color,
-		hand:  handCopy,
-		pawns: pawnsCopy,
-		turns: p.turns,
+		Xcolor: p.Xcolor,
+		Xhand:  handCopy,
+		Xpawns: pawnsCopy,
+		Xturns: p.Xturns,
 	}
 }
 
@@ -130,27 +180,27 @@ func (p *player) PublicData() Player {
 	handCopy := make([]Card, 0, DeckSize) // other players should not see this player's hand when making decisions
 
 	pawnsCopy := make([]Pawn, 0, Pawns)
-	for i := range p.pawns {
-		pawnsCopy = append(pawnsCopy, p.pawns[i].Copy())
+	for i := range p.Xpawns {
+		pawnsCopy = append(pawnsCopy, p.Xpawns[i].Copy())
 	}
 
 	return &player{
-		color: p.color,
-		hand:  handCopy,
-		pawns: pawnsCopy,
-		turns: p.turns,
+		Xcolor: p.Xcolor,
+		Xhand:  handCopy,
+		Xpawns: pawnsCopy,
+		Xturns: p.Xturns,
 	}
 }
 
 func (p *player) AppendToHand(card Card) {
-	p.hand = append(p.hand, card)
+	p.Xhand = append(p.Xhand, card)
 }
 
 func (p *player) RemoveFromHand(card Card) {
-	for i := 0; i < len(p.hand); i++ {
-		found := p.hand[i]
+	for i := 0; i < len(p.Xhand); i++ {
+		found := p.Xhand[i]
 		if equality.ByValueEquals[Card](card, found) {
-			p.hand = slices.Delete(p.hand, i, i+1)
+			p.Xhand = slices.Delete(p.Xhand, i, i+1)
 			return
 		}
 	}
@@ -159,9 +209,9 @@ func (p *player) RemoveFromHand(card Card) {
 }
 
 func (p *player) FindFirstPawnInStart() *Pawn { // optional
-	for i := range p.pawns {
-		if p.pawns[i].Position().Start() {
-			return &p.pawns[i]
+	for i := range p.Xpawns {
+		if p.Xpawns[i].Position().Start() {
+			return &p.Xpawns[i]
 		}
 	}
 
@@ -169,8 +219,8 @@ func (p *player) FindFirstPawnInStart() *Pawn { // optional
 }
 
 func (p *player) AllPawnsInHome() bool {
-	for i := range p.pawns {
-		if ! p.pawns[i].Position().Home() {
+	for i := range p.Xpawns {
+		if ! p.Xpawns[i].Position().Home() {
 			return false
 		}
 	}
@@ -179,7 +229,7 @@ func (p *player) AllPawnsInHome() bool {
 }
 
 func (p *player) IncrementTurns() {
-	p.turns += 1
+	p.Xturns += 1
 }
 
 // PlayerView A player-specific view of the game, showing only the information a player would have available on their turn.
@@ -202,45 +252,83 @@ type PlayerView interface {
 }
 
 type playerView struct {
-	player Player
-	opponents map[PlayerColor]Player
+	Xplayer    Player `json:"player"`
+	Xopponents map[PlayerColor]Player `json:"opponents"`
 }
 
 // NewPlayerView contructs a new PlayerView
 func NewPlayerView(player Player, opponents map[PlayerColor]Player) PlayerView {
 	return &playerView{
-		player: player,
-		opponents: opponents,
+		Xplayer:    player,
+		Xopponents: opponents,
 	}
 }
 
 // NewPlayerViewFromJSON constructs a new object from JSON in an io.Reader
 func NewPlayerViewFromJSON(reader io.Reader) (PlayerView, error) {
-	return nil, nil // TODO: implement NewPlayerViewFromJSON
+	type raw struct {
+		Xplayer    json.RawMessage `json:"player"`
+		Xopponents map[PlayerColor]json.RawMessage `json:"opponents"`
+	}
+
+	var temp raw
+	err := json.NewDecoder(reader).Decode(&temp)
+	if err != nil {
+		return nil, err
+	}
+
+	var Xplayer Player
+	if temp.Xplayer != nil || string(temp.Xplayer) == "null" {
+		Xplayer, err = NewPlayerFromJSON(bytes.NewReader(temp.Xplayer))
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	var Xopponents = make(map[PlayerColor]Player, len(temp.Xopponents))
+	for key := range temp.Xopponents {
+		value := temp.Xopponents[key]
+		if value == nil || string(value) == "null" {
+			Xopponents[key] = nil
+		} else {
+			element, err := NewPlayerFromJSON(bytes.NewReader(value))
+			if err != nil {
+				return nil, err
+			}
+			Xopponents[key] = element
+		}
+	}
+
+	obj := playerView {
+		Xplayer:    Xplayer,
+		Xopponents: Xopponents,
+	}
+
+	return &obj, nil
 }
 
 func (v *playerView) Player() Player {
-	return v.player
+	return v.Xplayer
 }
 
 func (v *playerView) Opponents() map[PlayerColor]Player {
-	return v.opponents
+	return v.Xopponents
 }
 
 func (v *playerView) Copy() PlayerView {
-	opponentsCopy := make(map[PlayerColor]Player, len(v.opponents))
+	opponentsCopy := make(map[PlayerColor]Player, len(v.Xopponents))
 
 	// range on a map explicitly does *not* return keys in a stable order, so we iterate on colors instead
 	for _, color := range PlayerColors.Members() {
-		opponent, exists := v.opponents[color]
+		opponent, exists := v.Xopponents[color]
 		if exists {
 			opponentsCopy[color] = opponent.Copy()
 		}
 	}
 
 	return &playerView{
-		player: v.player.Copy(),
-		opponents: opponentsCopy,
+		Xplayer:    v.Xplayer.Copy(),
+		Xopponents: opponentsCopy,
 	}
 }
 
@@ -258,13 +346,13 @@ func (v *playerView) GetPawn(prototype Pawn) Pawn {
 func (v *playerView) AllPawns() []Pawn {
 	all := make([]Pawn, 0)
 
-	for i := range v.player.Pawns() {
-		all = append(all, v.player.Pawns()[i])
+	for i := range v.Xplayer.Pawns() {
+		all = append(all, v.Xplayer.Pawns()[i])
 	}
 
 	// range on a map explicitly does *not* return keys in a stable order, so we iterate on colors instead
 	for _, color := range PlayerColors.Members() {
-		opponent, exists := v.opponents[color]
+		opponent, exists := v.Xopponents[color]
 		if exists {
 			pawns := opponent.Pawns()
 			for i := range pawns {

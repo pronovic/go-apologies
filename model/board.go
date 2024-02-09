@@ -338,7 +338,7 @@ func NewPawnFromJSON(reader io.Reader) (Pawn, error) {
 	}
 
 	var Xposition Position
-	if temp.Xposition != nil {
+	if temp.Xposition != nil && string(temp.Xposition) != "null" {
 		Xposition, err = NewPositionFromJSON(bytes.NewReader(temp.Xposition))
 		if err != nil {
 			return nil, err

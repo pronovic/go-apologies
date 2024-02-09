@@ -1,6 +1,8 @@
 package model
 
 import (
+	"bytes"
+	"encoding/json"
 	"github.com/stretchr/testify/assert"
 	"slices"
 	"testing"
@@ -14,7 +16,23 @@ func TestNewPlayer(t *testing.T) {
 }
 
 func TestNewPlayerFromJSON(t *testing.T) {
-	t.Fail() // TODO: implement TestNewPlayerFromJSON()
+	var obj Player
+	var err error
+	var marshalled []byte
+	var unmarshalled Player
+
+	card1 := NewCard("0", CardApologies)
+	obj = NewPlayer(Red)
+	obj.AppendToHand(card1)
+	_ = obj.Pawns()[0].Position().MoveToHome()
+	_ = obj.Pawns()[1].Position().MoveToSafe(2)
+	_ = obj.Pawns()[2].Position().MoveToSquare(32)
+
+	marshalled, err = json.Marshal(obj)
+	assert.Nil(t, err)
+	unmarshalled, err = NewPlayerFromJSON(bytes.NewReader(marshalled))
+	assert.Nil(t, err)
+	assert.Equal(t, obj, unmarshalled)
 }
 
 func TestPlayerCopy(t *testing.T) {
@@ -137,7 +155,22 @@ func TestNewPlayerView(t *testing.T) {
 }
 
 func TestNewPlayerViewFromJSON(t *testing.T) {
-	t.Fail() // TODO: implement TestNewPlayerViewFromJSON()
+	var obj PlayerView
+	var err error
+	var marshalled []byte
+	var unmarshalled PlayerView
+
+	player1 := NewPlayer(Blue)
+	player2 := NewPlayer(Red)
+	opponents := make(map[PlayerColor]Player, 1)
+	opponents[Red] = player2
+	obj = NewPlayerView(player1, opponents)
+
+	marshalled, err = json.Marshal(obj)
+	assert.Nil(t, err)
+	unmarshalled, err = NewPlayerViewFromJSON(bytes.NewReader(marshalled))
+	assert.Nil(t, err)
+	assert.Equal(t, obj, unmarshalled)
 }
 
 func TestPlayerViewCopy(t *testing.T) {

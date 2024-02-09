@@ -1,6 +1,8 @@
 package model
 
 import (
+	"bytes"
+	"encoding/json"
 	"fmt"
 	"github.com/pronovic/go-apologies/internal/timestamp"
 	"github.com/stretchr/testify/assert"
@@ -41,7 +43,34 @@ func TestNewHistory(t *testing.T) {
 }
 
 func TestNewHistoryFromJSON(t *testing.T) {
-	t.Fail() // TODO: implement TestNewHistoryFromJSON()
+	var obj History
+	var err error
+	var marshalled []byte
+	var unmarshalled History
+
+	obj = NewHistory("something", nil, nil, nil)
+	marshalled, err = json.Marshal(obj)
+	assert.Nil(t, err)
+	unmarshalled, err = NewHistoryFromJSON(bytes.NewReader(marshalled))
+	marshalled, err = json.Marshal(obj)
+	assert.Nil(t, err)
+	assert.Equal(t, obj, unmarshalled)
+
+	color := Blue
+	obj = NewHistory("something", &color, nil, nil)
+	marshalled, err = json.Marshal(obj)
+	assert.Nil(t, err)
+	unmarshalled, err = NewHistoryFromJSON(bytes.NewReader(marshalled))
+	assert.Nil(t, err)
+	assert.Equal(t, obj, unmarshalled)
+
+	card1 := Card12
+	obj = NewHistory("something", nil, &card1, nil)
+	marshalled, err = json.Marshal(obj)
+	assert.Nil(t, err)
+	unmarshalled, err = NewHistoryFromJSON(bytes.NewReader(marshalled))
+	assert.Nil(t, err)
+	assert.Equal(t, obj, unmarshalled)
 }
 
 func TestHistoryCopy(t *testing.T) {
@@ -54,7 +83,17 @@ func TestHistoryCopy(t *testing.T) {
 }
 
 func TestNewGameFromJSON(t *testing.T) {
-	t.Fail() // TODO: implement TestNewGameFromJSON()
+	var obj Game
+	var err error
+	var marshalled []byte
+	var unmarshalled Game
+
+	obj = createRealisticGame()
+	marshalled, err = json.Marshal(obj)
+	assert.Nil(t, err)
+	unmarshalled, err = NewGameFromJSON(bytes.NewReader(marshalled))
+	assert.Nil(t, err)
+	assert.Equal(t, obj, unmarshalled)
 }
 
 func TestNewGame2Players(t *testing.T) {

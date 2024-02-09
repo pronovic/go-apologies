@@ -40,10 +40,10 @@ type History interface {
 }
 
 type history struct {
-	action string
-	color *PlayerColor
-	card *CardType
-	timestamp timestamp.Timestamp
+	Xaction   string `json:"action"`
+	Xcolor    *PlayerColor `json:"color"`
+	Xcard      *CardType `json:"card"`
+	Xtimestamp timestamp.Timestamp `json:"timestamp"`
 }
 
 // NewHistory constructs a new History, optionally accepting a timestamp factory
@@ -53,10 +53,10 @@ func NewHistory(action string, color *PlayerColor, card *CardType, factory times
 	}
 
 	return &history{
-		action: action,
-		color: color,
-		card: card,
-		timestamp: factory.CurrentTime(),
+		Xaction:    action,
+		Xcolor:     color,
+		Xcard:      card,
+		Xtimestamp: factory.CurrentTime(),
 	}
 }
 
@@ -73,37 +73,37 @@ func NewHistoryFromJSON(reader io.Reader) (History, error) {
 }
 
 func (h *history) Action() string {
-	return h.action
+	return h.Xaction
 }
 
 func (h *history) Color() *PlayerColor { // optional
-	return h.color
+	return h.Xcolor
 }
 
 func (h *history) Card() *CardType { // optional
-	return h.card
+	return h.Xcard
 }
 
 func (h *history) Timestamp() timestamp.Timestamp {
-	return h.timestamp
+	return h.Xtimestamp
 }
 
 func (h *history) Copy() History {
 	return &history{
-		action: h.action,
-		color: h.color,
-		card: h.card,
-		timestamp: h.timestamp,
+		Xaction:    h.Xaction,
+		Xcolor:     h.Xcolor,
+		Xcard:      h.Xcard,
+		Xtimestamp: h.Xtimestamp,
 	}
 }
 
 func (h *history) String() string {
-	now := h.timestamp.Format()
+	now := h.Xtimestamp.Format()
 	color := "General"
-	if h.color != nil {
-		color = h.color.Value()
+	if h.Xcolor != nil {
+		color = h.Xcolor.Value()
 	}
-	action := h.action
+	action := h.Xaction
 	return fmt.Sprintf("[%s] %s - %s", now, color, action)
 }
 
@@ -181,7 +181,7 @@ func NewGame(playerCount int, factory timestamp.Factory) (Game, error) {
 func NewGameFromJSON(reader io.Reader) (Game, error) {
 	type raw struct {
 		XplayerCount int  `json:"playercount"`
-		Xplayers map[PlayerColor]player `json:"players"`
+		Xplayers map[PlayerColor]json.RawMessage `json:"players"`
 		Xdeck    json.RawMessage `json:"deck"`
 		Xhistory []json.RawMessage `json:"history"`
 	}
@@ -192,28 +192,39 @@ func NewGameFromJSON(reader io.Reader) (Game, error) {
 		return nil, err
 	}
 
-	var Xplayers = make(map[PlayerColor]Player)
+	var Xplayers = make(map[PlayerColor]Player, len(temp.Xplayers))
 	for key := range temp.Xplayers {
 		value := temp.Xplayers[key]
-		Xplayers[key] = &value
+		if value == nil || string(value) == "null" {
+			Xplayers[key] = nil
+		} else {
+			element, err := NewPlayerFromJSON(bytes.NewReader(value))
+			if err != nil {
+				return nil, err
+			}
+			Xplayers[key] = element
+		}
 	}
 
 	var Xdeck Deck
-	if temp.Xdeck != nil {
+	if temp.Xdeck != nil || string(temp.Xdeck) == "null" {
 		Xdeck, err = NewDeckFromJSON(bytes.NewReader(temp.Xdeck))
 		if err != nil {
 			return nil, err
 		}
 	}
 
-	var Xhistory = make([]History, 0)
-	if temp.Xhistory != nil {
-		for i := 0; i < len(temp.Xhistory); i++ {
-			element, err := NewHistoryFromJSON(bytes.NewReader(temp.Xhistory[i]))
+	var Xhistory = make([]History, len(temp.Xhistory))
+	for i := range temp.Xhistory {
+		value := temp.Xhistory[i]
+		if value == nil || string(value) == "null" {
+			Xhistory[i] = nil
+		} else {
+			element, err := NewHistoryFromJSON(bytes.NewReader(value))
 			if err != nil {
 				return nil, err
 			}
-			Xhistory = append(Xhistory, element)
+			Xhistory[i] = element
 		}
 	}
 
