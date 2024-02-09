@@ -26,6 +26,9 @@ type Rules interface {
 	// Pass the card to play, or nil if the move should come from the player's hand
 	ConstructLegalMoves(view model.PlayerView, card model.Card) ([]model.Move, error)
 
+	// DrawAgain Whether the player gets to draw again based on the passed-in card
+	DrawAgain(card model.Card) bool
+
 }
 
 type rules struct {
@@ -185,6 +188,14 @@ func (r *rules) ConstructLegalMoves(view model.PlayerView, card model.Card) ([]m
 	}
 
 	return moves, nil
+}
+
+func (r *rules) DrawAgain(card model.Card) bool {
+	if card == nil {
+		return false
+	} else {
+		return model.DrawAgain[card.Type()]
+	}
 }
 
 func contains(moves []model.Move, move model.Move) bool {

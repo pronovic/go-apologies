@@ -311,6 +311,13 @@ func TestConstructLegalMovesWithMovesNoCard(t *testing.T) {
 	assert.Equal(t, expectedMoves, result)
 }
 
+func TestDrawAgain(t *testing.T) {
+	rules := NewRules(nil)
+	for _, cardType := range model.CardTypes.Members() {
+		assert.Equal(t, model.DrawAgain[cardType], rules.DrawAgain(model.NewCard("id", cardType)))
+	}
+}
+
 func actionPosition(pawn model.Pawn) model.Action {
 	return model.NewAction(model.MoveToPosition, pawn, nil)
 }
