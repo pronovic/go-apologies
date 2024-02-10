@@ -22,7 +22,7 @@ type Engine interface {
 	First() model.PlayerColor
 
 	// SetFirst Override the randomly-chosen first player
-	SetFirst(first model.PlayerColor)
+	SetFirst(first model.PlayerColor) error
 
 	// Players The number of players in the game
 	Players() int
@@ -152,8 +152,9 @@ func (e *engine) First() model.PlayerColor {
 	return e.first
 }
 
-func (e *engine) SetFirst(first model.PlayerColor) {
+func (e *engine) SetFirst(first model.PlayerColor) error {
 	e.first = first
+	return e.queue.SetFirst(first)
 }
 
 func (e *engine) Players() int {
@@ -240,7 +241,7 @@ func (e *engine) PlayNext() (model.Game, error) {
 	color := next.Color()
 
 	done := false
-	for done {
+	for {
 		var err error
 		var view model.PlayerView
 		var move model.Move
@@ -261,6 +262,10 @@ func (e *engine) PlayNext() (model.Game, error) {
 		if err != nil {
 			e.game = saved // put back original so failed call is idempotent
 			return nil, err
+		}
+
+		if done {
+			break
 		}
 	}
 
@@ -381,12 +386,12 @@ func (e *engine) executeMoveAdult(player model.Player, move model.Move) (bool, e
 
 		player.RemoveFromHand(move.Card())
 
-		err := e.Discard(move.Card())
+		drawn, err := e.Draw()
 		if err != nil {
 			return false, err
 		}
 
-		drawn, err := e.Draw()
+		err = e.Discard(move.Card())
 		if err != nil {
 			return false, err
 		}
@@ -404,12 +409,12 @@ func (e *engine) executeMoveAdult(player model.Player, move model.Move) (bool, e
 
 		player.RemoveFromHand(move.Card())
 
-		err = e.Discard(move.Card())
+		drawn, err := e.Draw()
 		if err != nil {
 			return false, err
 		}
 
-		drawn, err := e.Draw()
+		err = e.Discard(move.Card())
 		if err != nil {
 			return false, err
 		}
