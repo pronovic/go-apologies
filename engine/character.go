@@ -25,17 +25,17 @@ type Character interface {
 }
 
 type character struct {
-	name string
+	name   string
 	source source.CharacterInputSource
-	color model.PlayerColor
+	color  model.PlayerColor
 }
 
 // NewCharacter constructs a new Character
 func NewCharacter(name string, source source.CharacterInputSource) Character {
 	return &character{
-		name: name,
+		name:   name,
 		source: source,
-		color: *new(model.PlayerColor),
+		color:  *new(model.PlayerColor),
 	}
 }
 

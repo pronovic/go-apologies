@@ -2,19 +2,20 @@ package source
 
 import (
 	"cmp"
+	"slices"
+
 	"github.com/pronovic/go-apologies/model"
 	"github.com/pronovic/go-apologies/reward"
 	"github.com/pronovic/go-apologies/rules"
-	"slices"
 )
 
 type rewardInputSource struct {
-	evaluator rules.Rules
+	evaluator  rules.Rules
 	calculator reward.Calculator
 }
 
 type result struct {
-	move model.Move
+	move  model.Move
 	score float32
 }
 
@@ -28,8 +29,8 @@ func RewardInputSource(evaluator rules.Rules, calculator reward.Calculator) Char
 		calculator = reward.NewCalculator()
 	}
 
-	return &rewardInputSource {
-		evaluator: evaluator,
+	return &rewardInputSource{
+		evaluator:  evaluator,
 		calculator: calculator,
 	}
 }
@@ -48,12 +49,12 @@ func (s *rewardInputSource) ChooseMove(_ model.GameMode, view model.PlayerView, 
 		}
 
 		score := s.calculator.Calculate(evaluated)
-		results = append(results, result { move, score })
+		results = append(results, result{move, score})
 	}
 
 	// sort the highest-scoring move to the top
 	slices.SortStableFunc(results, func(i, j result) int {
-		return cmp.Compare(j.score, i.score)  // j before i reverses the sort, so largest is at [0]
+		return cmp.Compare(j.score, i.score) // j before i reverses the sort, so largest is at [0]
 	})
 
 	// return the highest-scoring move

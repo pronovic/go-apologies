@@ -1,10 +1,11 @@
 package engine
 
 import (
+	"testing"
+
 	"github.com/pronovic/go-apologies/model"
 	"github.com/pronovic/go-apologies/source"
 	"github.com/stretchr/testify/assert"
-	"testing"
 )
 
 func TestNewCharacter(t *testing.T) {
@@ -35,4 +36,3 @@ func TestCharacterChooseMove(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Same(t, &move, result)
 }
-

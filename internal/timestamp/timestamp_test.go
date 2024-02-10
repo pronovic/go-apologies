@@ -1,9 +1,10 @@
 package timestamp
 
 import (
-	"github.com/stretchr/testify/assert"
 	"testing"
 	"time"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestFactoryCurrentTime(t *testing.T) {
@@ -15,7 +16,7 @@ func TestFactoryCurrentTime(t *testing.T) {
 	current := NewFactory().CurrentTime()
 	assert.True(t, current.AsTime().After(now))
 	_, offset := current.AsTime().Zone()
-	assert.Equal(t, 0, offset)  // zero offset means UTC
+	assert.Equal(t, 0, offset) // zero offset means UTC
 }
 
 func TestParseFormatCurrent(t *testing.T) {
@@ -34,7 +35,7 @@ func TestParseFormat(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, time.Date(2024, time.January, 31, 8, 15, 3, 221000000, time.UTC), parsed.AsTime())
 	_, offset := parsed.AsTime().Zone()
-	assert.Equal(t, 0, offset)  // zero offset means UTC
+	assert.Equal(t, 0, offset) // zero offset means UTC
 
 	formatted := parsed.Format()
 	assert.Equal(t, input, formatted)

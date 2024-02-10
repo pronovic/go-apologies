@@ -1,11 +1,12 @@
 package source
 
 import (
+	"testing"
+
 	"github.com/pronovic/go-apologies/model"
 	"github.com/pronovic/go-apologies/reward"
 	"github.com/pronovic/go-apologies/rules"
 	"github.com/stretchr/testify/assert"
-	"testing"
 )
 
 func TestRewardInputSourceName(t *testing.T) {
@@ -23,7 +24,7 @@ func TestRewardInputSourceChooseMove(t *testing.T) {
 	move1 := model.MockMove{}
 	move2 := model.MockMove{}
 	move3 := model.MockMove{}
-	moves := []model.Move { &move1, &move2, &move3 }
+	moves := []model.Move{&move1, &move2, &move3}
 
 	evaluator := rules.MockRules{}
 	calculator := reward.MockCalculator{}

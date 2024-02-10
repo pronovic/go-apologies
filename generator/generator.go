@@ -2,13 +2,14 @@ package generator
 
 import (
 	"errors"
+
 	"github.com/pronovic/go-apologies/internal/equality"
 	"github.com/pronovic/go-apologies/model"
 )
 
 // splitPair defines a legal way to split up a move of 7
 type splitPair struct {
-	left int
+	left  int
 	right int
 }
 
@@ -32,8 +33,7 @@ type moveGenerator struct {
 
 // NewGenerator constructs a new move generator, optionally accepting an identifier factory
 func NewGenerator() MoveGenerator {
-	return &moveGenerator{
-	}
+	return &moveGenerator{}
 }
 
 // LegalMoves Generate the set of legal moves for a pawn using a card, possibly empty.
@@ -170,13 +170,13 @@ func (g *moveGenerator) moveCircle(moves *[]model.Move, color model.PlayerColor,
 	if pawn.Position().Start() {
 		conflict := g.findPawn(allPawns, model.StartCircles[color])
 		if conflict == nil {
-			actions := []model.Action { model.NewAction(model.MoveToPosition, pawn, model.StartCircles[color].Copy()) }
+			actions := []model.Action{model.NewAction(model.MoveToPosition, pawn, model.StartCircles[color].Copy())}
 			sideEffects := make([]model.Action, 0)
 			move := model.NewMove(card, actions, sideEffects)
 			*moves = append(*moves, move)
 		} else if conflict != nil && conflict.Color() != color {
-			actions := []model.Action { model.NewAction(model.MoveToPosition, pawn, model.StartCircles[color].Copy())}
-			sideEffects := []model.Action { model.NewAction(model.MoveToStart, conflict, nil) }
+			actions := []model.Action{model.NewAction(model.MoveToPosition, pawn, model.StartCircles[color].Copy())}
+			sideEffects := []model.Action{model.NewAction(model.MoveToStart, conflict, nil)}
 			move := model.NewMove(card, actions, sideEffects)
 			*moves = append(*moves, move)
 		}
@@ -190,20 +190,20 @@ func (g *moveGenerator) moveSimple(moves *[]model.Move, color model.PlayerColor,
 		target, err := g.CalculatePosition(color, pawn.Position(), squares)
 		if err == nil { // if the requested position is not legal, then just ignore it
 			if target.Home() || target.Start() { // by definition, there can't be a conflict going to home or start
-				actions := []model.Action { model.NewAction(model.MoveToPosition, pawn, target) }
+				actions := []model.Action{model.NewAction(model.MoveToPosition, pawn, target)}
 				sideEffects := make([]model.Action, 0)
 				move := model.NewMove(card, actions, sideEffects)
 				*moves = append(*moves, move)
 			} else {
 				conflict := g.findPawn(allPawns, target)
 				if conflict == nil {
-					actions := []model.Action { model.NewAction(model.MoveToPosition, pawn, target) }
+					actions := []model.Action{model.NewAction(model.MoveToPosition, pawn, target)}
 					sideEffects := make([]model.Action, 0)
 					move := model.NewMove(card, actions, sideEffects)
 					*moves = append(*moves, move)
 				} else if conflict != nil && conflict.Color() != color {
-					actions := []model.Action { model.NewAction(model.MoveToPosition, pawn, target)}
-					sideEffects := []model.Action { model.NewAction(model.MoveToStart, conflict, nil) }
+					actions := []model.Action{model.NewAction(model.MoveToPosition, pawn, target)}
+					sideEffects := []model.Action{model.NewAction(model.MoveToStart, conflict, nil)}
 					move := model.NewMove(card, actions, sideEffects)
 					*moves = append(*moves, move)
 				}
@@ -267,17 +267,17 @@ func (g *moveGenerator) moveSwap(moves *[]model.Move, color model.PlayerColor, c
 	// For the 11 card, a pawn on the board can swap with another pawn of a different
 	// color, as long as that pawn is outside of the start area, safe area, or home area.
 	if pawn.Position().Square() != nil { // pawn is on the board
-		 for _, swap := range allPawns {
-			 if swap.Color() != color && !swap.Position().Home() && !swap.Position().Start() && swap.Position().Safe() == nil {
-				 actions := []model.Action {
-					 model.NewAction(model.MoveToPosition, pawn, swap.Position().Copy()),
-					 model.NewAction(model.MoveToPosition, swap, pawn.Position().Copy()),
-				 }
-				 sideEffects := make([]model.Action, 0)
-				 move := model.NewMove(card, actions, sideEffects)
-				 *moves = append(*moves, move)
-			 }
-		 }
+		for _, swap := range allPawns {
+			if swap.Color() != color && !swap.Position().Home() && !swap.Position().Start() && swap.Position().Safe() == nil {
+				actions := []model.Action{
+					model.NewAction(model.MoveToPosition, pawn, swap.Position().Copy()),
+					model.NewAction(model.MoveToPosition, swap, pawn.Position().Copy()),
+				}
+				sideEffects := make([]model.Action, 0)
+				move := model.NewMove(card, actions, sideEffects)
+				*moves = append(*moves, move)
+			}
+		}
 	}
 }
 
@@ -287,7 +287,7 @@ func (g *moveGenerator) moveApologies(moves *[]model.Move, color model.PlayerCol
 	if pawn.Position().Start() {
 		for _, swap := range allPawns {
 			if swap.Color() != color && !swap.Position().Home() && !swap.Position().Start() && swap.Position().Safe() == nil {
-				actions := []model.Action {
+				actions := []model.Action{
 					model.NewAction(model.MoveToPosition, pawn, swap.Position().Copy()),
 					model.NewAction(model.MoveToStart, swap, nil),
 				}
@@ -309,7 +309,7 @@ func (g *moveGenerator) augmentWithSlides(allPawns []model.Pawn, moves []model.M
 						for _, slide := range model.Slides[color] { // # look at all model.Slides with this color
 							if action.Position() != nil && action.Position().Square() != nil && *action.Position().Square() == slide.Start() {
 								_ = action.Position().MoveToSquare(slide.End()) // if the pawn landed on the start of the slide, move the pawn to the end of the slide
-								for square := slide.Start()+1; square <= slide.End(); square++ {
+								for square := slide.Start() + 1; square <= slide.End(); square++ {
 									// Note: in this one case, a pawn can bump another pawn of the same color
 									tmp := model.NewPosition(false, false, nil, &square)
 									pawn := g.findPawn(allPawns, tmp)
@@ -335,14 +335,14 @@ func (g *moveGenerator) CalculatePosition(color model.PlayerColor, position mode
 		if squares == 0 {
 			return position.Copy(), nil
 		} else if squares > 0 {
-			if *position.Safe() + squares < model.SafeSquares {
+			if *position.Safe()+squares < model.SafeSquares {
 				copied := position.Copy()
 				err := copied.MoveToSafe(*position.Safe() + squares)
 				if err != nil {
 					return (model.Position)(nil), err
 				}
 				return copied, nil
-			} else if *position.Safe() + squares == model.SafeSquares {
+			} else if *position.Safe()+squares == model.SafeSquares {
 				copied := position.Copy()
 				err := copied.MoveToHome()
 				if err != nil {
@@ -353,34 +353,34 @@ func (g *moveGenerator) CalculatePosition(color model.PlayerColor, position mode
 				return (model.Position)(nil), errors.New("pawn cannot move past home")
 			}
 		} else { // squares < 0
-			if *position.Safe() + squares >= 0 {
+			if *position.Safe()+squares >= 0 {
 				copied := position.Copy()
 				err := copied.MoveToSafe(*position.Safe() + squares)
 				if err != nil {
 					return (model.Position)(nil), err
 				}
 				return copied, nil
-			} else {  // handle moving back out of the safe area
+			} else { // handle moving back out of the safe area
 				copied := position.Copy()
 				err := copied.MoveToSquare(*model.TurnSquares[color].Square())
 				if err != nil {
 					return (model.Position)(nil), err
 				}
-				return g.CalculatePosition(color, copied, squares + *position.Safe() + 1)
+				return g.CalculatePosition(color, copied, squares+*position.Safe()+1)
 			}
 		}
 	} else if position.Square() != nil {
 		if squares == 0 {
 			return position.Copy(), nil
 		} else if squares > 0 {
-			if *position.Square() + squares < model.BoardSquares {
-				if *position.Square() <= *model.TurnSquares[color].Square() && *position.Square() + squares > *model.TurnSquares[color].Square() {
+			if *position.Square()+squares < model.BoardSquares {
+				if *position.Square() <= *model.TurnSquares[color].Square() && *position.Square()+squares > *model.TurnSquares[color].Square() {
 					copied := position.Copy()
 					err := copied.MoveToSafe(0)
 					if err != nil {
 						return (model.Position)(nil), err
 					}
-					return g.CalculatePosition(color, copied, squares - (*model.TurnSquares[color].Square() - *position.Square()) - 1)
+					return g.CalculatePosition(color, copied, squares-(*model.TurnSquares[color].Square()-*position.Square())-1)
 				} else {
 					copied := position.Copy()
 					err := copied.MoveToSquare(*position.Square() + squares)
@@ -395,10 +395,10 @@ func (g *moveGenerator) CalculatePosition(color model.PlayerColor, position mode
 				if err != nil {
 					return (model.Position)(nil), err
 				}
-				return g.CalculatePosition(color, copied, squares - (model.BoardSquares - *position.Square()))
+				return g.CalculatePosition(color, copied, squares-(model.BoardSquares-*position.Square()))
 			}
 		} else { // squares < 0
-			if *position.Square() + squares >= 0 {
+			if *position.Square()+squares >= 0 {
 				copied := position.Copy()
 				err := copied.MoveToSquare(*position.Square() + squares)
 				if err != nil {
@@ -411,7 +411,7 @@ func (g *moveGenerator) CalculatePosition(color model.PlayerColor, position mode
 				if err != nil {
 					return (model.Position)(nil), err
 				}
-				return g.CalculatePosition(color, copied, squares + *position.Square() + 1)
+				return g.CalculatePosition(color, copied, squares+*position.Square()+1)
 			}
 		}
 	} else {

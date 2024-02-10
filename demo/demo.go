@@ -4,11 +4,6 @@ import (
 	"cmp"
 	"flag"
 	"fmt"
-	"github.com/pronovic/go-apologies/engine"
-	"github.com/pronovic/go-apologies/model"
-	"github.com/pronovic/go-apologies/render"
-	"github.com/pronovic/go-apologies/source"
-	"github.com/rthornton128/goncurses"
 	"log"
 	"os"
 	"os/signal"
@@ -16,6 +11,12 @@ import (
 	"strings"
 	"syscall"
 	"time"
+
+	"github.com/pronovic/go-apologies/engine"
+	"github.com/pronovic/go-apologies/model"
+	"github.com/pronovic/go-apologies/render"
+	"github.com/pronovic/go-apologies/source"
+	"github.com/rthornton128/goncurses"
 )
 
 const minCols = 155
@@ -69,7 +70,7 @@ func parseArgs() (int, int, bool, model.GameMode, source.CharacterInputSource) {
 // forceMinimimumSize Force an xterm to resize via a control sequence.
 func forceMinimumSize() {
 	fmt.Printf("\u001b[8;%d;%dt", minRows, minCols)
-	time.Sleep(time.Duration(500)*time.Millisecond)
+	time.Sleep(time.Duration(500) * time.Millisecond)
 }
 
 // cursesMain is the ncurses main routine
@@ -105,7 +106,7 @@ func cursesMain(cis source.CharacterInputSource, runtime engine.Engine, delay in
 	interrupt := make(chan os.Signal, 1)
 	signal.Notify(interrupt, os.Interrupt)
 	go func() {
-		_ = <- interrupt
+		_ = <-interrupt
 		complete = true
 		goncurses.End()
 	}()
@@ -113,10 +114,9 @@ func cursesMain(cis source.CharacterInputSource, runtime engine.Engine, delay in
 	resize := make(chan os.Signal, 1)
 	signal.Notify(resize, syscall.SIGWINCH)
 	go func() {
-		_ = <- resize
+		_ = <-resize
 		draw(stdscr, board, state, history)
 	}()
-
 
 	for {
 		if complete {
@@ -132,15 +132,15 @@ func cursesMain(cis source.CharacterInputSource, runtime engine.Engine, delay in
 			refresh(cis, runtime, game, delay, stdscr, board, state, history)
 		}
 
-		time.Sleep(time.Duration(delay)*time.Millisecond)
+		time.Sleep(time.Duration(delay) * time.Millisecond)
 	}
 }
 
 func draw(
-		stdscr *goncurses.Window,
-		board *goncurses.Window,
-		state *goncurses.Window,
-		history *goncurses.Window) {
+	stdscr *goncurses.Window,
+	board *goncurses.Window,
+	state *goncurses.Window,
+	history *goncurses.Window) {
 	err := stdscr.Clear()
 	if err != nil {
 		log.Fatal(err)
@@ -173,14 +173,14 @@ func draw(
 }
 
 func refresh(
-		cis source.CharacterInputSource,
-		runtime engine.Engine,
-		game model.Game,
-		delay int,
-		stdscr *goncurses.Window,
-		board *goncurses.Window,
-		state *goncurses.Window,
-		history *goncurses.Window) {
+	cis source.CharacterInputSource,
+	runtime engine.Engine,
+	game model.Game,
+	delay int,
+	stdscr *goncurses.Window,
+	board *goncurses.Window,
+	state *goncurses.Window,
+	history *goncurses.Window) {
 	refreshScreen(stdscr)
 	refreshBoard(game, board)
 	refreshState(cis, runtime, game, delay, state)
@@ -195,7 +195,7 @@ func refreshScreen(stdscr *goncurses.Window) {
 
 	stdscr.MovePrint(1, 95, "APOLOGIES DEMO")
 	stdscr.MovePrint(1, 138, "CTRL-C TO EXIT")
-	stdscr.Move(minRows-2, minCols-2)  // bottom-right corner
+	stdscr.Move(minRows-2, minCols-2) // bottom-right corner
 
 	stdscr.Refresh()
 }
@@ -266,11 +266,11 @@ func refreshBoard(game model.Game, board *goncurses.Window) {
 }
 
 func refreshState(
-		cis source.CharacterInputSource,
-		runtime engine.Engine,
-		game model.Game,
-		delay int,
-		state *goncurses.Window) {
+	cis source.CharacterInputSource,
+	runtime engine.Engine,
+	game model.Game,
+	delay int,
+	state *goncurses.Window) {
 	err := state.Clear()
 	if err != nil {
 		log.Fatal(err)
@@ -299,13 +299,13 @@ func refreshState(
 
 	row := 10
 	for _, player := range players {
-		state.MovePrintf(row + 0, 2, "%s PLAYER", strings.ToUpper(player.Color().Value()))
-		state.MovePrintf(row + 2, 3, "Hand.....: %s", renderHand(player))
-		state.MovePrintf(row + 3, 3, "Pawns....:")
-		state.MovePrint(row + 4, 6, player.Pawns()[0])
-		state.MovePrint(row + 5, 6, player.Pawns()[1])
-		state.MovePrint(row + 6, 6, player.Pawns()[2])
-		state.MovePrint(row + 7, 6, player.Pawns()[3])
+		state.MovePrintf(row+0, 2, "%s PLAYER", strings.ToUpper(player.Color().Value()))
+		state.MovePrintf(row+2, 3, "Hand.....: %s", renderHand(player))
+		state.MovePrintf(row+3, 3, "Pawns....:")
+		state.MovePrint(row+4, 6, player.Pawns()[0])
+		state.MovePrint(row+5, 6, player.Pawns()[1])
+		state.MovePrint(row+6, 6, player.Pawns()[2])
+		state.MovePrint(row+7, 6, player.Pawns()[3])
 		row += 10
 	}
 
@@ -328,7 +328,7 @@ func refreshHistory(game model.Game, history *goncurses.Window) {
 	if length < 4 {
 		entries = game.History()
 	} else {
-		entries = game.History()[length-3:length]
+		entries = game.History()[length-3 : length]
 	}
 
 	row := 1

@@ -3,9 +3,10 @@ package model
 import (
 	"bytes"
 	"encoding/json"
-	"github.com/stretchr/testify/assert"
 	"slices"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestNewCard(t *testing.T) {

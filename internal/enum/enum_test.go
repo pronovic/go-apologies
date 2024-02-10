@@ -2,15 +2,16 @@ package enum
 
 import (
 	"encoding/json"
-	"github.com/stretchr/testify/assert"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 type Sample struct{ value string }
 
-func (e Sample) Value() string { return e.value }
+func (e Sample) Value() string                         { return e.value }
 func (e Sample) MarshalText() (text []byte, err error) { return Marshal(e) }
-func (e *Sample) UnmarshalText(text []byte) error {	return Unmarshal(e, text, SampleValues) }
+func (e *Sample) UnmarshalText(text []byte) error      { return Unmarshal(e, text, SampleValues) }
 
 var Value1 = Sample{"Value1"}
 var Value2 = Sample{"Value2"}

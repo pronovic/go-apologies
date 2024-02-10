@@ -3,8 +3,9 @@ package model
 import (
 	"bytes"
 	"encoding/json"
-	"github.com/stretchr/testify/assert"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestNewAction(t *testing.T) {
@@ -63,7 +64,7 @@ func TestNewMoveFromJSON(t *testing.T) {
 	action1 := NewAction(MoveToStart, nil, position1)
 	pawn2 := NewPawn(Red, 0)
 	action2 := NewAction(MoveToStart, pawn2, nil)
-	obj = NewMove(card1, []Action {action1}, []Action {action2})
+	obj = NewMove(card1, []Action{action1}, []Action{action2})
 
 	marshalled, err = json.Marshal(obj)
 	assert.Nil(t, err)
@@ -89,7 +90,7 @@ func TestNewMoveNilSlice(t *testing.T) {
 	var sideEffects = make([]Action, 0)
 	obj := NewMove(card, nil, nil)
 	assert.Equal(t, card, obj.Card())
-	assert.Equal(t, actions, obj.Actions())  // nil is converted to a newly-allocated empty slice
+	assert.Equal(t, actions, obj.Actions())         // nil is converted to a newly-allocated empty slice
 	assert.Equal(t, sideEffects, obj.SideEffects()) // nil is converted to a newly-allocated empty slice
 }
 
@@ -103,7 +104,7 @@ func TestMoveAddSideEffect(t *testing.T) {
 	position := NewPosition(false, false, nil, nil)
 	sideEffect := NewAction(MoveToPosition, pawn, position)
 	obj.AddSideEffect(sideEffect)
-	assert.Equal(t, []Action {sideEffect}, obj.SideEffects())
+	assert.Equal(t, []Action{sideEffect}, obj.SideEffects())
 }
 
 func TestMoveMergedActions(t *testing.T) {
@@ -122,9 +123,9 @@ func TestMoveMergedActions(t *testing.T) {
 	action4 := NewAction(MoveToStart, pawn4, nil)
 
 	card := NewCard("1", Card1)
-	actions := []Action { action1, action2 }
-	sideEffects := []Action { action3, action4 }
-	expected := []Action { action1, action2, action3, action4 }
+	actions := []Action{action1, action2}
+	sideEffects := []Action{action3, action4}
+	expected := []Action{action1, action2, action3, action4}
 	obj := NewMove(card, actions, sideEffects)
 	assert.Equal(t, expected, obj.MergedActions())
 }

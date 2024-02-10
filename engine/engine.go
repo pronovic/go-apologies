@@ -3,6 +3,7 @@ package engine
 import (
 	"errors"
 	"fmt"
+
 	"github.com/pronovic/go-apologies/internal/circularqueue"
 	"github.com/pronovic/go-apologies/internal/randomutil"
 	"github.com/pronovic/go-apologies/model"
@@ -72,19 +73,18 @@ type Engine interface {
 
 	// ExecuteMove Execute a move for a player, returning true if the player's turn is done.
 	ExecuteMove(color model.PlayerColor, move model.Move) (bool, error)
-
 }
 
 type engine struct {
-	mode model.GameMode
+	mode       model.GameMode
 	characters []Character
-	evaluator rules.Rules
-	players int
-	colors []model.PlayerColor
-	first model.PlayerColor
-	queue circularqueue.CircularQueue[model.PlayerColor]
-	game model.Game
-	colorMap map[model.PlayerColor]Character
+	evaluator  rules.Rules
+	players    int
+	colors     []model.PlayerColor
+	first      model.PlayerColor
+	queue      circularqueue.CircularQueue[model.PlayerColor]
+	game       model.Game
+	colorMap   map[model.PlayerColor]Character
 }
 
 // NewEngine constructs a new Engine
@@ -126,15 +126,15 @@ func NewEngine(mode model.GameMode, characters []Character, evaluator rules.Rule
 	}
 
 	constructed := &engine{
-		mode: mode,
+		mode:       mode,
 		characters: characters,
-		evaluator: evaluator,
-		players: players,
-		colors: colors,
-		first: first,
-		queue: queue,
-		game: game,
-		colorMap: colorMap,
+		evaluator:  evaluator,
+		players:    players,
+		colors:     colors,
+		first:      first,
+		queue:      queue,
+		game:       game,
+		colorMap:   colorMap,
 	}
 
 	return constructed, nil

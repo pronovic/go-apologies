@@ -3,9 +3,10 @@ package model
 import (
 	"bytes"
 	"encoding/json"
-	"github.com/stretchr/testify/assert"
 	"slices"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestNewPlayer(t *testing.T) {
@@ -200,7 +201,7 @@ func TestPlayerViewAllPawns(t *testing.T) {
 	opponents := map[PlayerColor]Player{Green: NewPlayer(Green)}
 	view := NewPlayerView(player1, opponents)
 	pawns := view.AllPawns()
-	assert.Equal(t, 2 * Pawns, len(pawns))
+	assert.Equal(t, 2*Pawns, len(pawns))
 	for i := 0; i < Pawns; i++ {
 		assert.True(t, slices.Contains(pawns, player1.Pawns()[i]))
 		assert.True(t, slices.Contains(pawns, opponents[Green].Pawns()[i]))

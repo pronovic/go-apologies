@@ -4,9 +4,10 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"testing"
+
 	"github.com/pronovic/go-apologies/internal/timestamp"
 	"github.com/stretchr/testify/assert"
-	"testing"
 )
 
 var stubbedString = "2024-01-31T08:15:03.221Z"
@@ -101,7 +102,7 @@ func TestNewGame2Players(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, 2, len(game.Players()))
 	assert.Equal(t, 0, len(game.History()))
-	for _, color := range []PlayerColor{ Red, Yellow } {
+	for _, color := range []PlayerColor{Red, Yellow} {
 		assert.Equal(t, color, game.Players()[color].Color())
 		assert.Equal(t, 0, len(game.Players()[color].Hand()))
 	}
@@ -112,7 +113,7 @@ func TestNewGame3Players(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, 3, len(game.Players()))
 	assert.Equal(t, 0, len(game.History()))
-	for _, color := range []PlayerColor{ Red, Yellow, Green } {
+	for _, color := range []PlayerColor{Red, Yellow, Green} {
 		assert.Equal(t, color, game.Players()[color].Color())
 		assert.Equal(t, 0, len(game.Players()[color].Hand()))
 	}
@@ -123,14 +124,14 @@ func TestNewGame4Players(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, 4, len(game.Players()))
 	assert.Equal(t, 0, len(game.History()))
-	for _, color := range []PlayerColor{ Red, Yellow, Green, Blue } {
+	for _, color := range []PlayerColor{Red, Yellow, Green, Blue} {
 		assert.Equal(t, color, game.Players()[color].Color())
 		assert.Equal(t, 0, len(game.Players()[color].Hand()))
 	}
 }
 
 func TestNewGameInvalidPlayers(t *testing.T) {
-	for _, playerCount := range []int { -2, -1, 0, 1, 5, 6  } {
+	for _, playerCount := range []int{-2, -1, 0, 1, 5, 6} {
 		_, err := NewGame(playerCount, nil)
 		assert.EqualError(t, err, "invalid number of players")
 	}
@@ -155,14 +156,14 @@ func TestGameCompletedAndWinner(t *testing.T) {
 
 	// move all but last pawn into home for all of the players; the game is not complete
 	for _, value := range game.Players() {
-		for i := 0; i < Pawns - 1; i++ {
+		for i := 0; i < Pawns-1; i++ {
 			assert.False(t, game.Completed())
 			_ = value.Pawns()[i].Position().MoveToHome()
 		}
 	}
 
 	// move the final pawn to home for one player; now the game is complete
-	_ = game.Players()[Red].Pawns()[Pawns - 1].Position().MoveToHome()
+	_ = game.Players()[Red].Pawns()[Pawns-1].Position().MoveToHome()
 	assert.True(t, game.Completed())
 	expected := game.Players()[Red]
 	assert.Equal(t, &expected, game.Winner())
@@ -193,7 +194,7 @@ func TestGameTrackWithColor(t *testing.T) {
 func TestGameCreatePlayerViewInvalid(t *testing.T) {
 	game, _ := NewGame(2, nil)
 	_, err := game.CreatePlayerView(Blue) // no blue player in 2-player game
-	assert.EqualError(t, err,"invalid color")
+	assert.EqualError(t, err, "invalid color")
 }
 
 func TestGameCreatePlayerView(t *testing.T) {
@@ -226,7 +227,7 @@ func TestGameCreatePlayerView(t *testing.T) {
 
 	assert.Equal(t, game.Players()[Red], view.Player())
 
-	for _, color := range []PlayerColor{ Yellow, Green, Blue } {
+	for _, color := range []PlayerColor{Yellow, Green, Blue} {
 		assert.Equal(t, color, view.Opponents()[color].Color())
 		assert.Equal(t, 0, len(view.Opponents()[color].Hand()))
 		assert.Equal(t, game.Players()[color].Pawns(), view.Opponents()[color].Pawns())

@@ -78,7 +78,7 @@ type Values[T Enum] interface {
 }
 
 type values[T Enum] struct {
-	members[]T
+	members []T
 }
 
 // NewValues constructs a new Values collection with a set of members

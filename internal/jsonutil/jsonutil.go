@@ -134,7 +134,7 @@ func DecodeSimpleJSON[T any](reader io.Reader) (*T, error) {
 }
 
 // DecodeInterfaceJSON decodes (unmarshalls) an interface from a json.RawMessage
-func DecodeInterfaceJSON[T any](raw json.RawMessage, constructor func(reader io.Reader)(T, error)) (T, error) {
+func DecodeInterfaceJSON[T any](raw json.RawMessage, constructor func(reader io.Reader) (T, error)) (T, error) {
 	var result T
 	var err error
 
@@ -149,7 +149,7 @@ func DecodeInterfaceJSON[T any](raw json.RawMessage, constructor func(reader io.
 }
 
 // DecodeMapJSON decodes (unmarshalls) a map[K]T from map[K]json.rawMessage
-func DecodeMapJSON[K comparable, T any](raw map[K]json.RawMessage, constructor func(reader io.Reader)(T, error)) (map[K]T, error) {
+func DecodeMapJSON[K comparable, T any](raw map[K]json.RawMessage, constructor func(reader io.Reader) (T, error)) (map[K]T, error) {
 	var result = make(map[K]T, len(raw))
 
 	for key := range raw {
@@ -170,7 +170,7 @@ func DecodeMapJSON[K comparable, T any](raw map[K]json.RawMessage, constructor f
 }
 
 // DecodeSliceJSON decodes (unmarshalls) a []T from []json.rawMessage
-func DecodeSliceJSON[T any](raw []json.RawMessage, constructor func(reader io.Reader)(T, error)) ([]T, error) {
+func DecodeSliceJSON[T any](raw []json.RawMessage, constructor func(reader io.Reader) (T, error)) ([]T, error) {
 	var result = make([]T, len(raw))
 
 	for i := range raw {

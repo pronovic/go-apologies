@@ -31,7 +31,6 @@ type Calculator interface {
 
 	// Range Return the range of possible rewards for a game
 	Range(players int) (float32, float32)
-
 }
 
 type calculator struct {
@@ -78,7 +77,7 @@ func calculateDistanceIncentive(player model.Player) int {
 	for _, pawn := range player.Pawns() {
 		distance += distanceToHome(pawn)
 	}
-	return 260 - distance  // 260 = 4*65, max distance for 4 pawns
+	return 260 - distance // 260 = 4*65, max distance for 4 pawns
 }
 
 func calculateSafeIncentive(player model.Player) int {

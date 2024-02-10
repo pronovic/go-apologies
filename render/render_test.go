@@ -2,10 +2,11 @@ package render
 
 import (
 	"fmt"
-	"github.com/pronovic/go-apologies/model"
-	"github.com/stretchr/testify/assert"
 	"os"
 	"testing"
+
+	"github.com/pronovic/go-apologies/model"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestEmpty2Player(t *testing.T) {
@@ -77,7 +78,7 @@ func empty(players int) model.Game {
 func fillHome() model.Game {
 	game := empty(4)
 
-	for _, color := range []model.PlayerColor { model.Blue, model.Red, model.Yellow, model.Green } {
+	for _, color := range []model.PlayerColor{model.Blue, model.Red, model.Yellow, model.Green} {
 		for pawn := 0; pawn < 4; pawn++ {
 			_ = game.Players()[color].Pawns()[pawn].Position().MoveToHome()
 		}
@@ -90,7 +91,7 @@ func fillHome() model.Game {
 func fillSafe(start int) model.Game {
 	game := empty(4)
 
-	for _, color := range []model.PlayerColor { model.Blue, model.Red, model.Yellow, model.Green } {
+	for _, color := range []model.PlayerColor{model.Blue, model.Red, model.Yellow, model.Green} {
 		for pawn := 0; pawn < 4; pawn++ {
 			_ = game.Players()[color].Pawns()[pawn].Position().MoveToSafe(pawn + start)
 		}
@@ -105,8 +106,8 @@ func fillSquares(start int, end int) model.Game {
 
 	square := 0
 	for pawn := 0; pawn < 4; pawn++ {
-		for _, color := range []model.PlayerColor { model.Blue, model.Red, model.Yellow, model.Green } {
-			if square + start <= end {
+		for _, color := range []model.PlayerColor{model.Blue, model.Red, model.Yellow, model.Green} {
+			if square+start <= end {
 				_ = game.Players()[color].Pawns()[pawn].Position().MoveToSquare(square + start)
 				square += 1
 			}

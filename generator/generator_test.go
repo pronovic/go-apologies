@@ -1,9 +1,10 @@
 package generator
 
 import (
+	"testing"
+
 	"github.com/pronovic/go-apologies/model"
 	"github.com/stretchr/testify/assert"
-	"testing"
 )
 
 var emptyMoves = make([]model.Move, 0)
@@ -596,11 +597,11 @@ func TestLegalMovesCard11(t *testing.T) {
 	// Swap pawns elsewhere on board
 	game = setupGame()
 	_ = game.Players()[model.Red].Pawns()[0].Position().MoveToSquare(15)
-	_ = game.Players()[model.Red].Pawns()[1].Position().MoveToSquare(32)  // can't be swapped, same color
-	_ = game.Players()[model.Green].Pawns()[0].Position().MoveToStart()  // can't be swapped, in start area
-	_ = game.Players()[model.Yellow].Pawns()[0].Position().MoveToSafe(0)  // can't be swapped, in safe area
-	_ = game.Players()[model.Yellow].Pawns()[3].Position().MoveToSquare(52)  // can be swapped, on board
-	_ = game.Players()[model.Blue].Pawns()[1].Position().MoveToSquare(19)  // can be swapped, on board
+	_ = game.Players()[model.Red].Pawns()[1].Position().MoveToSquare(32)    // can't be swapped, same color
+	_ = game.Players()[model.Green].Pawns()[0].Position().MoveToStart()     // can't be swapped, in start area
+	_ = game.Players()[model.Yellow].Pawns()[0].Position().MoveToSafe(0)    // can't be swapped, in safe area
+	_ = game.Players()[model.Yellow].Pawns()[3].Position().MoveToSquare(52) // can be swapped, on board
+	_ = game.Players()[model.Blue].Pawns()[1].Position().MoveToSquare(19)   // can be swapped, on board
 	card, pawn, view, moves = buildMoves(model.Red, game, 0, model.Card11)
 	expected = moveSlice(
 		move(card, swap(view, pawn, model.Yellow, 3), nil),
@@ -661,17 +662,17 @@ func TestLegalMovesCardApologies(t *testing.T) {
 	game = setupGame()
 	card, pawn, _, moves = buildMoves(model.Red, game, 0, model.CardApologies)
 	_ = game.Players()[model.Yellow].Pawns()[3].Position().MoveToSquare(52) // can be swapped, on board
-	_ = game.Players()[model.Blue].Pawns()[1].Position().MoveToSquare(19) // can be swapped, on board
+	_ = game.Players()[model.Blue].Pawns()[1].Position().MoveToSquare(19)   // can be swapped, on board
 	expected = emptyMoves
 	assert.Equal(t, expected, moves)
 
 	// Swap pawns elsewhere on board
 	game = setupGame()
 	_ = game.Players()[model.Red].Pawns()[0].Position().MoveToStart()
-	_ = game.Players()[model.Green].Pawns()[0].Position().MoveToStart() // can't be swapped, in start area
-	_ = game.Players()[model.Yellow].Pawns()[0].Position().MoveToSafe(0) // can't be swapped, in safe area
+	_ = game.Players()[model.Green].Pawns()[0].Position().MoveToStart()     // can't be swapped, in start area
+	_ = game.Players()[model.Yellow].Pawns()[0].Position().MoveToSafe(0)    // can't be swapped, in safe area
 	_ = game.Players()[model.Yellow].Pawns()[3].Position().MoveToSquare(52) // can be swapped, on board
-	_ = game.Players()[model.Blue].Pawns()[1].Position().MoveToSquare(19) // can be swapped, on board
+	_ = game.Players()[model.Blue].Pawns()[1].Position().MoveToSquare(19)   // can be swapped, on board
 	card, pawn, view, moves = buildMoves(model.Red, game, 0, model.CardApologies)
 	expected = moveSlice(
 		move(card, actionSlice(square(pawn, 52), bump(view, model.Yellow, 3)), nil),
@@ -730,7 +731,7 @@ func setupGame() model.Game {
 	game, _ := model.NewGame(4, nil)
 
 	for _, color := range model.PlayerColors.Members() {
-		for pawn := 0; pawn < model.Pawns; pawn ++ {
+		for pawn := 0; pawn < model.Pawns; pawn++ {
 			_ = game.Players()[color].Pawns()[pawn].Position().MoveToHome()
 		}
 	}
@@ -756,7 +757,6 @@ func calculatePositionFailure(t *testing.T, color model.PlayerColor, start model
 	_, err := NewGenerator().CalculatePosition(color, start, squares)
 	assert.EqualError(t, err, expected)
 }
-
 
 func home(pawn model.Pawn) model.Action {
 	return model.NewAction(model.MoveToPosition, pawn, model.NewPosition(false, true, nil, nil))
@@ -810,7 +810,7 @@ func move(card model.Card, actions []model.Action, sideEffects []model.Action) m
 	return model.NewMove(card, actions, sideEffects)
 }
 
-func actionSlice(actions ... model.Action) []model.Action {
+func actionSlice(actions ...model.Action) []model.Action {
 	result := make([]model.Action, 0, len(actions))
 
 	for i := 0; i < len(actions); i++ {
@@ -820,7 +820,7 @@ func actionSlice(actions ... model.Action) []model.Action {
 	return result
 }
 
-func moveSlice(moves ... model.Move) []model.Move {
+func moveSlice(moves ...model.Move) []model.Move {
 	result := make([]model.Move, 0, len(moves))
 
 	for i := 0; i < len(moves); i++ {

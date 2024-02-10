@@ -2,7 +2,8 @@ package circularqueue
 
 import (
 	"errors"
-	"github.com/golang-ds/queue/circularqueue"
+
+	queue "github.com/golang-ds/queue/circularqueue"
 	"github.com/pronovic/go-apologies/internal/equality"
 )
 
@@ -38,7 +39,7 @@ func (q *circularQueue[T]) SetFirst(entry T) error {
 		var first, _ = q.wrapped.First()
 
 		if equality.EqualByValue(entry, first) {
-			return nil  // entry is found at front of queue
+			return nil // entry is found at front of queue
 		}
 
 		q.wrapped.Rotate() // rotate to the next entry and try again

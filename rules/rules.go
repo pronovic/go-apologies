@@ -3,6 +3,7 @@ package rules
 import (
 	"errors"
 	"fmt"
+
 	"github.com/pronovic/go-apologies/generator"
 	"github.com/pronovic/go-apologies/internal/equality"
 	"github.com/pronovic/go-apologies/model"
@@ -28,7 +29,6 @@ type Rules interface {
 
 	// DrawAgain Whether the player gets to draw again based on the passed-in card
 	DrawAgain(card model.Card) bool
-
 }
 
 type rules struct {
@@ -41,7 +41,7 @@ func NewRules(moveGenerator generator.MoveGenerator) Rules {
 		moveGenerator = generator.NewGenerator()
 	}
 
-	return &rules {
+	return &rules{
 		moveGenerator: moveGenerator,
 	}
 }
@@ -133,7 +133,7 @@ func (r *rules) EvaluateMove(view model.PlayerView, move model.Move) (model.Play
 	for _, action := range move.MergedActions() { // execute actions, then side effects, in order
 		// keep in mind that the pawn on the action is a different object than the pawn in the game
 		pawn := result.GetPawn(action.Pawn())
-		if pawn != nil {  // if the pawn isn't valid, just ignore it
+		if pawn != nil { // if the pawn isn't valid, just ignore it
 			if action.Type() == model.MoveToStart {
 				err := pawn.Position().MoveToStart()
 				if err != nil {
@@ -156,11 +156,11 @@ func (r *rules) ConstructLegalMoves(view model.PlayerView, card model.Card) ([]m
 		return nil, errors.New("view is nil")
 	}
 
-	allPawns := view.AllPawns()  // pre-calculate this once up-front
+	allPawns := view.AllPawns() // pre-calculate this once up-front
 
 	var cards []model.Card
 	if card != nil {
-		cards = []model.Card { card }
+		cards = []model.Card{card}
 	} else {
 		cards = view.Player().Hand()
 	}
@@ -169,8 +169,8 @@ func (r *rules) ConstructLegalMoves(view model.PlayerView, card model.Card) ([]m
 	for _, played := range cards {
 		for _, pawn := range view.Player().Pawns() {
 			for _, move := range r.moveGenerator.LegalMoves(view.Player().Color(), played, pawn, allPawns) {
-				if ! contains(moves, move) {
-					moves = append(moves, move)  // eliminate duplicates
+				if !contains(moves, move) {
+					moves = append(moves, move) // eliminate duplicates
 				}
 			}
 		}
@@ -207,4 +207,3 @@ func contains(moves []model.Move, move model.Move) bool {
 
 	return false
 }
-

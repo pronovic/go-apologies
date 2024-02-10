@@ -4,8 +4,9 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/pronovic/go-apologies/internal/jsonutil"
 	"io"
+
+	"github.com/pronovic/go-apologies/internal/jsonutil"
 )
 
 // SafeSquares there are 5 safe squares for each color, numbered 0-4
@@ -15,27 +16,27 @@ const SafeSquares = 5
 const BoardSquares = 60
 
 // StartCircles defines the start circles for each color
-var StartCircles = map[PlayerColor]Position {
-	Red: newPositionAtSquare(4),
-	Blue: newPositionAtSquare(19),
+var StartCircles = map[PlayerColor]Position{
+	Red:    newPositionAtSquare(4),
+	Blue:   newPositionAtSquare(19),
 	Yellow: newPositionAtSquare(34),
-	Green: newPositionAtSquare(49),
+	Green:  newPositionAtSquare(49),
 }
 
 // TurnSquares defines the turn squares for each color, where forward movement turns into the safe zone
-var TurnSquares = map[PlayerColor]Position {
-	Red: newPositionAtSquare(2),
-	Blue: newPositionAtSquare(17),
+var TurnSquares = map[PlayerColor]Position{
+	Red:    newPositionAtSquare(2),
+	Blue:   newPositionAtSquare(17),
 	Yellow: newPositionAtSquare(32),
-	Green: newPositionAtSquare(47),
+	Green:  newPositionAtSquare(47),
 }
 
 // Slides defines the start positions for each color
-var Slides = map[PlayerColor][]Slide {
-	Red: {newSlide(1, 4), newSlide(9, 13)},
-	Blue: {newSlide(16, 19), newSlide(24, 28)},
+var Slides = map[PlayerColor][]Slide{
+	Red:    {newSlide(1, 4), newSlide(9, 13)},
+	Blue:   {newSlide(16, 19), newSlide(24, 28)},
 	Yellow: {newSlide(31, 34), newSlide(39, 43)},
-	Green: {newSlide(46, 49), newSlide(54, 58)},
+	Green:  {newSlide(46, 49), newSlide(54, 58)},
 }
 
 // Slide defines the start and end positions of a slide on the board
@@ -49,12 +50,12 @@ type Slide interface {
 
 type slide struct {
 	start int
-	end int
+	end   int
 }
 
 // newSlide creates a new slide, for defining constants
 func newSlide(start int, end int) Slide {
-	return &slide{start, end }
+	return &slide{start, end}
 }
 
 func (s *slide) Start() int {
@@ -100,8 +101,8 @@ type Position interface {
 }
 
 type position struct {
-	Xstart bool  `json:"start"`
-	Xhome  bool  `json:"home"`
+	Xstart  bool `json:"start"`
+	Xhome   bool `json:"home"`
 	Xsafe   *int `json:"safe"`
 	Xsquare *int `json:"square"`
 }
@@ -161,7 +162,7 @@ func (p *position) Square() *int {
 }
 
 func (p *position) Copy() Position {
-	return &position {
+	return &position{
 		Xstart:  p.Xstart,
 		Xhome:   p.Xhome,
 		Xsafe:   p.Xsafe,
@@ -286,10 +287,10 @@ type Pawn interface {
 }
 
 type pawn struct {
-	Xcolor PlayerColor `json:"playercolor"`
-	Xindex int		   `json:"index"`
-	Xname string	   `json:"name"`
-	Xposition Position `json:"position"`
+	Xcolor    PlayerColor `json:"playercolor"`
+	Xindex    int         `json:"index"`
+	Xname     string      `json:"name"`
+	Xposition Position    `json:"position"`
 }
 
 // NewPawn constructs a new Pawn
@@ -305,9 +306,9 @@ func NewPawn(color PlayerColor, index int) Pawn {
 // NewPawnFromJSON constructs a new object from JSON in an io.Reader
 func NewPawnFromJSON(reader io.Reader) (Pawn, error) {
 	type raw struct {
-		Xcolor PlayerColor `json:"playercolor"`
-		Xindex int	`json:"index"`
-		Xname string `json:"name"`
+		Xcolor    PlayerColor     `json:"playercolor"`
+		Xindex    int             `json:"index"`
+		Xname     string          `json:"name"`
 		Xposition json.RawMessage `json:"position"`
 	}
 
@@ -323,7 +324,7 @@ func NewPawnFromJSON(reader io.Reader) (Pawn, error) {
 		return nil, err
 	}
 
-	obj := pawn {
+	obj := pawn{
 		Xcolor:    temp.Xcolor,
 		Xindex:    temp.Xindex,
 		Xname:     temp.Xname,

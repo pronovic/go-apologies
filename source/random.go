@@ -5,11 +5,11 @@ import (
 	"github.com/pronovic/go-apologies/model"
 )
 
-type randomInputSource struct { }
+type randomInputSource struct{}
 
 // RandomInputSource source of input for a character which chooses randomly from among legal moves.
 func RandomInputSource() CharacterInputSource {
-	return &randomInputSource {	}
+	return &randomInputSource{}
 }
 
 func (s *randomInputSource) Name() string {

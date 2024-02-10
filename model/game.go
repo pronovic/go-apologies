@@ -4,17 +4,20 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
+
 	"github.com/pronovic/go-apologies/internal/enum"
 	"github.com/pronovic/go-apologies/internal/jsonutil"
 	"github.com/pronovic/go-apologies/internal/timestamp"
-	"io"
 )
 
 // GameMode defines legal game modes
 type GameMode struct{ value string }
-func (e GameMode) Value() string { return e.value }
+
+func (e GameMode) Value() string                         { return e.value }
 func (e GameMode) MarshalText() (text []byte, err error) { return enum.Marshal(e) }
-func (e *GameMode) UnmarshalText(text []byte) error { return enum.Unmarshal(e, text, GameModes) }
+func (e *GameMode) UnmarshalText(text []byte) error      { return enum.Unmarshal(e, text, GameModes) }
+
 var GameModes = enum.NewValues[GameMode](AdultMode, StandardMode)
 var StandardMode = GameMode{"StandardMode"}
 var AdultMode = GameMode{"AdultMode"}
@@ -26,23 +29,22 @@ type History interface {
 	Action() string
 
 	// Color Color of the player associated with the action
-	Color() *PlayerColor  // optional
+	Color() *PlayerColor // optional
 
 	// Card Card associated with the action
-	Card() *CardType	// optional
+	Card() *CardType // optional
 
 	// Timestamp Timestamp tied to the action (defaults to current time)
 	Timestamp() timestamp.Timestamp
 
 	// Copy Return a fully-independent copy of the history.
 	Copy() History
-
 }
 
 type history struct {
-	Xaction   string `json:"action"`
-	Xcolor    *PlayerColor `json:"color"`
-	Xcard      *CardType `json:"card"`
+	Xaction    string              `json:"action"`
+	Xcolor     *PlayerColor        `json:"color"`
+	Xcard      *CardType           `json:"card"`
 	Xtimestamp timestamp.Timestamp `json:"timestamp"`
 }
 
@@ -132,15 +134,14 @@ type Game interface {
 
 	// CreatePlayerView Return a player-specific view of the game, showing only the information a player would have available on their turn.
 	CreatePlayerView(color PlayerColor) (PlayerView, error)
-
 }
 
 type game struct {
-	XplayerCount int  `json:"playercount"`
-	Xplayers map[PlayerColor]Player `json:"players"`
-	Xdeck    Deck      `json:"deck"`
-	Xhistory []History `json:"history"`
-	factory  timestamp.Factory
+	XplayerCount int                    `json:"playercount"`
+	Xplayers     map[PlayerColor]Player `json:"players"`
+	Xdeck        Deck                   `json:"deck"`
+	Xhistory     []History              `json:"history"`
+	factory      timestamp.Factory
 }
 
 // NewGame constructs a new Game, optionally accepting a timestamp factory
@@ -173,10 +174,10 @@ func NewGame(playerCount int, factory timestamp.Factory) (Game, error) {
 // NewGameFromJSON constructs a new object from JSON in an io.Reader
 func NewGameFromJSON(reader io.Reader) (Game, error) {
 	type raw struct {
-		XplayerCount int  `json:"playercount"`
-		Xplayers map[PlayerColor]json.RawMessage `json:"players"`
-		Xdeck    json.RawMessage `json:"deck"`
-		Xhistory []json.RawMessage `json:"history"`
+		XplayerCount int                             `json:"playercount"`
+		Xplayers     map[PlayerColor]json.RawMessage `json:"players"`
+		Xdeck        json.RawMessage                 `json:"deck"`
+		Xhistory     []json.RawMessage               `json:"history"`
 	}
 
 	var temp raw
@@ -203,7 +204,7 @@ func NewGameFromJSON(reader io.Reader) (Game, error) {
 		return nil, err
 	}
 
-	obj := game {
+	obj := game{
 		XplayerCount: temp.XplayerCount,
 		Xplayers:     Xplayers,
 		Xdeck:        Xdeck,
@@ -302,7 +303,7 @@ func (g *game) Track(action string, player Player, card Card) {
 
 func (g *game) CreatePlayerView(color PlayerColor) (PlayerView, error) {
 	player, ok := g.Xplayers[color]
-	if ! ok {
+	if !ok {
 		return (PlayerView)(nil), errors.New("invalid color")
 	}
 
@@ -322,4 +323,3 @@ func (g *game) CreatePlayerView(color PlayerColor) (PlayerView, error) {
 
 	return NewPlayerView(copied, opponents), nil
 }
-

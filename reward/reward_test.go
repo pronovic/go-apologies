@@ -1,9 +1,10 @@
 package reward
 
 import (
+	"testing"
+
 	"github.com/pronovic/go-apologies/model"
 	"github.com/stretchr/testify/assert"
-	"testing"
 )
 
 func TestRewardRange(t *testing.T) {
@@ -25,7 +26,7 @@ func TestRewardRange(t *testing.T) {
 
 func TestCalculateRewardEmptyGame(t *testing.T) {
 	calc := NewCalculator()
-	for _, count := range []int{ 2, 3, 4 } {
+	for _, count := range []int{2, 3, 4} {
 		for _, color := range model.PlayerColors.Members()[0:count] {
 			game, _ := model.NewGame(count, nil)
 			view, _ := game.CreatePlayerView(color)
@@ -53,7 +54,7 @@ func TestCalculateRewardSafeZone(t *testing.T) {
 	_ = game.Players()[model.Red].Pawns()[0].Position().MoveToSafe(4) // last safe square before home
 	view, _ := game.CreatePlayerView(model.Red)
 	assert.Equal(t, float32(222), calc.Calculate(view))
-	for _, color := range []model.PlayerColor { model.Yellow, model.Green, model.Blue } {
+	for _, color := range []model.PlayerColor{model.Yellow, model.Green, model.Blue} {
 		view, _ = game.CreatePlayerView(color)
 		assert.Equal(t, float32(0), calc.Calculate(view)) // score is always zero if all pawns are in start
 	}
@@ -69,7 +70,7 @@ func TestCalculateRewardWinner(t *testing.T) {
 	_ = game2.Players()[model.Red].Pawns()[3].Position().MoveToHome()
 	view2, _ := game2.CreatePlayerView(model.Red)
 	assert.Equal(t, float32(400), calc.Calculate(view2))
-	for _, color := range []model.PlayerColor { model.Yellow } {
+	for _, color := range []model.PlayerColor{model.Yellow} {
 		view2, _ = game2.CreatePlayerView(color)
 		assert.Equal(t, float32(0), calc.Calculate(view2)) // score is always zero if all pawns are in start
 	}
@@ -81,7 +82,7 @@ func TestCalculateRewardWinner(t *testing.T) {
 	_ = game3.Players()[model.Red].Pawns()[3].Position().MoveToHome()
 	view3, _ := game3.CreatePlayerView(model.Red)
 	assert.Equal(t, float32(800), calc.Calculate(view3))
-	for _, color := range []model.PlayerColor { model.Yellow, model.Green } {
+	for _, color := range []model.PlayerColor{model.Yellow, model.Green} {
 		view3, _ = game3.CreatePlayerView(color)
 		assert.Equal(t, float32(0), calc.Calculate(view3)) // score is always zero if all pawns are in start
 	}
@@ -93,7 +94,7 @@ func TestCalculateRewardWinner(t *testing.T) {
 	_ = game4.Players()[model.Red].Pawns()[3].Position().MoveToHome()
 	view4, _ := game4.CreatePlayerView(model.Red)
 	assert.Equal(t, float32(1200), calc.Calculate(view4))
-	for _, color := range []model.PlayerColor { model.Yellow, model.Green, model.Blue } {
+	for _, color := range []model.PlayerColor{model.Yellow, model.Green, model.Blue} {
 		view4, _ = game4.CreatePlayerView(color)
 		assert.Equal(t, float32(0), calc.Calculate(view4)) // score is always zero if all pawns are in start
 	}
@@ -134,15 +135,14 @@ func TestCalculateRewardArbitrary(t *testing.T) {
 	assert.Equal(t, float32(0), calc.Calculate(blue))
 }
 
-
 func TestDistanceToHome(t *testing.T) {
 	// distance from home is always 0
-	for _, color := range []model.PlayerColor{ model.Red, model.Yellow, model.Green } {
+	for _, color := range []model.PlayerColor{model.Red, model.Yellow, model.Green} {
 		assert.Equal(t, 0, distanceToHome(pawnHome(color)))
 	}
 
 	// distance from start is always 65
-	for _, color := range []model.PlayerColor{ model.Red, model.Yellow, model.Green } {
+	for _, color := range []model.PlayerColor{model.Red, model.Yellow, model.Green} {
 		assert.Equal(t, 65, distanceToHome(pawnStart(color)))
 	}
 

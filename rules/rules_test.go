@@ -1,10 +1,11 @@
 package rules
 
 import (
+	"testing"
+
 	"github.com/pronovic/go-apologies/generator"
 	"github.com/pronovic/go-apologies/model"
 	"github.com/stretchr/testify/assert"
-	"testing"
 )
 
 func TestStartGameStandardMode(t *testing.T) {
@@ -49,12 +50,12 @@ func TestStartGameAdultMode(t *testing.T) {
 }
 
 func TestExecuteMove(t *testing.T) {
-	actions := []model.Action {
+	actions := []model.Action{
 		model.NewAction(model.MoveToPosition, model.NewPawn(model.Red, 1), positionSquare(10)),
 		model.NewAction(model.MoveToPosition, model.NewPawn(model.Yellow, 3), positionSquare(11)),
 	}
 
-	sideEffects := []model.Action {
+	sideEffects := []model.Action{
 		model.NewAction(model.MoveToStart, model.NewPawn(model.Blue, 2), nil),
 		model.NewAction(model.MoveToPosition, model.NewPawn(model.Green, 0), positionSquare(12)),
 	}
@@ -77,12 +78,12 @@ func TestEvaluateMove(t *testing.T) {
 	var err error
 	var result model.PlayerView
 
-	actions := []model.Action {
+	actions := []model.Action{
 		model.NewAction(model.MoveToPosition, model.NewPawn(model.Red, 1), positionSquare(10)),
 		model.NewAction(model.MoveToPosition, model.NewPawn(model.Yellow, 3), positionSquare(11)),
 	}
 
-	sideEffects := []model.Action {
+	sideEffects := []model.Action{
 		model.NewAction(model.MoveToStart, model.NewPawn(model.Blue, 2), nil),
 		model.NewAction(model.MoveToPosition, model.NewPawn(model.Green, 0), positionSquare(12)),
 	}
@@ -116,32 +117,32 @@ func TestEvaluateMove(t *testing.T) {
 // it was in Python.
 
 func TestConstructLegalMovesNoMovesWithCard(t *testing.T) {
-	var card = model.NewCard("card",  model.Card10)
+	var card = model.NewCard("card", model.Card10)
 
 	hand1 := model.NewCard("hand1", model.Card1)
 	hand2 := model.NewCard("hand2", model.Card2)
-	hand := []model.Card { hand1, hand2 }
+	hand := []model.Card{hand1, hand2}
 
 	var pawn1 = model.NewPawn(model.Red, 0)
 	var pawn2 = model.NewPawn(model.Red, 1)
-	playerPawns := []model.Pawn{ pawn1, pawn2 }
+	playerPawns := []model.Pawn{pawn1, pawn2}
 
 	var dummy1 = model.MockPawn{}
 	var dummy2 = model.MockPawn{}
-	allPawns := []model.Pawn { &dummy1, &dummy2 }
+	allPawns := []model.Pawn{&dummy1, &dummy2}
 
 	var cardPawn1Moves = make([]model.Move, 0)
 	var cardPawn2Moves = make([]model.Move, 0)
 
 	// result is a forfeit for the only card
-	expectedMoves := []model.Move { move(card, nil, nil)}
+	expectedMoves := []model.Move{move(card, nil, nil)}
 
 	var player = model.MockPlayer{}
 	player.On("Color").Return(model.Red)
 	player.On("Hand").Return(hand)
 	player.On("Pawns").Return(playerPawns)
 
-	var view = model.MockPlayerView {}
+	var view = model.MockPlayerView{}
 	view.On("Player").Return(&player)
 	view.On("AllPawns").Return(allPawns)
 
@@ -160,15 +161,15 @@ func TestConstructLegalMovesNoMovesNoCard(t *testing.T) {
 
 	hand1 := model.NewCard("hand1", model.Card1)
 	hand2 := model.NewCard("hand2", model.Card2)
-	hand := []model.Card { hand1, hand2 }
+	hand := []model.Card{hand1, hand2}
 
 	var pawn1 = model.NewPawn(model.Red, 0)
 	var pawn2 = model.NewPawn(model.Red, 1)
-	playerPawns := []model.Pawn{ pawn1, pawn2 }
+	playerPawns := []model.Pawn{pawn1, pawn2}
 
 	var dummy1 = model.MockPawn{}
 	var dummy2 = model.MockPawn{}
-	allPawns := []model.Pawn { &dummy1, &dummy2 }
+	allPawns := []model.Pawn{&dummy1, &dummy2}
 
 	var hand1Pawn1Moves = make([]model.Move, 0)
 	var hand1Pawn2Moves = make([]model.Move, 0)
@@ -176,14 +177,14 @@ func TestConstructLegalMovesNoMovesNoCard(t *testing.T) {
 	var hand2Pawn2Moves = make([]model.Move, 0)
 
 	// result is a forfeit for all cards in the hand
-	expectedMoves := []model.Move { move(hand1, nil, nil), move(hand2, nil, nil) }
+	expectedMoves := []model.Move{move(hand1, nil, nil), move(hand2, nil, nil)}
 
 	var player = model.MockPlayer{}
 	player.On("Color").Return(model.Red)
 	player.On("Hand").Return(hand)
 	player.On("Pawns").Return(playerPawns)
 
-	var view = model.MockPlayerView {}
+	var view = model.MockPlayerView{}
 	view.On("Player").Return(&player)
 	view.On("AllPawns").Return(allPawns)
 
@@ -200,33 +201,33 @@ func TestConstructLegalMovesNoMovesNoCard(t *testing.T) {
 }
 
 func TestConstructLegalMovesWithMovesWithCard(t *testing.T) {
-	var card = model.NewCard("card",  model.Card10)
+	var card = model.NewCard("card", model.Card10)
 
 	hand1 := model.NewCard("hand1", model.Card1)
 	hand2 := model.NewCard("hand2", model.Card2)
-	hand := []model.Card { hand1, hand2 }
+	hand := []model.Card{hand1, hand2}
 
 	var pawn1 = model.NewPawn(model.Red, 0)
 	var pawn2 = model.NewPawn(model.Red, 1)
-	playerPawns := []model.Pawn{ pawn1, pawn2 }
+	playerPawns := []model.Pawn{pawn1, pawn2}
 
 	var dummy1 = model.MockPawn{}
 	var dummy2 = model.MockPawn{}
-	allPawns := []model.Pawn { &dummy1, &dummy2 }
+	allPawns := []model.Pawn{&dummy1, &dummy2}
 
-	var cardPawn1Moves = []model.Move {
-		move(card, []model.Action {actionStart(pawn1) }, nil),
-		move(card, []model.Action {actionStart(pawn1) }, nil),
+	var cardPawn1Moves = []model.Move{
+		move(card, []model.Action{actionStart(pawn1)}, nil),
+		move(card, []model.Action{actionStart(pawn1)}, nil),
 	}
 
-	var cardPawn2Moves = []model.Move {
-		move(card, []model.Action {actionPosition(pawn2), actionStart(pawn2) }, nil),
+	var cardPawn2Moves = []model.Move{
+		move(card, []model.Action{actionPosition(pawn2), actionStart(pawn2)}, nil),
 	}
 
 	// result is a list of all returned moves, with duplicates removed
-	expectedMoves := []model.Move {
-		move(card, []model.Action {actionStart(pawn1) }, nil),
-		move(card, []model.Action {actionPosition(pawn2), actionStart(pawn2) }, nil),
+	expectedMoves := []model.Move{
+		move(card, []model.Action{actionStart(pawn1)}, nil),
+		move(card, []model.Action{actionPosition(pawn2), actionStart(pawn2)}, nil),
 	}
 
 	var player = model.MockPlayer{}
@@ -234,7 +235,7 @@ func TestConstructLegalMovesWithMovesWithCard(t *testing.T) {
 	player.On("Hand").Return(hand)
 	player.On("Pawns").Return(playerPawns)
 
-	var view = model.MockPlayerView {}
+	var view = model.MockPlayerView{}
 	view.On("Player").Return(&player)
 	view.On("AllPawns").Return(allPawns)
 
@@ -253,39 +254,39 @@ func TestConstructLegalMovesWithMovesNoCard(t *testing.T) {
 
 	hand1 := model.NewCard("hand1", model.Card1)
 	hand2 := model.NewCard("hand2", model.Card2)
-	hand := []model.Card { hand1, hand2 }
+	hand := []model.Card{hand1, hand2}
 
 	var pawn1 = model.NewPawn(model.Red, 0)
 	var pawn2 = model.NewPawn(model.Red, 1)
-	playerPawns := []model.Pawn{ pawn1, pawn2 }
+	playerPawns := []model.Pawn{pawn1, pawn2}
 
 	var dummy1 = model.MockPawn{}
 	var dummy2 = model.MockPawn{}
-	allPawns := []model.Pawn { &dummy1, &dummy2 }
+	allPawns := []model.Pawn{&dummy1, &dummy2}
 
-	var hand1Pawn1Moves = []model.Move {
-		move(card, []model.Action {actionStart(pawn1) }, nil),
-		move(card, []model.Action {actionStart(pawn1) }, nil),
+	var hand1Pawn1Moves = []model.Move{
+		move(card, []model.Action{actionStart(pawn1)}, nil),
+		move(card, []model.Action{actionStart(pawn1)}, nil),
 	}
 
-	var hand1Pawn2Moves = []model.Move {
-		move(card, []model.Action {actionStart(pawn2), actionPosition(pawn2) }, nil),
+	var hand1Pawn2Moves = []model.Move{
+		move(card, []model.Action{actionStart(pawn2), actionPosition(pawn2)}, nil),
 	}
 
-	var hand2Pawn1Moves = []model.Move {
-		move(card, []model.Action {actionPosition(pawn1) }, nil),
+	var hand2Pawn1Moves = []model.Move{
+		move(card, []model.Action{actionPosition(pawn1)}, nil),
 	}
 
-	var hand2Pawn2Moves = []model.Move {
-		move(card, []model.Action {actionPosition(pawn2) }, nil),
+	var hand2Pawn2Moves = []model.Move{
+		move(card, []model.Action{actionPosition(pawn2)}, nil),
 	}
 
 	// result is a list of all returned moves, with duplicates removed
-	expectedMoves := []model.Move {
-		move(card, []model.Action {actionStart(pawn1) }, nil),
-		move(card, []model.Action {actionStart(pawn2), actionPosition(pawn2) }, nil),
-		move(card, []model.Action {actionPosition(pawn1) }, nil),
-		move(card, []model.Action {actionPosition(pawn2) }, nil),
+	expectedMoves := []model.Move{
+		move(card, []model.Action{actionStart(pawn1)}, nil),
+		move(card, []model.Action{actionStart(pawn2), actionPosition(pawn2)}, nil),
+		move(card, []model.Action{actionPosition(pawn1)}, nil),
+		move(card, []model.Action{actionPosition(pawn2)}, nil),
 	}
 
 	var player = model.MockPlayer{}
@@ -293,7 +294,7 @@ func TestConstructLegalMovesWithMovesNoCard(t *testing.T) {
 	player.On("Hand").Return(hand)
 	player.On("Pawns").Return(playerPawns)
 
-	var view = model.MockPlayerView {}
+	var view = model.MockPlayerView{}
 	view.On("Player").Return(&player)
 	view.On("AllPawns").Return(allPawns)
 

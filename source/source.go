@@ -22,5 +22,4 @@ type CharacterInputSource interface {
 	// rules require a player to make a legal move if one is available, even if that move is
 	// disadvantageous.
 	ChooseMove(mode model.GameMode, view model.PlayerView, legalMoves []model.Move) (model.Move, error)
-
 }

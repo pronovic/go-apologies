@@ -2,11 +2,12 @@ package model
 
 import (
 	"encoding/json"
+	"io"
+	"slices"
+
 	"github.com/pronovic/go-apologies/internal/enum"
 	"github.com/pronovic/go-apologies/internal/equality"
 	"github.com/pronovic/go-apologies/internal/jsonutil"
-	"io"
-	"slices"
 )
 
 // MinPlayers a game consists of at least 2 players
@@ -20,9 +21,11 @@ const Pawns = 4
 
 // PlayerColor defines all legal player colors, enumerated in order of use
 type PlayerColor struct{ value string }
-func (e PlayerColor) Value() string { return e.value }
+
+func (e PlayerColor) Value() string                         { return e.value }
 func (e PlayerColor) MarshalText() (text []byte, err error) { return enum.Marshal(e) }
-func (e *PlayerColor) UnmarshalText(text []byte) error { return enum.Unmarshal(e, text, PlayerColors) }
+func (e *PlayerColor) UnmarshalText(text []byte) error      { return enum.Unmarshal(e, text, PlayerColors) }
+
 var PlayerColors = enum.NewValues[PlayerColor](Red, Yellow, Green, Blue)
 var Red = PlayerColor{"Red"}
 var Yellow = PlayerColor{"Yellow"}
@@ -68,9 +71,9 @@ type Player interface {
 
 type player struct {
 	Xcolor PlayerColor `json:"color"`
-	Xhand  []Card `json:"hand"`
-	Xpawns []Pawn `json:"pawns"`
-	Xturns int `json:"turns"`
+	Xhand  []Card      `json:"hand"`
+	Xpawns []Pawn      `json:"pawns"`
+	Xturns int         `json:"turns"`
 }
 
 // NewPlayer constructs a new Player
@@ -91,10 +94,10 @@ func NewPlayer(color PlayerColor) Player {
 // NewPlayerFromJSON constructs a new object from JSON in an io.Reader
 func NewPlayerFromJSON(reader io.Reader) (Player, error) {
 	type raw struct {
-		Xcolor PlayerColor `json:"color"`
+		Xcolor PlayerColor       `json:"color"`
 		Xhand  []json.RawMessage `json:"hand"`
 		Xpawns []json.RawMessage `json:"pawns"`
-		Xturns int `json:"turns"`
+		Xturns int               `json:"turns"`
 	}
 
 	var temp raw
@@ -115,7 +118,7 @@ func NewPlayerFromJSON(reader io.Reader) (Player, error) {
 		return nil, err
 	}
 
-	obj := player {
+	obj := player{
 		Xcolor: temp.Xcolor,
 		Xhand:  Xhand,
 		Xpawns: Xpawns,
@@ -204,7 +207,7 @@ func (p *player) FindFirstPawnInStart() *Pawn { // optional
 
 func (p *player) AllPawnsInHome() bool {
 	for i := range p.Xpawns {
-		if ! p.Xpawns[i].Position().Home() {
+		if !p.Xpawns[i].Position().Home() {
 			return false
 		}
 	}
@@ -236,7 +239,7 @@ type PlayerView interface {
 }
 
 type playerView struct {
-	Xplayer    Player `json:"player"`
+	Xplayer    Player                 `json:"player"`
 	Xopponents map[PlayerColor]Player `json:"opponents"`
 }
 
@@ -251,7 +254,7 @@ func NewPlayerView(player Player, opponents map[PlayerColor]Player) PlayerView {
 // NewPlayerViewFromJSON constructs a new object from JSON in an io.Reader
 func NewPlayerViewFromJSON(reader io.Reader) (PlayerView, error) {
 	type raw struct {
-		Xplayer    json.RawMessage `json:"player"`
+		Xplayer    json.RawMessage                 `json:"player"`
 		Xopponents map[PlayerColor]json.RawMessage `json:"opponents"`
 	}
 
@@ -273,7 +276,7 @@ func NewPlayerViewFromJSON(reader io.Reader) (PlayerView, error) {
 		return nil, err
 	}
 
-	obj := playerView {
+	obj := playerView{
 		Xplayer:    Xplayer,
 		Xopponents: Xopponents,
 	}

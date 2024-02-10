@@ -1,12 +1,13 @@
 package engine
 
 import (
+	"testing"
+
 	"github.com/pronovic/go-apologies/model"
 	"github.com/pronovic/go-apologies/rules"
 	"github.com/pronovic/go-apologies/source"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
-	"testing"
 )
 
 func TestNewEngine(t *testing.T) {
@@ -16,7 +17,7 @@ func TestNewEngine(t *testing.T) {
 	character2 := NewCharacter("character2", &input)
 	character3 := NewCharacter("character3", &input)
 	character4 := NewCharacter("character4", &input)
-	characters := []Character { character1, character2, character3, character4 }
+	characters := []Character{character1, character2, character3, character4}
 
 	e, _ := NewEngine(model.StandardMode, characters, nil)
 	assert.Equal(t, model.StandardMode, e.Mode())
@@ -117,7 +118,7 @@ func TestEngineDrawAndDiscard(t *testing.T) {
 	assert.NotNil(t, err)
 
 	// put back one card
-	last := drawn[model.DeckSize - 1]
+	last := drawn[model.DeckSize-1]
 	err = e.Discard(last)
 	assert.Nil(t, err)
 
@@ -135,7 +136,7 @@ func TestEngineConstructLegalMovesStandardNoCard(t *testing.T) {
 	drawcard := model.NewCard("1", model.Card1)
 	movecard := model.NewCard("2", model.Card2)
 	move := model.NewMove(movecard, nil, nil)
-	legalMoves := []model.Move{ move }
+	legalMoves := []model.Move{move}
 
 	configureDrawCards(e, drawcard) // so we know exactly which card will be drawn
 	evaluator.On("ConstructLegalMoves", &view, drawcard).Return(legalMoves, nil)
@@ -158,7 +159,7 @@ func TestEngineConstructLegalMovesStandardCard(t *testing.T) {
 	movecard := model.NewCard("2", model.Card2)
 	providedcard := model.NewCard("3", model.Card3)
 	move := model.NewMove(movecard, nil, nil)
-	legalMoves := []model.Move{ move }
+	legalMoves := []model.Move{move}
 
 	configureDrawCards(e, drawcard) // so we know exactly which card will be drawn
 	evaluator.On("ConstructLegalMoves", &view, providedcard).Return(legalMoves, nil)
@@ -169,7 +170,7 @@ func TestEngineConstructLegalMovesStandardCard(t *testing.T) {
 	assert.Equal(t, legalMoves, m)
 
 	c, _ = e.Draw()
-	assert.Same(t, drawcard, c)  // confirm that the card was not drawn from the deck
+	assert.Same(t, drawcard, c) // confirm that the card was not drawn from the deck
 }
 
 func TestEngineConstructLegalMovesAdultNoCard(t *testing.T) {
@@ -180,7 +181,7 @@ func TestEngineConstructLegalMovesAdultNoCard(t *testing.T) {
 	drawcard := model.NewCard("1", model.Card1)
 	movecard := model.NewCard("2", model.Card2)
 	move := model.NewMove(movecard, nil, nil)
-	legalMoves := []model.Move{ move }
+	legalMoves := []model.Move{move}
 
 	configureDrawCards(e, drawcard) // so we know exactly which card will be drawn
 	evaluator.On("ConstructLegalMoves", &view, nil).Return(legalMoves, nil)
@@ -191,7 +192,7 @@ func TestEngineConstructLegalMovesAdultNoCard(t *testing.T) {
 	assert.Equal(t, legalMoves, m)
 
 	c, _ = e.Draw()
-	assert.Same(t, drawcard, c)  // confirm that the card was not drawn from the deck
+	assert.Same(t, drawcard, c) // confirm that the card was not drawn from the deck
 }
 
 func TestEngineConstructLegalMovesAdultCard(t *testing.T) {
@@ -203,7 +204,7 @@ func TestEngineConstructLegalMovesAdultCard(t *testing.T) {
 	movecard := model.NewCard("2", model.Card2)
 	providedcard := model.NewCard("3", model.Card3)
 	move := model.NewMove(movecard, nil, nil)
-	legalMoves := []model.Move{ move }
+	legalMoves := []model.Move{move}
 
 	configureDrawCards(e, drawcard) // so we know exactly which card will be drawn
 	evaluator.On("ConstructLegalMoves", &view, providedcard).Return(legalMoves, nil)
@@ -214,7 +215,7 @@ func TestEngineConstructLegalMovesAdultCard(t *testing.T) {
 	assert.Equal(t, legalMoves, m)
 
 	c, _ = e.Draw()
-	assert.Same(t, drawcard, c)  // confirm that the card was not drawn from the deck
+	assert.Same(t, drawcard, c) // confirm that the card was not drawn from the deck
 }
 
 func TestEnginePlayNextCompleted(t *testing.T) {
@@ -237,7 +238,7 @@ func TestEnginePlayNextStandardForfeit(t *testing.T) {
 
 	card := model.NewCard("1", model.Card1)
 	move := model.NewMove(card, nil, nil)
-	legalMoves := []model.Move{ move }
+	legalMoves := []model.Move{move}
 
 	configureDrawCards(e, card) // so we know exactly which card will be drawn
 	evaluator.On("ConstructLegalMoves", mock.Anything, card).Return(legalMoves, nil).Once()
@@ -248,7 +249,7 @@ func TestEnginePlayNextStandardForfeit(t *testing.T) {
 	assert.Same(t, e.Game(), game)
 
 	c, _ := e.Draw()
-	assert.Same(t, card, c)  // confirm that the card was discarded back to the deck
+	assert.Same(t, card, c) // confirm that the card was discarded back to the deck
 }
 
 func TestEnginePlayNextStandardNoDrawAgain(t *testing.T) {
@@ -260,8 +261,8 @@ func TestEnginePlayNextStandardNoDrawAgain(t *testing.T) {
 	player := e.Game().Players()[model.Red]
 	pawn := player.Pawns()[0]
 	card := model.NewCard("1", model.Card1)
-	move := model.NewMove(card, []model.Action { actionStart(pawn) }, nil)
-	legalMoves := []model.Move{ move }
+	move := model.NewMove(card, []model.Action{actionStart(pawn)}, nil)
+	legalMoves := []model.Move{move}
 
 	configureDrawCards(e, card) // so we know exactly which card will be drawn
 	evaluator.On("ConstructLegalMoves", mock.Anything, card).Return(legalMoves, nil).Once()
@@ -274,7 +275,7 @@ func TestEnginePlayNextStandardNoDrawAgain(t *testing.T) {
 	assert.Same(t, e.Game(), game)
 
 	c, _ := e.Draw()
-	assert.Same(t, card, c)  // confirm that the card was discarded back to the deck
+	assert.Same(t, card, c) // confirm that the card was discarded back to the deck
 }
 
 func TestEnginePlayNextStandardDrawAgain(t *testing.T) {
@@ -286,8 +287,8 @@ func TestEnginePlayNextStandardDrawAgain(t *testing.T) {
 	player := e.Game().Players()[model.Red]
 	pawn := player.Pawns()[0]
 	card := model.NewCard("1", model.Card1)
-	move1 := model.NewMove(card, []model.Action {actionStart(pawn) }, nil)
-	move2 := model.NewMove(card, []model.Action {actionPosition(pawn) }, nil)
+	move1 := model.NewMove(card, []model.Action{actionStart(pawn)}, nil)
+	move2 := model.NewMove(card, []model.Action{actionPosition(pawn)}, nil)
 	legalMoves1 := []model.Move{move1}
 	legalMoves2 := []model.Move{move2}
 
@@ -320,7 +321,7 @@ func TestEnginePlayNextAdultForfeit(t *testing.T) {
 	movecard := player.Hand()[0]
 	replacementcard := model.NewCard("999", model.CardApologies)
 	move := model.NewMove(movecard, nil, nil)
-	legalMoves := []model.Move{ move }
+	legalMoves := []model.Move{move}
 
 	configureDrawCards(e, replacementcard) // so we know exactly which card will be drawn
 	evaluator.On("ConstructLegalMoves", mock.Anything, nil).Return(legalMoves, nil).Once()
@@ -359,8 +360,8 @@ func TestEnginePlayNextAdultNoDrawAgain(t *testing.T) {
 	pawn := player.Pawns()[0]
 	movecard := player.Hand()[0]
 	replacementcard := model.NewCard("999", model.CardApologies)
-	move := model.NewMove(movecard, []model.Action { actionStart(pawn) }, nil)
-	legalMoves := []model.Move{ move }
+	move := model.NewMove(movecard, []model.Action{actionStart(pawn)}, nil)
+	legalMoves := []model.Move{move}
 
 	configureDrawCards(e, replacementcard) // so we know exactly which card will be drawn
 	evaluator.On("ConstructLegalMoves", mock.Anything, nil).Return(legalMoves, nil).Once()
@@ -403,8 +404,8 @@ func TestEnginePlayNextAdultDrawAgain(t *testing.T) {
 	movecard2 := player.Hand()[1]
 	replacementcard1 := model.NewCard("998", model.CardApologies)
 	replacementcard2 := model.NewCard("999", model.CardApologies)
-	move1 := model.NewMove(movecard1, []model.Action {actionStart(pawn) }, nil)
-	move2 := model.NewMove(movecard2, []model.Action {actionPosition(pawn) }, nil)
+	move1 := model.NewMove(movecard1, []model.Action{actionStart(pawn)}, nil)
+	move2 := model.NewMove(movecard2, []model.Action{actionPosition(pawn)}, nil)
 	legalMoves1 := []model.Move{move1}
 	legalMoves2 := []model.Move{move2}
 
@@ -437,7 +438,7 @@ func createEngine(mode model.GameMode, evaluator rules.Rules, input source.Chara
 
 	character1 := NewCharacter("character1", input)
 	character2 := NewCharacter("character2", input)
-	characters := []Character { character1, character2 }
+	characters := []Character{character1, character2}
 
 	e, _ := NewEngine(mode, characters, evaluator)
 	_ = e.SetFirst(model.Red)
@@ -446,7 +447,7 @@ func createEngine(mode model.GameMode, evaluator rules.Rules, input source.Chara
 }
 
 // configureDrawCards configures the deck with one or more cards in it to be drawn
-func configureDrawCards(e Engine, drawcards ... model.Card) {
+func configureDrawCards(e Engine, drawcards ...model.Card) {
 	configureEmptyDeck(e)
 	for _, drawcard := range drawcards {
 		_ = e.Discard(drawcard)

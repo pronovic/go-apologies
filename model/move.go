@@ -2,17 +2,20 @@ package model
 
 import (
 	"encoding/json"
+	"io"
+
 	"github.com/pronovic/go-apologies/internal/enum"
 	"github.com/pronovic/go-apologies/internal/equality"
 	"github.com/pronovic/go-apologies/internal/jsonutil"
-	"io"
 )
 
 // ActionType defines all actions that a character can take
 type ActionType struct{ value string }
-func (e ActionType) Value() string { return e.value }
+
+func (e ActionType) Value() string                         { return e.value }
 func (e ActionType) MarshalText() (text []byte, err error) { return enum.Marshal(e) }
-func (e *ActionType) UnmarshalText(text []byte) error { return enum.Unmarshal(e, text, ActionTypes) }
+func (e *ActionType) UnmarshalText(text []byte) error      { return enum.Unmarshal(e, text, ActionTypes) }
+
 var ActionTypes = enum.NewValues[ActionType](MoveToStart, MoveToPosition)
 var MoveToStart = ActionType{"MoveToStart"}
 var MoveToPosition = ActionType{"MoveToPosition"}
@@ -34,9 +37,9 @@ type Action interface {
 }
 
 type action struct {
-	XactionType ActionType	`json:"type"`
-	Xpawn     Pawn `json:"pawn"`
-	Xposition Position `json:"position"`
+	XactionType ActionType `json:"type"`
+	Xpawn       Pawn       `json:"pawn"`
+	Xposition   Position   `json:"position"`
 }
 
 // NewAction constructs a new Action
@@ -51,9 +54,9 @@ func NewAction(actionType ActionType, pawn Pawn, position Position) Action {
 // NewActionFromJSON constructs a new object from JSON in an io.Reader
 func NewActionFromJSON(reader io.Reader) (Action, error) {
 	type raw struct {
-		XactionType ActionType	`json:"type"`
-		Xpawn     json.RawMessage `json:"pawn"`
-		Xposition json.RawMessage `json:"position"`
+		XactionType ActionType      `json:"type"`
+		Xpawn       json.RawMessage `json:"pawn"`
+		Xposition   json.RawMessage `json:"position"`
 	}
 
 	var temp raw
@@ -74,10 +77,10 @@ func NewActionFromJSON(reader io.Reader) (Action, error) {
 		return nil, err
 	}
 
-	obj := action {
+	obj := action{
 		XactionType: temp.XactionType,
-		Xpawn: Xpawn,
-		Xposition: Xposition,
+		Xpawn:       Xpawn,
+		Xposition:   Xposition,
 	}
 
 	return &obj, nil
@@ -115,8 +118,8 @@ type Move interface {
 }
 
 type move struct {
-	Xid     string	`json:"id"`
-	Xcard       Card `json:"card"`
+	Xid          string   `json:"id"`
+	Xcard        Card     `json:"card"`
 	Xactions     []Action `json:"actions"`
 	XsideEffects []Action `json:"sideeffects"`
 }
@@ -142,8 +145,8 @@ func NewMove(card Card, actions []Action, sideEffects []Action) Move {
 // NewMoveFromJSON constructs a new object from JSON in an io.Reader
 func NewMoveFromJSON(reader io.Reader) (Move, error) {
 	type raw struct {
-		Xid     string	`json:"id"`
-		Xcard       json.RawMessage `json:"card"`
+		Xid          string            `json:"id"`
+		Xcard        json.RawMessage   `json:"card"`
 		Xactions     []json.RawMessage `json:"actions"`
 		XsideEffects []json.RawMessage `json:"sideeffects"`
 	}
@@ -172,10 +175,10 @@ func NewMoveFromJSON(reader io.Reader) (Move, error) {
 		return nil, err
 	}
 
-	obj := move {
-		Xid: temp.Xid,
-		Xcard:     Xcard,
-		Xactions: Xactions,
+	obj := move{
+		Xid:          temp.Xid,
+		Xcard:        Xcard,
+		Xactions:     Xactions,
 		XsideEffects: XsideEffects,
 	}
 
@@ -213,7 +216,7 @@ func (m *move) AddSideEffect(action Action) {
 }
 
 func (m *move) MergedActions() []Action {
-	merged := make([]Action, 0, len(m.Xactions) + len(m.XsideEffects))
+	merged := make([]Action, 0, len(m.Xactions)+len(m.XsideEffects))
 
 	for _, action := range m.Xactions {
 		merged = append(merged, action)

@@ -3,11 +3,12 @@ package model
 import (
 	"encoding/json"
 	"errors"
+	"io"
+	"strconv"
+
 	"github.com/pronovic/go-apologies/internal/enum"
 	"github.com/pronovic/go-apologies/internal/jsonutil"
 	"github.com/pronovic/go-apologies/internal/randomutil"
-	"io"
-	"strconv"
 )
 
 // AdultHand for an adult-mode game, we deal out 5 cards
@@ -16,9 +17,11 @@ const AdultHand = 5
 // CardType defines all legal types of cards
 // The "A" card (CardApologies) is like the "Sorry" card in the original game
 type CardType struct{ value string }
-func (e CardType) Value() string { return e.value }
+
+func (e CardType) Value() string                         { return e.value }
 func (e CardType) MarshalText() (text []byte, err error) { return enum.Marshal(e) }
-func (e *CardType) UnmarshalText(text []byte) error { return enum.Unmarshal(e, text, CardTypes) }
+func (e *CardType) UnmarshalText(text []byte) error      { return enum.Unmarshal(e, text, CardTypes) }
+
 var CardTypes = enum.NewValues[CardType](Card1, Card2, Card3, Card4, Card5, Card7, Card8, Card10, Card11, Card12, CardApologies)
 var Card1 = CardType{"1"}
 var Card2 = CardType{"2"}
@@ -111,7 +114,7 @@ func (c *card) Type() CardType {
 }
 
 func (c *card) Copy() Card {
-	return &card {
+	return &card{
 		Xid:   c.Xid,
 		Xtype: c.Xtype,
 	}
@@ -134,7 +137,6 @@ type Deck interface {
 
 	// Discard a card to the discard pile
 	Discard(card Card) error
-
 }
 
 type deck struct {
@@ -187,7 +189,7 @@ func NewDeckFromJSON(reader io.Reader) (Deck, error) {
 		return nil, err
 	}
 
-	obj := deck {
+	obj := deck{
 		XdrawPile:    XdrawPile,
 		XdiscardPile: XdiscardPile,
 	}
