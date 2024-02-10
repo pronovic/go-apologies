@@ -1,3 +1,7 @@
+all:
+	@echo "Available targets: mocks, demo, format, test, lint"
+.PHONY: all
+
 mocks:
 	# Generate mockery mocks for use with testify, which are checked into git
 	# To get the tool: brew install mockery
