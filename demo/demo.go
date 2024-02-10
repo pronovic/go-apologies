@@ -216,6 +216,13 @@ func refreshBoard(game model.Game, board *goncurses.Window) {
 		log.Fatal(err)
 	}
 
+	// Unfortunately, the ncurses implementation for GoLang does not work with some of the
+	// unicode characters that I've been using in the board definition in the Python
+	// implementation.  In some cases, I can translate to a roughly equivalent result, and
+	// in other cases I'm just clearing out the junk.  It's not as legible as I had
+	// intended, but still serves the purpose of letting someone watch the code play a
+	// game.
+
 	row := 0
 	char := 0
 	runes := []rune(rendered)
@@ -237,6 +244,18 @@ func refreshBoard(game model.Game, board *goncurses.Window) {
 				board.MoveAddChar(row, char, goncurses.ACS_HLINE)
 			} else if r == '│' {
 				board.MoveAddChar(row, char, goncurses.ACS_VLINE)
+			} else if r == '◼' {
+				board.MovePrint(row, char, string(' '))
+			} else if r == '●' {
+				board.MovePrint(row, char, string(' '))
+			} else if r == '▶' {
+				board.MovePrint(row, char, string(' '))
+			} else if r == '▼' {
+				board.MovePrint(row, char, string(' '))
+			} else if r == '◀' {
+				board.MovePrint(row, char, string(' '))
+			} else if r == '▲' {
+				board.MovePrint(row, char, string(' '))
 			} else {
 				board.MovePrint(row, char, string(r))
 			}
