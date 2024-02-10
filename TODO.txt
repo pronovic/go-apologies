@@ -1,3 +1,0 @@
-Run fmt
-Run import organizer
-Run godoc

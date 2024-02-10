@@ -12,8 +12,7 @@ type Factory interface {
 	CurrentTime() Timestamp
 }
 
-type factory struct {
-}
+type factory struct{}
 
 func NewFactory() Factory {
 	return &factory{}

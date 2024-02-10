@@ -150,7 +150,7 @@ func DecodeInterfaceJSON[T any](raw json.RawMessage, constructor func(reader io.
 
 // DecodeMapJSON decodes (unmarshalls) a map[K]T from map[K]json.rawMessage
 func DecodeMapJSON[K comparable, T any](raw map[K]json.RawMessage, constructor func(reader io.Reader) (T, error)) (map[K]T, error) {
-	var result = make(map[K]T, len(raw))
+	result := make(map[K]T, len(raw))
 
 	for key := range raw {
 		value := raw[key]
@@ -171,7 +171,7 @@ func DecodeMapJSON[K comparable, T any](raw map[K]json.RawMessage, constructor f
 
 // DecodeSliceJSON decodes (unmarshalls) a []T from []json.rawMessage
 func DecodeSliceJSON[T any](raw []json.RawMessage, constructor func(reader io.Reader) (T, error)) ([]T, error) {
-	var result = make([]T, len(raw))
+	result := make([]T, len(raw))
 
 	for i := range raw {
 		value := raw[i]

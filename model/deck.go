@@ -22,18 +22,20 @@ func (e CardType) Value() string                         { return e.value }
 func (e CardType) MarshalText() (text []byte, err error) { return enum.Marshal(e) }
 func (e *CardType) UnmarshalText(text []byte) error      { return enum.Unmarshal(e, text, CardTypes) }
 
-var CardTypes = enum.NewValues[CardType](Card1, Card2, Card3, Card4, Card5, Card7, Card8, Card10, Card11, Card12, CardApologies)
-var Card1 = CardType{"1"}
-var Card2 = CardType{"2"}
-var Card3 = CardType{"3"}
-var Card4 = CardType{"4"}
-var Card5 = CardType{"5"}
-var Card7 = CardType{"7"}
-var Card8 = CardType{"8"}
-var Card10 = CardType{"10"}
-var Card11 = CardType{"11"}
-var Card12 = CardType{"12"}
-var CardApologies = CardType{"A"}
+var (
+	CardTypes     = enum.NewValues[CardType](Card1, Card2, Card3, Card4, Card5, Card7, Card8, Card10, Card11, Card12, CardApologies)
+	Card1         = CardType{"1"}
+	Card2         = CardType{"2"}
+	Card3         = CardType{"3"}
+	Card4         = CardType{"4"}
+	Card5         = CardType{"5"}
+	Card7         = CardType{"7"}
+	Card8         = CardType{"8"}
+	Card10        = CardType{"10"}
+	Card11        = CardType{"11"}
+	Card12        = CardType{"12"}
+	CardApologies = CardType{"A"}
+)
 
 // DeckCounts defines the number of each type of card is in the deck
 var DeckCounts = map[CardType]int{
@@ -52,7 +54,7 @@ var DeckCounts = map[CardType]int{
 
 // DeckSize is the total size of the deck
 var DeckSize = func(counts map[CardType]int) int {
-	var total = 0
+	total := 0
 	for _, v := range counts {
 		total += v
 	}
@@ -76,7 +78,6 @@ var DrawAgain = map[CardType]bool{
 
 // Card is a card in a deck or in a player's hand
 type Card interface {
-
 	// Id Unique identifier for this card
 	Id() string
 
@@ -128,7 +129,6 @@ func (c *card) Equals(other Card) bool {
 
 // Deck The deck of cards associated with a game.
 type Deck interface {
-
 	// Copy Return a fully-independent copy of the deck.
 	Copy() Deck
 
@@ -146,13 +146,13 @@ type deck struct {
 
 // NewDeck constructs a new Deck
 func NewDeck() Deck {
-	var drawPile = make(map[string]Card, DeckSize)
-	var discardPile = make(map[string]Card, DeckSize)
+	drawPile := make(map[string]Card, DeckSize)
+	discardPile := make(map[string]Card, DeckSize)
 
-	var count = 0
+	count := 0
 	for _, c := range CardTypes.Members() {
 		for i := 0; i < DeckCounts[c]; i++ {
-			var id = strconv.Itoa(count)
+			id := strconv.Itoa(count)
 			drawPile[id] = NewCard(id, c)
 			count += 1
 		}
@@ -199,12 +199,12 @@ func NewDeckFromJSON(reader io.Reader) (Deck, error) {
 
 // Copy Return a fully-independent copy of the deck.
 func (d *deck) Copy() Deck {
-	var drawPileCopy = make(map[string]Card, DeckSize)
+	drawPileCopy := make(map[string]Card, DeckSize)
 	for key := range d.XdrawPile {
 		drawPileCopy[key] = d.XdrawPile[key].Copy()
 	}
 
-	var discardPileCopy = make(map[string]Card, DeckSize)
+	discardPileCopy := make(map[string]Card, DeckSize)
 	for key := range d.XdiscardPile {
 		discardPileCopy[key] = d.XdiscardPile[key].Copy()
 	}

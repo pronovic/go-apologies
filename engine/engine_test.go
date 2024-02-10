@@ -106,7 +106,7 @@ func TestEngineDrawAndDiscard(t *testing.T) {
 	e := createEngine(model.AdultMode, nil, nil)
 
 	// draw all of the cards from the deck
-	var drawn = make([]model.Card, 0, model.DeckSize)
+	drawn := make([]model.Card, 0, model.DeckSize)
 	for i := 0; i < model.DeckSize; i++ {
 		c, err := e.Draw()
 		assert.Nil(t, err)

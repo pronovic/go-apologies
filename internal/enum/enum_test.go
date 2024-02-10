@@ -13,9 +13,11 @@ func (e Sample) Value() string                         { return e.value }
 func (e Sample) MarshalText() (text []byte, err error) { return Marshal(e) }
 func (e *Sample) UnmarshalText(text []byte) error      { return Unmarshal(e, text, SampleValues) }
 
-var Value1 = Sample{"Value1"}
-var Value2 = Sample{"Value2"}
-var SampleValues = NewValues[Sample](Value1, Value2)
+var (
+	Value1       = Sample{"Value1"}
+	Value2       = Sample{"Value2"}
+	SampleValues = NewValues[Sample](Value1, Value2)
+)
 
 func TestMembers(t *testing.T) {
 	assert.Equal(t, []Sample{Value1, Value2}, SampleValues.Members())

@@ -28,8 +28,7 @@ type MoveGenerator interface {
 	CalculatePosition(color model.PlayerColor, position model.Position, squares int) (model.Position, error)
 }
 
-type moveGenerator struct {
-}
+type moveGenerator struct{}
 
 // NewGenerator constructs a new move generator, optionally accepting an identifier factory
 func NewGenerator() MoveGenerator {

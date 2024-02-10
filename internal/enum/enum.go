@@ -63,7 +63,6 @@ type Enum interface {
 
 // Values is a fixed collection of enumeration values
 type Values[T Enum] interface {
-
 	// Members returns all members of an enumeration
 	Members() []T
 

@@ -7,7 +7,6 @@ import (
 
 // Character is a character that plays a game, which could be a person or could be computer-driven.
 type Character interface {
-
 	// Name the name of this character
 	Name() string
 

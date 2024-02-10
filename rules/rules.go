@@ -11,7 +11,6 @@ import (
 
 // Rules provides high-level game rules
 type Rules interface {
-
 	// StartGame starts a game using the passed-in mode
 	StartGame(game model.Game, mode model.GameMode) error
 

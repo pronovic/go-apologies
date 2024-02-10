@@ -10,9 +10,11 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-var stubbedString = "2024-01-31T08:15:03.221Z"
-var stubbedTimestamp, _ = timestamp.Parse(stubbedString)
-var factory timestamp.MockFactory
+var (
+	stubbedString       = "2024-01-31T08:15:03.221Z"
+	stubbedTimestamp, _ = timestamp.Parse(stubbedString)
+	factory             timestamp.MockFactory
+)
 
 func init() {
 	factory.On("CurrentTime").Return(stubbedTimestamp)

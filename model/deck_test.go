@@ -45,7 +45,7 @@ func TestNewDeck(t *testing.T) {
 	assert.Equal(t, DeckSize, len(underlying.XdrawPile))
 	assert.Equal(t, 0, len(underlying.XdiscardPile))
 
-	var counts = make(map[CardType]int, len(CardTypes.Members()))
+	counts := make(map[CardType]int, len(CardTypes.Members()))
 	for i := range CardTypes.Members() {
 		cardtype := CardTypes.Members()[i]
 		counts[cardtype] = 0
@@ -93,7 +93,7 @@ func TestDeckDrawAndDiscard(t *testing.T) {
 	underlying := obj.(*deck)
 
 	// Check that we can draw the entire deck
-	var drawn = make([]Card, 0, DeckSize)
+	drawn := make([]Card, 0, DeckSize)
 	for i := 0; i < DeckSize; i++ {
 		card1, err = obj.Draw()
 		assert.Nil(t, err)

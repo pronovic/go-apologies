@@ -12,7 +12,6 @@ import (
 
 // Engine Game engine that coordinates character actions in a game.
 type Engine interface {
-
 	// Mode The game mode
 	Mode() model.GameMode
 

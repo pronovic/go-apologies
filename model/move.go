@@ -16,13 +16,14 @@ func (e ActionType) Value() string                         { return e.value }
 func (e ActionType) MarshalText() (text []byte, err error) { return enum.Marshal(e) }
 func (e *ActionType) UnmarshalText(text []byte) error      { return enum.Unmarshal(e, text, ActionTypes) }
 
-var ActionTypes = enum.NewValues[ActionType](MoveToStart, MoveToPosition)
-var MoveToStart = ActionType{"MoveToStart"}
-var MoveToPosition = ActionType{"MoveToPosition"}
+var (
+	ActionTypes    = enum.NewValues[ActionType](MoveToStart, MoveToPosition)
+	MoveToStart    = ActionType{"MoveToStart"}
+	MoveToPosition = ActionType{"MoveToPosition"}
+)
 
 // Action is an action that can be taken as part of a move
 type Action interface {
-
 	// Type The type of the action
 	Type() ActionType
 

@@ -5,7 +5,6 @@ import (
 )
 
 type CharacterInputSource interface {
-
 	// Name Get the name of the character input source.
 	Name() string
 

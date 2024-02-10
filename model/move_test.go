@@ -76,8 +76,8 @@ func TestNewMoveFromJSON(t *testing.T) {
 
 func TestNewMoveEmptySlice(t *testing.T) {
 	card := NewCard("1", Card1)
-	var actions = make([]Action, 0)
-	var sideEffects = make([]Action, 0)
+	actions := make([]Action, 0)
+	sideEffects := make([]Action, 0)
 	obj := NewMove(card, actions, sideEffects)
 	assert.Equal(t, card, obj.Card())
 	assert.Equal(t, actions, obj.Actions())
@@ -86,8 +86,8 @@ func TestNewMoveEmptySlice(t *testing.T) {
 
 func TestNewMoveNilSlice(t *testing.T) {
 	card := NewCard("1", Card1)
-	var actions = make([]Action, 0)
-	var sideEffects = make([]Action, 0)
+	actions := make([]Action, 0)
+	sideEffects := make([]Action, 0)
 	obj := NewMove(card, nil, nil)
 	assert.Equal(t, card, obj.Card())
 	assert.Equal(t, actions, obj.Actions())         // nil is converted to a newly-allocated empty slice

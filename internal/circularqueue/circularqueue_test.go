@@ -25,7 +25,7 @@ func TestEmpty(t *testing.T) {
 func TestSingle(t *testing.T) {
 	var entry string
 	var err error
-	var entries = []string{"a"}
+	entries := []string{"a"}
 
 	queue := NewCircularQueue[string](entries)
 
@@ -54,7 +54,7 @@ func TestSingle(t *testing.T) {
 func TestMultiple(t *testing.T) {
 	var entry string
 	var err error
-	var entries = []string{"a", "b", "c", "d", "e"}
+	entries := []string{"a", "b", "c", "d", "e"}
 
 	queue := NewCircularQueue[string](entries)
 

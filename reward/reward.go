@@ -25,7 +25,6 @@ import (
 )
 
 type Calculator interface {
-
 	// Calculate calculate the reward associated with a player view
 	Calculate(view model.PlayerView) float32
 
@@ -33,8 +32,7 @@ type Calculator interface {
 	Range(players int) (float32, float32)
 }
 
-type calculator struct {
-}
+type calculator struct{}
 
 func NewCalculator() Calculator {
 	return &calculator{}

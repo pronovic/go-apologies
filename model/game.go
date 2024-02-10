@@ -18,13 +18,14 @@ func (e GameMode) Value() string                         { return e.value }
 func (e GameMode) MarshalText() (text []byte, err error) { return enum.Marshal(e) }
 func (e *GameMode) UnmarshalText(text []byte) error      { return enum.Unmarshal(e, text, GameModes) }
 
-var GameModes = enum.NewValues[GameMode](AdultMode, StandardMode)
-var StandardMode = GameMode{"StandardMode"}
-var AdultMode = GameMode{"AdultMode"}
+var (
+	GameModes    = enum.NewValues[GameMode](AdultMode, StandardMode)
+	StandardMode = GameMode{"StandardMode"}
+	AdultMode    = GameMode{"AdultMode"}
+)
 
 // History Tracks an action taken during the game.
 type History interface {
-
 	// Action String describing the action
 	Action() string
 
@@ -104,7 +105,6 @@ func (h *history) String() string {
 
 // Game The game, consisting of state for a set of players.
 type Game interface {
-
 	// PlayerCount Number of players in the game
 	PlayerCount() int
 
@@ -232,7 +232,7 @@ func (g *game) History() []History {
 }
 
 func (g *game) Copy() Game {
-	var playersCopy = make(map[PlayerColor]Player, len(g.Xplayers))
+	playersCopy := make(map[PlayerColor]Player, len(g.Xplayers))
 
 	// range on a map explicitly does *not* return keys in a stable order, so we iterate on colors instead
 	for _, color := range PlayerColors.Members() {
@@ -242,7 +242,7 @@ func (g *game) Copy() Game {
 		}
 	}
 
-	var historyCopy = make([]History, 0, len(g.Xhistory))
+	historyCopy := make([]History, 0, len(g.Xhistory))
 	for i := range g.Xhistory {
 		historyCopy = append(historyCopy, g.Xhistory[i])
 	}
@@ -293,7 +293,7 @@ func (g *game) Track(action string, player Player, card Card) {
 		cardtype = &tmp
 	}
 
-	var history = NewHistory(action, color, cardtype, g.factory)
+	history := NewHistory(action, color, cardtype, g.factory)
 	g.Xhistory = append(g.Xhistory, history)
 
 	if player != nil {

@@ -26,15 +26,16 @@ func (e PlayerColor) Value() string                         { return e.value }
 func (e PlayerColor) MarshalText() (text []byte, err error) { return enum.Marshal(e) }
 func (e *PlayerColor) UnmarshalText(text []byte) error      { return enum.Unmarshal(e, text, PlayerColors) }
 
-var PlayerColors = enum.NewValues[PlayerColor](Red, Yellow, Green, Blue)
-var Red = PlayerColor{"Red"}
-var Yellow = PlayerColor{"Yellow"}
-var Blue = PlayerColor{"Blue"}
-var Green = PlayerColor{"Green"}
+var (
+	PlayerColors = enum.NewValues[PlayerColor](Red, Yellow, Green, Blue)
+	Red          = PlayerColor{"Red"}
+	Yellow       = PlayerColor{"Yellow"}
+	Blue         = PlayerColor{"Blue"}
+	Green        = PlayerColor{"Green"}
+)
 
 // Player A player, which has a color and a set of pawns.
 type Player interface {
-
 	// Color the color of this player
 	Color() PlayerColor
 
@@ -221,7 +222,6 @@ func (p *player) IncrementTurns() {
 
 // PlayerView A player-specific view of the game, showing only the information a player would have available on their turn.
 type PlayerView interface {
-
 	// Player The player associated with the view.
 	Player() Player
 

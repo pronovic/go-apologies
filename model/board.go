@@ -68,7 +68,6 @@ func (s *slide) End() int {
 
 // Position is the position of a pawn on the board.
 type Position interface {
-
 	// Start Whether this pawn resides in its start area
 	Start() bool
 
@@ -171,7 +170,7 @@ func (p *position) Copy() Position {
 }
 
 func (p *position) MoveToPosition(position Position) error {
-	var fields = 0
+	fields := 0
 
 	if position.Start() {
 		fields += 1
@@ -266,7 +265,6 @@ func (p *position) String() string {
 
 // Pawn is a pawn on the board, belonging to a player.
 type Pawn interface {
-
 	// Color the color of this pawn
 	Color() PlayerColor
 

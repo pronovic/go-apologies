@@ -36,7 +36,7 @@ func (q *circularQueue[T]) SetFirst(entry T) error {
 	}
 
 	for i := 0; i < q.wrapped.Size(); i++ {
-		var first, _ = q.wrapped.First()
+		first, _ := q.wrapped.First()
 
 		if equality.EqualByValue(entry, first) {
 			return nil // entry is found at front of queue
@@ -54,7 +54,7 @@ func (q *circularQueue[T]) Next() (T, error) {
 		return *new(T), errors.New("queue is empty")
 	}
 
-	var first, ok = q.wrapped.First()
+	first, ok := q.wrapped.First()
 	if !ok {
 		return *new(T), errors.New("entry not found")
 	}

@@ -19,8 +19,10 @@ import (
 	"github.com/rthornton128/goncurses"
 )
 
-const minCols = 155
-const minRows = 60
+const (
+	minCols = 155
+	minRows = 60
+)
 
 func main() {
 	players, delay, exit, mode, cis := parseArgs()
@@ -140,7 +142,8 @@ func draw(
 	stdscr *goncurses.Window,
 	board *goncurses.Window,
 	state *goncurses.Window,
-	history *goncurses.Window) {
+	history *goncurses.Window,
+) {
 	err := stdscr.Clear()
 	if err != nil {
 		log.Fatal(err)
@@ -180,7 +183,8 @@ func refresh(
 	stdscr *goncurses.Window,
 	board *goncurses.Window,
 	state *goncurses.Window,
-	history *goncurses.Window) {
+	history *goncurses.Window,
+) {
 	refreshScreen(stdscr)
 	refreshBoard(game, board)
 	refreshState(cis, runtime, game, delay, state)
@@ -270,7 +274,8 @@ func refreshState(
 	runtime engine.Engine,
 	game model.Game,
 	delay int,
-	state *goncurses.Window) {
+	state *goncurses.Window,
+) {
 	err := state.Clear()
 	if err != nil {
 		log.Fatal(err)
