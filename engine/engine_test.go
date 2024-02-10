@@ -134,10 +134,10 @@ func TestEngineConstructLegalMovesStandardNoCard(t *testing.T) {
 	view := model.MockPlayerView{}
 	drawcard := model.NewCard("1", model.Card1)
 	movecard := model.NewCard("2", model.Card2)
-	move := model.NewMove(movecard, []model.Action{}, []model.Action{})
+	move := model.NewMove(movecard, nil, nil)
 	legalMoves := []model.Move{ move }
 
-	configureDrawCard(e, drawcard) // so we know exactly which card will be drawn
+	configureDrawCards(e, drawcard) // so we know exactly which card will be drawn
 	evaluator.On("ConstructLegalMoves", &view, drawcard).Return(legalMoves, nil)
 
 	c, m, err := e.ConstructLegalMoves(&view, nil)
@@ -157,10 +157,10 @@ func TestEngineConstructLegalMovesStandardCard(t *testing.T) {
 	drawcard := model.NewCard("1", model.Card1)
 	movecard := model.NewCard("2", model.Card2)
 	providedcard := model.NewCard("3", model.Card3)
-	move := model.NewMove(movecard, []model.Action{}, []model.Action{})
+	move := model.NewMove(movecard, nil, nil)
 	legalMoves := []model.Move{ move }
 
-	configureDrawCard(e, drawcard) // so we know exactly which card will be drawn
+	configureDrawCards(e, drawcard) // so we know exactly which card will be drawn
 	evaluator.On("ConstructLegalMoves", &view, providedcard).Return(legalMoves, nil)
 
 	c, m, err := e.ConstructLegalMoves(&view, providedcard)
@@ -179,10 +179,10 @@ func TestEngineConstructLegalMovesAdultNoCard(t *testing.T) {
 	view := model.MockPlayerView{}
 	drawcard := model.NewCard("1", model.Card1)
 	movecard := model.NewCard("2", model.Card2)
-	move := model.NewMove(movecard, []model.Action{}, []model.Action{})
+	move := model.NewMove(movecard, nil, nil)
 	legalMoves := []model.Move{ move }
 
-	configureDrawCard(e, drawcard) // so we know exactly which card will be drawn
+	configureDrawCards(e, drawcard) // so we know exactly which card will be drawn
 	evaluator.On("ConstructLegalMoves", &view, nil).Return(legalMoves, nil)
 
 	c, m, err := e.ConstructLegalMoves(&view, nil)
@@ -202,10 +202,10 @@ func TestEngineConstructLegalMovesAdultCard(t *testing.T) {
 	drawcard := model.NewCard("1", model.Card1)
 	movecard := model.NewCard("2", model.Card2)
 	providedcard := model.NewCard("3", model.Card3)
-	move := model.NewMove(movecard, []model.Action{}, []model.Action{})
+	move := model.NewMove(movecard, nil, nil)
 	legalMoves := []model.Move{ move }
 
-	configureDrawCard(e, drawcard) // so we know exactly which card will be drawn
+	configureDrawCards(e, drawcard) // so we know exactly which card will be drawn
 	evaluator.On("ConstructLegalMoves", &view, providedcard).Return(legalMoves, nil)
 
 	c, m, err := e.ConstructLegalMoves(&view, providedcard)
@@ -233,12 +233,13 @@ func TestEnginePlayNextStandardForfeit(t *testing.T) {
 	evaluator := rules.MockRules{}
 	input := &source.MockCharacterInputSource{}
 	e := createEngine(model.StandardMode, &evaluator, input)
+	startGame(e)
 
 	card := model.NewCard("1", model.Card1)
-	move := model.NewMove(card, []model.Action{}, []model.Action{})
+	move := model.NewMove(card, nil, nil)
 	legalMoves := []model.Move{ move }
 
-	configureDrawCard(e, card) // so we know exactly which card will be drawn
+	configureDrawCards(e, card) // so we know exactly which card will be drawn
 	evaluator.On("ConstructLegalMoves", mock.Anything, card).Return(legalMoves, nil).Once()
 	input.On("ChooseMove", model.StandardMode, mock.Anything, legalMoves).Return(move, nil).Once()
 
@@ -250,20 +251,63 @@ func TestEnginePlayNextStandardForfeit(t *testing.T) {
 	assert.Same(t, card, c)  // confirm that the card was discarded back to the deck
 }
 
-func TestEnginePlayNextStandardIllegal(t *testing.T) {
-	t.Fail()  // TODO: implement test case
-}
+func TestEnginePlayNextStandardNoDrawAgain(t *testing.T) {
+	evaluator := rules.MockRules{}
+	input := &source.MockCharacterInputSource{}
+	e := createEngine(model.StandardMode, &evaluator, input)
+	startGame(e)
 
-func TestEnginePlayNextStandardLegal(t *testing.T) {
-	t.Fail()  // TODO: implement test case
+	player := e.Game().Players()[model.Red]
+	pawn := player.Pawns()[0]
+	card := model.NewCard("1", model.Card1)
+	move := model.NewMove(card, []model.Action { actionStart(pawn) }, nil)
+	legalMoves := []model.Move{ move }
+
+	configureDrawCards(e, card) // so we know exactly which card will be drawn
+	evaluator.On("ConstructLegalMoves", mock.Anything, card).Return(legalMoves, nil).Once()
+	input.On("ChooseMove", model.StandardMode, mock.Anything, legalMoves).Return(move, nil).Once()
+	evaluator.On("DrawAgain", card).Return(false).Once()
+	evaluator.On("ExecuteMove", e.Game(), player, move).Return(nil).Once()
+
+	game, err := e.PlayNext()
+	assert.Nil(t, err)
+	assert.Same(t, e.Game(), game)
+
+	c, _ := e.Draw()
+	assert.Same(t, card, c)  // confirm that the card was discarded back to the deck
 }
 
 func TestEnginePlayNextStandardDrawAgain(t *testing.T) {
-	t.Fail()  // TODO: implement test case
-}
+	evaluator := rules.MockRules{}
+	input := &source.MockCharacterInputSource{}
+	e := createEngine(model.StandardMode, &evaluator, input)
+	startGame(e)
 
-func TestEnginePlayNextStandardComplete(t *testing.T) {
-	t.Fail()  // TODO: implement test case
+	player := e.Game().Players()[model.Red]
+	pawn := player.Pawns()[0]
+	card := model.NewCard("1", model.Card1)
+	move1 := model.NewMove(card, []model.Action {actionStart(pawn) }, nil)
+	move2 := model.NewMove(card, []model.Action {actionPosition(pawn) }, nil)
+	legalMoves1 := []model.Move{move1}
+	legalMoves2 := []model.Move{move2}
+
+	configureDrawCards(e, card, card) // so we know exactly which cards will be drawn
+	evaluator.On("ConstructLegalMoves", mock.Anything, card).Return(legalMoves1, nil).Once()
+	evaluator.On("ConstructLegalMoves", mock.Anything, card).Return(legalMoves2, nil).Once()
+	input.On("ChooseMove", model.StandardMode, mock.Anything, legalMoves1).Return(move1, nil).Once()
+	input.On("ChooseMove", model.StandardMode, mock.Anything, legalMoves2).Return(move2, nil).Once()
+	evaluator.On("DrawAgain", card).Return(true).Once()
+	evaluator.On("DrawAgain", card).Return(false).Once()
+	evaluator.On("ExecuteMove", e.Game(), player, move1).Return(nil).Once()
+	evaluator.On("ExecuteMove", e.Game(), player, move2).Return(nil).Once()
+
+	game, err := e.PlayNext()
+	assert.Nil(t, err)
+	assert.Same(t, e.Game(), game)
+
+	// just confirm that both moves were executed
+	evaluator.AssertCalled(t, "ExecuteMove", e.Game(), player, move1)
+	evaluator.AssertCalled(t, "ExecuteMove", e.Game(), player, move2)
 }
 
 func TestEnginePlayNextAdultForfeit(t *testing.T) {
@@ -275,10 +319,10 @@ func TestEnginePlayNextAdultForfeit(t *testing.T) {
 	player := e.Game().Players()[model.Red]
 	movecard := player.Hand()[0]
 	replacementcard := model.NewCard("999", model.CardApologies)
-	move := model.NewMove(movecard, []model.Action{}, []model.Action{})
+	move := model.NewMove(movecard, nil, nil)
 	legalMoves := []model.Move{ move }
 
-	configureDrawCard(e, replacementcard) // so we know exactly which card will be drawn
+	configureDrawCards(e, replacementcard) // so we know exactly which card will be drawn
 	evaluator.On("ConstructLegalMoves", mock.Anything, nil).Return(legalMoves, nil).Once()
 	input.On("ChooseMove", model.AdultMode, mock.Anything, legalMoves).Return(move, nil).Once()
 
@@ -305,20 +349,82 @@ func TestEnginePlayNextAdultForfeit(t *testing.T) {
 	assert.Same(t, movecard, c)
 }
 
-func TestEnginePlayNextAdultIllegal(t *testing.T) {
-	t.Fail()  // TODO: implement test case
-}
+func TestEnginePlayNextAdultNoDrawAgain(t *testing.T) {
+	evaluator := rules.MockRules{}
+	input := &source.MockCharacterInputSource{}
+	e := createEngine(model.AdultMode, &evaluator, input)
+	startGame(e)
 
-func TestEnginePlayNextAdultLegal(t *testing.T) {
-	t.Fail()  // TODO: implement test case
+	player := e.Game().Players()[model.Red]
+	pawn := player.Pawns()[0]
+	movecard := player.Hand()[0]
+	replacementcard := model.NewCard("999", model.CardApologies)
+	move := model.NewMove(movecard, []model.Action { actionStart(pawn) }, nil)
+	legalMoves := []model.Move{ move }
+
+	configureDrawCards(e, replacementcard) // so we know exactly which card will be drawn
+	evaluator.On("ConstructLegalMoves", mock.Anything, nil).Return(legalMoves, nil).Once()
+	input.On("ChooseMove", model.AdultMode, mock.Anything, legalMoves).Return(move, nil).Once()
+	evaluator.On("DrawAgain", movecard).Return(false).Once()
+	evaluator.On("ExecuteMove", e.Game(), player, move).Return(nil).Once()
+
+	game, err := e.PlayNext()
+	assert.Nil(t, err)
+	assert.Same(t, e.Game(), game)
+
+	// confirm that the forfeited card is not in the player's hand
+	assert.True(t, player.Hand()[0] != movecard ||
+		player.Hand()[1] != movecard ||
+		player.Hand()[2] != movecard ||
+		player.Hand()[3] != movecard ||
+		player.Hand()[4] != movecard)
+
+	// confirm that the replacement drawn card is now in the player's hand
+	assert.True(t, player.Hand()[0] == replacementcard ||
+		player.Hand()[1] == replacementcard ||
+		player.Hand()[2] == replacementcard ||
+		player.Hand()[3] == replacementcard ||
+		player.Hand()[4] == replacementcard)
+
+	// confirm that the forfeited card has been discarded back to the deck
+	c, _ := e.Draw()
+	assert.Same(t, movecard, c)
 }
 
 func TestEnginePlayNextAdultDrawAgain(t *testing.T) {
-	t.Fail()  // TODO: implement test case
-}
+	evaluator := rules.MockRules{}
+	input := &source.MockCharacterInputSource{}
+	e := createEngine(model.AdultMode, &evaluator, input)
+	startGame(e)
 
-func TestEnginePlayNextAdultComplete(t *testing.T) {
-	t.Fail()  // TODO: implement test case
+	player := e.Game().Players()[model.Red]
+	pawn := player.Pawns()[0]
+	movecard1 := player.Hand()[0]
+	movecard2 := player.Hand()[1]
+	replacementcard1 := model.NewCard("998", model.CardApologies)
+	replacementcard2 := model.NewCard("999", model.CardApologies)
+	move1 := model.NewMove(movecard1, []model.Action {actionStart(pawn) }, nil)
+	move2 := model.NewMove(movecard2, []model.Action {actionPosition(pawn) }, nil)
+	legalMoves1 := []model.Move{move1}
+	legalMoves2 := []model.Move{move2}
+
+	configureDrawCards(e, replacementcard1, replacementcard2) // so we know exactly which cards will be drawn
+	evaluator.On("ConstructLegalMoves", mock.Anything, nil).Return(legalMoves1, nil).Once()
+	evaluator.On("ConstructLegalMoves", mock.Anything, nil).Return(legalMoves2, nil).Once()
+	input.On("ChooseMove", model.AdultMode, mock.Anything, legalMoves1).Return(move1, nil).Once()
+	input.On("ChooseMove", model.AdultMode, mock.Anything, legalMoves2).Return(move2, nil).Once()
+	evaluator.On("DrawAgain", movecard1).Return(true).Once()
+	evaluator.On("DrawAgain", movecard2).Return(false).Once()
+	evaluator.On("ExecuteMove", e.Game(), player, move1).Return(nil).Once()
+	evaluator.On("ExecuteMove", e.Game(), player, move2).Return(nil).Once()
+
+	game, err := e.PlayNext()
+	assert.Nil(t, err)
+	assert.Same(t, e.Game(), game)
+
+	// just confirm that both moves were executed
+	evaluator.AssertCalled(t, "ExecuteMove", e.Game(), player, move1)
+	evaluator.AssertCalled(t, "ExecuteMove", e.Game(), player, move2)
 }
 
 // createEngine creates an engine for testing, to avoid boilerplate in other methods
@@ -339,10 +445,12 @@ func createEngine(mode model.GameMode, evaluator rules.Rules, input source.Chara
 	return e
 }
 
-// configureDrawCard configures the deck with a single card in it to be drawn
-func configureDrawCard(e Engine, drawcard model.Card) {
+// configureDrawCards configures the deck with one or more cards in it to be drawn
+func configureDrawCards(e Engine, drawcards ... model.Card) {
 	configureEmptyDeck(e)
-	_ = e.Discard(drawcard)
+	for _, drawcard := range drawcards {
+		_ = e.Discard(drawcard)
+	}
 }
 
 // configureEmptyDeck configures the deck with a single card in it to be drawn
@@ -356,4 +464,12 @@ func configureEmptyDeck(e Engine) {
 func startGame(e Engine) {
 	realRules := rules.NewRules(nil)
 	_ = realRules.StartGame(e.Game(), e.Mode())
+}
+
+func actionPosition(pawn model.Pawn) model.Action {
+	return model.NewAction(model.MoveToPosition, pawn, nil)
+}
+
+func actionStart(pawn model.Pawn) model.Action {
+	return model.NewAction(model.MoveToStart, pawn, nil)
 }

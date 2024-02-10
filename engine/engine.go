@@ -326,11 +326,7 @@ func (e *engine) ChooseNextMove(character Character, view model.PlayerView) (mod
 
 	move, err := character.ChooseMove(e.mode, view, legalMoves)
 	if err != nil {
-		e.game.Track("Illegal move: a random legal move will be chosen", view.Player(), nil)
-		move, err = randomutil.RandomChoice(legalMoves)
-		if err != nil {
-			return nil, err
-		}
+		return nil, err
 	}
 
 	return move, nil
@@ -374,7 +370,7 @@ func (e *engine) executeMoveStandard(player model.Player, move model.Move) (bool
 		}
 
 		// player's turn is done unless they can draw again with this card or the game is completed
-		done := e.Completed() || e.evaluator.DrawAgain(move.Card())
+		done := e.Completed() || !e.evaluator.DrawAgain(move.Card())
 
 		return done, nil
 	}
@@ -422,7 +418,7 @@ func (e *engine) executeMoveAdult(player model.Player, move model.Move) (bool, e
 		player.AppendToHand(drawn)
 
 		// player's turn is done unless they can draw again with this card or the game is completed
-		done := e.Completed() || e.evaluator.DrawAgain(move.Card())
+		done := e.Completed() || !e.evaluator.DrawAgain(move.Card())
 
 		return done, nil
 	}
