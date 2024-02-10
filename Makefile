@@ -28,6 +28,7 @@ lint: vet staticcheck
 staticcheck:
 	# Run the 'staticheck' linter
 	# To get the tool: go install honnef.co/go/tools/cmd/staticcheck@2023.1.6
+	# Explanations: https://staticcheck.dev/docs/checks
 	staticcheck ./...
 .PHONY: staticcheck
 
