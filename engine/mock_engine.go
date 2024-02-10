@@ -379,6 +379,24 @@ func (_m *MockEngine) Reset() (model.Game, error) {
 	return r0, r1
 }
 
+// SetFirst provides a mock function with given fields: first
+func (_m *MockEngine) SetFirst(first model.PlayerColor) error {
+	ret := _m.Called(first)
+
+	if len(ret) == 0 {
+		panic("no return value specified for SetFirst")
+	}
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(model.PlayerColor) error); ok {
+		r0 = rf(first)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
 // StartGame provides a mock function with given fields:
 func (_m *MockEngine) StartGame() (model.Game, error) {
 	ret := _m.Called()
