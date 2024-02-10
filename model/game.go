@@ -243,9 +243,7 @@ func (g *game) Copy() Game {
 	}
 
 	historyCopy := make([]History, 0, len(g.Xhistory))
-	for i := range g.Xhistory {
-		historyCopy = append(historyCopy, g.Xhistory[i])
-	}
+	historyCopy = append(historyCopy, g.Xhistory...)
 
 	return &game{
 		XplayerCount: g.XplayerCount,

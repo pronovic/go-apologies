@@ -238,21 +238,10 @@ func (g *moveGenerator) moveSplit(moves *[]model.Move, color model.PlayerColor, 
 					actions := make([]model.Action, 0)
 					sideEffects := make([]model.Action, 0)
 
-					for _, l := range left[0].Actions() {
-						actions = append(actions, l)
-					}
-
-					for _, l := range left[0].SideEffects() {
-						sideEffects = append(sideEffects, l)
-					}
-
-					for _, r := range right[0].Actions() {
-						actions = append(actions, r)
-					}
-
-					for _, r := range right[0].SideEffects() {
-						sideEffects = append(sideEffects, r)
-					}
+					actions = append(actions, left[0].Actions()...)
+					sideEffects = append(sideEffects, left[0].SideEffects()...)
+					actions = append(actions, right[0].Actions()...)
+					sideEffects = append(sideEffects, right[0].SideEffects()...)
 
 					move := model.NewMove(card, actions, sideEffects)
 					*moves = append(*moves, move)

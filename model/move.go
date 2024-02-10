@@ -218,14 +218,7 @@ func (m *move) AddSideEffect(action Action) {
 
 func (m *move) MergedActions() []Action {
 	merged := make([]Action, 0, len(m.Xactions)+len(m.XsideEffects))
-
-	for _, action := range m.Xactions {
-		merged = append(merged, action)
-	}
-
-	for _, action := range m.XsideEffects {
-		merged = append(merged, action)
-	}
-
+	merged = append(merged, m.Xactions...)
+	merged = append(merged, m.XsideEffects...)
 	return merged
 }

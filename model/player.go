@@ -330,9 +330,7 @@ func (v *playerView) AllPawns() []Pawn {
 		opponent, exists := v.Xopponents[color]
 		if exists {
 			pawns := opponent.Pawns()
-			for i := range pawns {
-				all = append(all, pawns[i])
-			}
+			all = append(all, pawns...)
 		}
 	}
 
