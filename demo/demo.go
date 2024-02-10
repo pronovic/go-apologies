@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/pronovic/go-apologies/engine"
 	"github.com/pronovic/go-apologies/model"
+	"github.com/pronovic/go-apologies/render"
 	"github.com/pronovic/go-apologies/source"
 	"github.com/rthornton128/goncurses"
 	"log"
@@ -43,9 +44,9 @@ func main() {
 	cursesMain(cis, runtime, delay, exit)
 }
 
-func parseArgs() (int, float64, bool, model.GameMode, source.CharacterInputSource) {
+func parseArgs() (int, int, bool, model.GameMode, source.CharacterInputSource) {
 	players := flag.Int("players", 2, "number of players")
-	delay := flag.Float64("delay", 200, "delay between moves (milliseconds)")
+	delay := flag.Int("delay", 200, "delay between moves (milliseconds)")
 	adult := flag.Bool("adult", false, "run in adult mode")
 	input := flag.String("input", "random", "'random' or 'reward' for input source")
 	exit := flag.Bool("exit", false, "exit immediately upon completion")
@@ -72,7 +73,7 @@ func forceMinimumSize() {
 }
 
 // cursesMain is the ncurses main routine
-func cursesMain(cis source.CharacterInputSource, runtime engine.Engine, delay float64, exit bool) {
+func cursesMain(cis source.CharacterInputSource, runtime engine.Engine, delay int, exit bool) {
 	stdscr, err := goncurses.Init()
 	if err != nil {
 		log.Fatal(err)
@@ -175,7 +176,7 @@ func refresh(
 		cis source.CharacterInputSource,
 		runtime engine.Engine,
 		game model.Game,
-		delay float64,
+		delay int,
 		stdscr *goncurses.Window,
 		board *goncurses.Window,
 		state *goncurses.Window,
@@ -210,16 +211,37 @@ func refreshBoard(game model.Game, board *goncurses.Window) {
 		log.Fatal(err)
 	}
 
-	//rendered, err := render.Board(game)
-	//if err != nil {
-	//	log.Fatal(err)
-	//}
+	rendered, err := render.Board(game)
+	if err != nil {
+		log.Fatal(err)
+	}
 
-	//row := 0
-	//for _, line := range strings.Split(rendered,"\n") {
-	//	board.MovePrint(row, 1, line)
-	//	row += 1
-	//}
+	row := 0
+	char := 0
+	runes := []rune(rendered)
+	for _, r := range runes {
+		if r == '\n' {
+			row += 1
+			char = 0
+		} else {
+			char += 1
+			if r == '┌' {
+				board.MoveAddChar(row, char, goncurses.ACS_ULCORNER)
+			} else if r == '┐' {
+				board.MoveAddChar(row, char, goncurses.ACS_URCORNER)
+			} else if r == '└' {
+				board.MoveAddChar(row, char, goncurses.ACS_LLCORNER)
+			} else if r == '┘' {
+				board.MoveAddChar(row, char, goncurses.ACS_LRCORNER)
+			} else if r == '─' {
+				board.MoveAddChar(row, char, goncurses.ACS_HLINE)
+			} else if r == '│' {
+				board.MoveAddChar(row, char, goncurses.ACS_VLINE)
+			} else {
+				board.MovePrint(row, char, string(r))
+			}
+		}
+	}
 
 	board.Refresh()
 }
@@ -228,7 +250,7 @@ func refreshState(
 		cis source.CharacterInputSource,
 		runtime engine.Engine,
 		game model.Game,
-		delay float64,
+		delay int,
 		state *goncurses.Window) {
 	err := state.Clear()
 	if err != nil {
@@ -244,7 +266,7 @@ func refreshState(
 	state.MovePrintf(3, 3, "Players..: %d", runtime.Players())
 	state.MovePrintf(4, 3, "Mode.....: %s", runtime.Mode().Value())
 	state.MovePrintf(5, 3, "Source...: %s", cis.Name())
-	state.MovePrintf(6, 3, "Delay....: %.2f seconds", delay)
+	state.MovePrintf(6, 3, "Delay....: %d ms", delay)
 	state.MovePrintf(7, 3, "State....: %s", runtime.State())
 
 	players := make([]model.Player, 0)
@@ -282,10 +304,12 @@ func refreshHistory(game model.Game, history *goncurses.Window) {
 		log.Fatal(err)
 	}
 
-	entries := game.History()[:]
-	slices.Reverse(entries)
-	if len(entries) >= 3 {
-		entries = entries[0:3]
+	length := len(game.History())
+	var entries []model.History
+	if length < 4 {
+		entries = game.History()
+	} else {
+		entries = game.History()[length-3:length]
 	}
 
 	row := 1
