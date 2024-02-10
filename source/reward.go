@@ -38,7 +38,7 @@ func (s *rewardInputSource) Name() string {
 	return "RewardInputSource"
 }
 
-func (s *rewardInputSource) ChooseMove(mode model.GameMode, view model.PlayerView, legalMoves []model.Move) (model.Move, error) {
+func (s *rewardInputSource) ChooseMove(_ model.GameMode, view model.PlayerView, legalMoves []model.Move) (model.Move, error) {
 	results := make([]result, 0, len(legalMoves))
 
 	for _, move := range legalMoves {

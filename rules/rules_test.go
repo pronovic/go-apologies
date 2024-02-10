@@ -7,8 +7,6 @@ import (
 	"testing"
 )
 
-var emptyMoves = make([]model.Move, 0)
-
 func TestStartGameStandardMode(t *testing.T) {
 	game, _ := model.NewGame(2, nil)
 	err := NewRules(nil).StartGame(game, model.StandardMode)
