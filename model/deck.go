@@ -241,10 +241,10 @@ func (d *deck) Draw() (Card, error) {
 	}
 
 	key := keys[index]
-	card, _ := d.XdrawPile[key]
+	c := d.XdrawPile[key]
 	delete(d.XdrawPile, key)
 
-	return card, nil
+	return c, nil
 }
 
 func (d *deck) Discard(card Card) error {

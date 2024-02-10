@@ -55,7 +55,6 @@ func TestNewHistoryFromJSON(t *testing.T) {
 	marshalled, err = json.Marshal(obj)
 	assert.Nil(t, err)
 	unmarshalled, err = NewHistoryFromJSON(bytes.NewReader(marshalled))
-	marshalled, err = json.Marshal(obj)
 	assert.Nil(t, err)
 	assert.Equal(t, obj, unmarshalled)
 

@@ -313,7 +313,7 @@ func TestLegalMovesCard4(t *testing.T) {
 	game = setupGame()
 	_ = game.Players()[model.Red].Pawns()[0].Position().MoveToSquare(6)
 	_ = game.Players()[model.Red].Pawns()[1].Position().MoveToSquare(2)
-	card, pawn, view, moves = buildMoves(model.Red, game, 0, model.Card4)
+	_, _, _, moves = buildMoves(model.Red, game, 0, model.Card4)
 	expected = emptyMoves
 	assert.Equal(t, expected, moves) // can't move because we have a pawn there already
 
@@ -660,7 +660,7 @@ func TestLegalMovesCardApologies(t *testing.T) {
 
 	// No legal moves if no pawn in start
 	game = setupGame()
-	card, pawn, _, moves = buildMoves(model.Red, game, 0, model.CardApologies)
+	_, _, _, moves = buildMoves(model.Red, game, 0, model.CardApologies)
 	_ = game.Players()[model.Yellow].Pawns()[3].Position().MoveToSquare(52) // can be swapped, on board
 	_ = game.Players()[model.Blue].Pawns()[1].Position().MoveToSquare(19)   // can be swapped, on board
 	expected = emptyMoves
@@ -706,7 +706,7 @@ func TestLegalMovesSpecial(t *testing.T) {
 	// Move pawn past home
 	game = setupGame()
 	_ = game.Players()[model.Red].Pawns()[0].Position().MoveToSafe(4)
-	card, pawn, _, moves = buildMoves(model.Red, game, 0, model.Card2)
+	_, _, _, moves = buildMoves(model.Red, game, 0, model.Card2)
 	expected = emptyMoves
 	assert.Equal(t, expected, moves) // no moves, because it isn't legal
 

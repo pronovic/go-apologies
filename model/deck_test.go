@@ -112,6 +112,7 @@ func TestDeckDrawAndDiscard(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, len(underlying.XdiscardPile), 1)
 	card2, err = obj.Draw()
+	assert.Nil(t, err)
 	assert.Same(t, card1, card2)
 	assert.Equal(t, len(underlying.XdiscardPile), 0)
 	assert.Equal(t, len(underlying.XdrawPile), 0)
@@ -130,7 +131,7 @@ func TestDeckDrawAndDiscard(t *testing.T) {
 	card2 = drawn[0]
 	drawn = slices.Delete(drawn, 0, 1)
 	card3 = drawn[0]
-	drawn = slices.Delete(drawn, 0, 1)
+	slices.Delete(drawn, 0, 1)
 	err = obj.Discard(card1)
 	assert.Nil(t, err)
 	err = obj.Discard(card2)

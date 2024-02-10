@@ -192,8 +192,6 @@ func (p *player) RemoveFromHand(card Card) {
 			return
 		}
 	}
-
-	return
 }
 
 func (p *player) FindFirstPawnInStart() *Pawn { // optional

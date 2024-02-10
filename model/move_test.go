@@ -29,7 +29,6 @@ func TestNewActionFromJSON(t *testing.T) {
 	marshalled, err = json.Marshal(obj)
 	assert.Nil(t, err)
 	unmarshalled, err = NewActionFromJSON(bytes.NewReader(marshalled))
-	marshalled, err = json.Marshal(unmarshalled)
 	assert.Nil(t, err)
 	assert.Equal(t, obj, unmarshalled)
 }
@@ -70,7 +69,6 @@ func TestNewMoveFromJSON(t *testing.T) {
 	assert.Nil(t, err)
 	unmarshalled, err = NewMoveFromJSON(bytes.NewReader(marshalled))
 	assert.Nil(t, err)
-	marshalled, err = json.Marshal(unmarshalled)
 	assert.Equal(t, obj, unmarshalled)
 }
 

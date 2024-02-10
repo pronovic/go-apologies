@@ -28,6 +28,7 @@ func TestStartGameStandardMode(t *testing.T) {
 func TestStartGameAdultMode(t *testing.T) {
 	game, _ := model.NewGame(4, nil)
 	err := NewRules(nil).StartGame(game, model.AdultMode)
+	assert.Nil(t, err)
 
 	assert.Equal(t, model.Red, game.Players()[model.Red].Color())
 	assert.Equal(t, model.AdultHand, len(game.Players()[model.Red].Hand()))
@@ -109,6 +110,7 @@ func TestEvaluateMove(t *testing.T) {
 	assert.Nil(t, err)
 
 	result, err = NewRules(nil).EvaluateMove(view, move)
+	assert.Nil(t, err)
 	assert.Equal(t, expected, result)
 }
 

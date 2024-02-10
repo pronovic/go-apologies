@@ -108,7 +108,7 @@ func cursesMain(cis source.CharacterInputSource, runtime engine.Engine, delay in
 	interrupt := make(chan os.Signal, 1)
 	signal.Notify(interrupt, os.Interrupt)
 	go func() {
-		_ = <-interrupt
+		<-interrupt
 		complete = true
 		goncurses.End()
 	}()
@@ -116,7 +116,7 @@ func cursesMain(cis source.CharacterInputSource, runtime engine.Engine, delay in
 	resize := make(chan os.Signal, 1)
 	signal.Notify(resize, syscall.SIGWINCH)
 	go func() {
-		_ = <-resize
+		<-resize
 		draw(stdscr, board, state, history)
 	}()
 
@@ -229,8 +229,7 @@ func refreshBoard(game model.Game, board *goncurses.Window) {
 
 	row := 0
 	char := 0
-	runes := []rune(rendered)
-	for _, r := range runes {
+	for _, r := range rendered {
 		if r == '\n' {
 			row += 1
 			char = 0
