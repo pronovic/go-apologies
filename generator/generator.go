@@ -325,15 +325,13 @@ func (g *moveGenerator) CalculatePosition(color model.PlayerColor, position mode
 		} else if squares > 0 {
 			if *position.Safe()+squares < model.SafeSquares {
 				copied := position.Copy()
-				err := copied.MoveToSafe(*position.Safe() + squares)
-				if err != nil {
+				if err := copied.MoveToSafe(*position.Safe() + squares); err != nil {
 					return (model.Position)(nil), err
 				}
 				return copied, nil
 			} else if *position.Safe()+squares == model.SafeSquares {
 				copied := position.Copy()
-				err := copied.MoveToHome()
-				if err != nil {
+				if err := copied.MoveToHome(); err != nil {
 					return (model.Position)(nil), err
 				}
 				return copied, nil
@@ -343,15 +341,13 @@ func (g *moveGenerator) CalculatePosition(color model.PlayerColor, position mode
 		} else { // squares < 0
 			if *position.Safe()+squares >= 0 {
 				copied := position.Copy()
-				err := copied.MoveToSafe(*position.Safe() + squares)
-				if err != nil {
+				if err := copied.MoveToSafe(*position.Safe() + squares); err != nil {
 					return (model.Position)(nil), err
 				}
 				return copied, nil
 			} else { // handle moving back out of the safe area
 				copied := position.Copy()
-				err := copied.MoveToSquare(*model.TurnSquares[color].Square())
-				if err != nil {
+				if err := copied.MoveToSquare(*model.TurnSquares[color].Square()); err != nil {
 					return (model.Position)(nil), err
 				}
 				return g.CalculatePosition(color, copied, squares+*position.Safe()+1)
@@ -364,23 +360,20 @@ func (g *moveGenerator) CalculatePosition(color model.PlayerColor, position mode
 			if *position.Square()+squares < model.BoardSquares {
 				if *position.Square() <= *model.TurnSquares[color].Square() && *position.Square()+squares > *model.TurnSquares[color].Square() {
 					copied := position.Copy()
-					err := copied.MoveToSafe(0)
-					if err != nil {
+					if err := copied.MoveToSafe(0); err != nil {
 						return (model.Position)(nil), err
 					}
 					return g.CalculatePosition(color, copied, squares-(*model.TurnSquares[color].Square()-*position.Square())-1)
 				} else {
 					copied := position.Copy()
-					err := copied.MoveToSquare(*position.Square() + squares)
-					if err != nil {
+					if err := copied.MoveToSquare(*position.Square() + squares); err != nil {
 						return (model.Position)(nil), err
 					}
 					return copied, nil
 				}
 			} else { // handle turning the corner
 				copied := position.Copy()
-				err := copied.MoveToSquare(0)
-				if err != nil {
+				if err := copied.MoveToSquare(0); err != nil {
 					return (model.Position)(nil), err
 				}
 				return g.CalculatePosition(color, copied, squares-(model.BoardSquares-*position.Square()))
@@ -388,15 +381,13 @@ func (g *moveGenerator) CalculatePosition(color model.PlayerColor, position mode
 		} else { // squares < 0
 			if *position.Square()+squares >= 0 {
 				copied := position.Copy()
-				err := copied.MoveToSquare(*position.Square() + squares)
-				if err != nil {
+				if err := copied.MoveToSquare(*position.Square() + squares); err != nil {
 					return (model.Position)(nil), err
 				}
 				return copied, nil
 			} else { // handle turning the corner
 				copied := position.Copy()
-				err := copied.MoveToSquare(model.BoardSquares - 1)
-				if err != nil {
+				if err := copied.MoveToSquare(model.BoardSquares - 1); err != nil {
 					return (model.Position)(nil), err
 				}
 				return g.CalculatePosition(color, copied, squares+*position.Square()+1)

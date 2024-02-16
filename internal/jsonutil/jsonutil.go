@@ -125,8 +125,7 @@ import (
 func DecodeSimpleJSON[T any](reader io.Reader) (*T, error) {
 	var obj T
 
-	err := json.NewDecoder(reader).Decode(&obj)
-	if err != nil {
+	if err := json.NewDecoder(reader).Decode(&obj); err != nil {
 		return nil, err
 	}
 

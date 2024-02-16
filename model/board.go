@@ -135,8 +135,7 @@ func emptyPosition() Position {
 func newPositionAtSquare(square int) Position {
 	p := NewPosition(false, false, nil, nil)
 
-	err := p.MoveToSquare(square)
-	if err != nil {
+	if err := p.MoveToSquare(square); err != nil {
 		// panic is appropriate here, because this is used internally to set up constants, and if those are broken, we can't run
 		panic("invalid square for new p")
 	}

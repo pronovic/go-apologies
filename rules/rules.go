@@ -59,8 +59,7 @@ func (r *rules) StartGame(game model.Game, mode model.GameMode) error {
 	// the adult mode version of the game moves some pawns and deals some cards to each player
 	if mode == model.AdultMode {
 		for _, player := range game.Players() {
-			err := player.Pawns()[0].Position().MoveToPosition(model.StartCircles[player.Color()])
-			if err != nil {
+			if err := player.Pawns()[0].Position().MoveToPosition(model.StartCircles[player.Color()]); err != nil {
 				return err
 			}
 		}
@@ -97,14 +96,12 @@ func (r *rules) ExecuteMove(game model.Game, player model.Player, move model.Mov
 		pawn := game.Players()[action.Pawn().Color()].Pawns()[action.Pawn().Index()]
 		if action.Type() == model.MoveToStart {
 			game.Track(fmt.Sprintf("Played card %s: [%s->start]", move.Card().Type().Value(), pawn.Name()), player, move.Card())
-			err := pawn.Position().MoveToStart()
-			if err != nil {
+			if err := pawn.Position().MoveToStart(); err != nil {
 				return err
 			}
 		} else if action.Type() == model.MoveToPosition && action.Position() != nil {
 			game.Track(fmt.Sprintf("Played card %s: [%s->position]", move.Card().Type().Value(), pawn.Name()), player, move.Card())
-			err := pawn.Position().MoveToPosition(action.Position())
-			if err != nil {
+			if err := pawn.Position().MoveToPosition(action.Position()); err != nil {
 				return err
 			}
 		}
@@ -134,13 +131,11 @@ func (r *rules) EvaluateMove(view model.PlayerView, move model.Move) (model.Play
 		pawn := result.GetPawn(action.Pawn())
 		if pawn != nil { // if the pawn isn't valid, just ignore it
 			if action.Type() == model.MoveToStart {
-				err := pawn.Position().MoveToStart()
-				if err != nil {
+				if err := pawn.Position().MoveToStart(); err != nil {
 					return nil, err
 				}
 			} else if action.Type() == model.MoveToPosition && action.Position() != nil {
-				err := pawn.Position().MoveToPosition(action.Position())
-				if err != nil {
+				if err := pawn.Position().MoveToPosition(action.Position()); err != nil {
 					return nil, err
 				}
 			}

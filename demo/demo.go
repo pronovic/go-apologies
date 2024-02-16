@@ -33,7 +33,7 @@ func main() {
 		characters[player] = engine.NewCharacter(name, cis)
 	}
 
-	runtime, err := engine.NewEngine(mode, characters, nil)
+	runtime, err := engine.NewEngine(mode, characters, nil);
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -144,28 +144,23 @@ func draw(
 	state *goncurses.Window,
 	history *goncurses.Window,
 ) {
-	err := stdscr.Clear()
-	if err != nil {
+	if err := stdscr.Clear(); err != nil {
 		log.Fatal(err)
 	}
 
-	err = stdscr.Box(0, 0)
-	if err != nil {
+	if err := stdscr.Box(0, 0); err != nil {
 		log.Fatal(err)
 	}
 
-	err = board.Box(0, 0)
-	if err != nil {
+	if err := board.Box(0, 0); err != nil {
 		log.Fatal(err)
 	}
 
-	err = state.Box(0, 0)
-	if err != nil {
+	if err := state.Box(0, 0); err != nil {
 		log.Fatal(err)
 	}
 
-	err = history.Box(0, 0)
-	if err != nil {
+	if err := history.Box(0, 0); err != nil {
 		log.Fatal(err)
 	}
 
@@ -192,8 +187,7 @@ func refresh(
 }
 
 func refreshScreen(stdscr *goncurses.Window) {
-	err := stdscr.Box(0, 0)
-	if err != nil {
+	if err := stdscr.Box(0, 0); err != nil {
 		log.Fatal(err)
 	}
 
@@ -205,13 +199,11 @@ func refreshScreen(stdscr *goncurses.Window) {
 }
 
 func refreshBoard(game model.Game, board *goncurses.Window) {
-	err := board.Clear()
-	if err != nil {
+	if err := board.Clear(); err != nil {
 		log.Fatal(err)
 	}
 
-	err = board.Box(0, 0)
-	if err != nil {
+	if err := board.Box(0, 0); err != nil {
 		log.Fatal(err)
 	}
 
@@ -275,13 +267,11 @@ func refreshState(
 	delay int,
 	state *goncurses.Window,
 ) {
-	err := state.Clear()
-	if err != nil {
+	if err := state.Clear(); err != nil {
 		log.Fatal(err)
 	}
 
-	err = state.Box(0, 0)
-	if err != nil {
+	if err := state.Box(0, 0); err != nil {
 		log.Fatal(err)
 	}
 
@@ -317,13 +307,11 @@ func refreshState(
 }
 
 func refreshHistory(game model.Game, history *goncurses.Window) {
-	err := history.Clear()
-	if err != nil {
+	if err := history.Clear(); err != nil {
 		log.Fatal(err)
 	}
 
-	err = history.Box(0, 0)
-	if err != nil {
+	if err := history.Box(0, 0); err != nil {
 		log.Fatal(err)
 	}
 

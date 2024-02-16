@@ -207,8 +207,7 @@ func (e *engine) Reset() (model.Game, error) {
 }
 
 func (e *engine) StartGame() (model.Game, error) {
-	err := e.evaluator.StartGame(e.game, e.mode)
-	if err != nil {
+	if err := e.evaluator.StartGame(e.game, e.mode); err != nil {
 		return nil, err
 	}
 
@@ -241,7 +240,6 @@ func (e *engine) PlayNext() (model.Game, error) {
 
 	done := false
 	for {
-		var err error
 		var view model.PlayerView
 		var move model.Move
 
@@ -349,8 +347,7 @@ func (e *engine) executeMoveStandard(player model.Player, move model.Move) (bool
 	if len(move.Actions()) == 0 {
 		e.game.Track(fmt.Sprintf("Turn is forfeit; discarded card %s", move.Card().Type()), player, move.Card())
 
-		err := e.Discard(move.Card())
-		if err != nil {
+		if err := e.Discard(move.Card()); err != nil {
 			return false, err
 		}
 
@@ -358,13 +355,11 @@ func (e *engine) executeMoveStandard(player model.Player, move model.Move) (bool
 		return true, nil
 	} else {
 		// tracks history, potentially completes game
-		err := e.evaluator.ExecuteMove(e.game, player, move)
-		if err != nil {
+		if err := e.evaluator.ExecuteMove(e.game, player, move); err != nil {
 			return false, err
 		}
 
-		err = e.Discard(move.Card())
-		if err != nil {
+		if err := e.Discard(move.Card()); err != nil {
 			return false, err
 		}
 
@@ -397,8 +392,7 @@ func (e *engine) executeMoveAdult(player model.Player, move model.Move) (bool, e
 		return true, nil
 	} else {
 		// tracks history, potentially completes game
-		err := e.evaluator.ExecuteMove(e.game, player, move)
-		if err != nil {
+		if err := e.evaluator.ExecuteMove(e.game, player, move); err != nil {
 			return false, err
 		}
 
