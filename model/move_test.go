@@ -27,9 +27,9 @@ func TestNewActionFromJSON(t *testing.T) {
 	position1 := NewPosition(false, false, nil, nil)
 	obj = NewAction(MoveToPosition, pawn1, position1)
 	marshalled, err = json.Marshal(obj)
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 	unmarshalled, err = NewActionFromJSON(bytes.NewReader(marshalled))
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 	assert.Equal(t, obj, unmarshalled)
 }
 
@@ -66,9 +66,9 @@ func TestNewMoveFromJSON(t *testing.T) {
 	obj = NewMove(card1, []Action{action1}, []Action{action2})
 
 	marshalled, err = json.Marshal(obj)
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 	unmarshalled, err = NewMoveFromJSON(bytes.NewReader(marshalled))
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 	assert.Equal(t, obj, unmarshalled)
 }
 

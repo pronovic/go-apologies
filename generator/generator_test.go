@@ -749,7 +749,7 @@ func buildMoves(color model.PlayerColor, game model.Game, index int, cardType mo
 
 func calculatePositionSuccess(t *testing.T, color model.PlayerColor, start model.Position, squares int, expected model.Position) {
 	result, err := NewGenerator().CalculatePosition(color, start, squares)
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 	assert.Equal(t, expected, result)
 }
 

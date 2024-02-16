@@ -53,25 +53,25 @@ func TestNewHistoryFromJSON(t *testing.T) {
 
 	obj = NewHistory("something", nil, nil, nil)
 	marshalled, err = json.Marshal(obj)
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 	unmarshalled, err = NewHistoryFromJSON(bytes.NewReader(marshalled))
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 	assert.Equal(t, obj, unmarshalled)
 
 	color := Blue
 	obj = NewHistory("something", &color, nil, nil)
 	marshalled, err = json.Marshal(obj)
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 	unmarshalled, err = NewHistoryFromJSON(bytes.NewReader(marshalled))
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 	assert.Equal(t, obj, unmarshalled)
 
 	card1 := Card12
 	obj = NewHistory("something", nil, &card1, nil)
 	marshalled, err = json.Marshal(obj)
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 	unmarshalled, err = NewHistoryFromJSON(bytes.NewReader(marshalled))
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 	assert.Equal(t, obj, unmarshalled)
 }
 
@@ -92,15 +92,15 @@ func TestNewGameFromJSON(t *testing.T) {
 
 	obj = createRealisticGame()
 	marshalled, err = json.Marshal(obj)
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 	unmarshalled, err = NewGameFromJSON(bytes.NewReader(marshalled))
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 	assert.Equal(t, obj, unmarshalled)
 }
 
 func TestNewGame2Players(t *testing.T) {
 	game, err := NewGame(2, nil)
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 	assert.Equal(t, 2, len(game.Players()))
 	assert.Equal(t, 0, len(game.History()))
 	for _, color := range []PlayerColor{Red, Yellow} {
@@ -111,7 +111,7 @@ func TestNewGame2Players(t *testing.T) {
 
 func TestNewGame3Players(t *testing.T) {
 	game, err := NewGame(3, nil)
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 	assert.Equal(t, 3, len(game.Players()))
 	assert.Equal(t, 0, len(game.History()))
 	for _, color := range []PlayerColor{Red, Yellow, Green} {
@@ -122,7 +122,7 @@ func TestNewGame3Players(t *testing.T) {
 
 func TestNewGame4Players(t *testing.T) {
 	game, err := NewGame(4, nil)
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 	assert.Equal(t, 4, len(game.Players()))
 	assert.Equal(t, 0, len(game.History()))
 	for _, color := range []PlayerColor{Red, Yellow, Green, Blue} {
@@ -205,23 +205,23 @@ func TestGameCreatePlayerView(t *testing.T) {
 	game, _ := NewGame(4, nil)
 
 	card, err = game.Deck().Draw()
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 	game.Players()[Red].AppendToHand(card)
 
 	card, err = game.Deck().Draw()
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 	game.Players()[Yellow].AppendToHand(card)
 
 	card, err = game.Deck().Draw()
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 	game.Players()[Green].AppendToHand(card)
 
 	card, err = game.Deck().Draw()
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 	game.Players()[Blue].AppendToHand(card)
 
 	view, err := game.CreatePlayerView(Red)
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 
 	assert.NotSame(t, game.Players()[Red], view.Player())
 	assert.NotSame(t, game.Players()[Yellow], view.Opponents()[Yellow])

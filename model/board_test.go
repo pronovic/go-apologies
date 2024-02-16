@@ -96,39 +96,39 @@ func TestPositionJSON(t *testing.T) {
 
 	obj = NewPosition(true, false, nil, nil)
 	marshalled, err = json.Marshal(obj)
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 	unmarshalled, err = NewPositionFromJSON(bytes.NewReader(marshalled))
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 	assert.Equal(t, obj, unmarshalled)
 
 	obj = NewPosition(false, true, nil, nil)
 	marshalled, err = json.Marshal(obj)
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 	unmarshalled, err = NewPositionFromJSON(bytes.NewReader(marshalled))
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 	assert.Equal(t, obj, unmarshalled)
 
 	obj = NewPosition(false, false, nil, nil)
 	marshalled, err = json.Marshal(obj)
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 	unmarshalled, err = NewPositionFromJSON(bytes.NewReader(marshalled))
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 	assert.Equal(t, obj, unmarshalled)
 
 	square := 5
 	obj = NewPosition(false, false, nil, &square)
 	marshalled, err = json.Marshal(obj)
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 	unmarshalled, err = NewPositionFromJSON(bytes.NewReader(marshalled))
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 	assert.Equal(t, obj, unmarshalled)
 
 	safe := 10
 	obj = NewPosition(false, false, &safe, nil)
 	marshalled, err = json.Marshal(obj)
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 	unmarshalled, err = NewPositionFromJSON(bytes.NewReader(marshalled))
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 	assert.Equal(t, obj, unmarshalled)
 }
 
@@ -136,7 +136,7 @@ func TestPositionMoveToPositionValidStart(t *testing.T) {
 	target := NewPosition(true, false, nil, nil)
 	position := NewPosition(false, false, nil, nil)
 	err := position.MoveToPosition(target)
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 	assert.Equal(t, target, position)
 	assert.NotSame(t, target, position)
 	assert.Equal(t, "start", fmt.Sprintf("%s", position))
@@ -146,7 +146,7 @@ func TestPositionMoveToPositionValidHome(t *testing.T) {
 	target := NewPosition(false, true, nil, nil)
 	position := NewPosition(false, false, nil, nil)
 	err := position.MoveToPosition(target)
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 	assert.Equal(t, target, position)
 	assert.NotSame(t, target, position)
 	assert.Equal(t, "home", fmt.Sprintf("%s", position))
@@ -157,7 +157,7 @@ func TestPositionMoveToPositionValidSafe(t *testing.T) {
 	target := NewPosition(false, false, &safe, nil)
 	position := NewPosition(false, false, nil, nil)
 	err := position.MoveToPosition(target)
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 	assert.Equal(t, target, position)
 	assert.NotSame(t, target, position)
 	assert.Equal(t, "safe 3", fmt.Sprintf("%s", position))
@@ -168,7 +168,7 @@ func TestPositionMoveToPositionValidSquare(t *testing.T) {
 	target := NewPosition(false, false, nil, &square)
 	position := NewPosition(false, false, nil, nil)
 	err := position.MoveToPosition(target)
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 	assert.Equal(t, target, position)
 	assert.NotSame(t, target, position)
 	assert.Equal(t, "square 10", fmt.Sprintf("%s", position))
@@ -219,7 +219,7 @@ func TestPositionMoveToStart(t *testing.T) {
 	expected := NewPosition(true, false, nil, nil)
 	position := NewPosition(false, false, nil, nil)
 	err := position.MoveToStart()
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 	assert.Equal(t, expected, position)
 }
 
@@ -227,7 +227,7 @@ func TestPositionMoveToHome(t *testing.T) {
 	expected := NewPosition(false, true, nil, nil)
 	position := NewPosition(false, false, nil, nil)
 	err := position.MoveToHome()
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 	assert.Equal(t, expected, position)
 }
 
@@ -236,7 +236,7 @@ func TestPositionMoveToSafeValid(t *testing.T) {
 		expected := NewPosition(false, false, &safe, nil)
 		position := NewPosition(false, false, nil, nil)
 		err := position.MoveToSafe(safe)
-		assert.Nil(t, err)
+		assert.NoError(t, err)
 		assert.Equal(t, expected, position)
 	}
 }
@@ -254,7 +254,7 @@ func TestPositionMoveToSquareValid(t *testing.T) {
 		expected := NewPosition(false, false, nil, &square)
 		position := NewPosition(false, false, nil, nil)
 		err := position.MoveToSquare(square)
-		assert.Nil(t, err)
+		assert.NoError(t, err)
 		assert.Equal(t, expected, position)
 	}
 }
@@ -299,17 +299,17 @@ func TestPawnJSON(t *testing.T) {
 
 	obj = NewPawn(Red, 13)
 	marshalled, err = json.Marshal(obj)
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 	unmarshalled, err = NewPawnFromJSON(bytes.NewReader(marshalled))
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 	assert.Equal(t, obj, unmarshalled)
 
 	obj = NewPawn(Blue, 0)
 	target := NewPosition(false, true, nil, nil)
 	obj.SetPosition(target)
 	marshalled, err = json.Marshal(obj)
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 	unmarshalled, err = NewPawnFromJSON(bytes.NewReader(marshalled))
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 	assert.Equal(t, obj, unmarshalled)
 }

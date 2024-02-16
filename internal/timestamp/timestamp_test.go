@@ -32,7 +32,7 @@ func TestParseFormat(t *testing.T) {
 	input := "2024-01-31T08:15:03.221Z"
 
 	parsed, err := Parse(input)
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 	assert.Equal(t, time.Date(2024, time.January, 31, 8, 15, 3, 221000000, time.UTC), parsed.AsTime())
 	_, offset := parsed.AsTime().Zone()
 	assert.Equal(t, 0, offset) // zero offset means UTC
@@ -46,10 +46,10 @@ func TestMarshalUnmarshal(t *testing.T) {
 	parsed, _ := Parse(input)
 
 	marshalled, err := parsed.MarshalText()
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 	assert.Equal(t, input, string(marshalled))
 	var unmarshalled Timestamp
 	err = unmarshalled.UnmarshalText(marshalled)
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 	assert.Equal(t, parsed, unmarshalled)
 }

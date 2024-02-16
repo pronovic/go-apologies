@@ -24,9 +24,9 @@ func TestNewCardFromJSON(t *testing.T) {
 	for _, c := range CardTypes.Members() {
 		obj = NewCard("card", c)
 		marshalled, err = json.Marshal(obj)
-		assert.Nil(t, err)
+		assert.NoError(t, err)
 		unmarshalled, err = NewCardFromJSON(bytes.NewReader(marshalled))
-		assert.Nil(t, err)
+		assert.NoError(t, err)
 		assert.Equal(t, obj, unmarshalled)
 	}
 }
@@ -70,9 +70,9 @@ func TestNewDeckFromJSON(t *testing.T) {
 
 	obj = NewDeck()
 	marshalled, err = json.Marshal(obj)
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 	unmarshalled, err = NewDeckFromJSON(bytes.NewReader(marshalled))
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 	assert.Equal(t, obj, unmarshalled)
 }
 
@@ -96,7 +96,7 @@ func TestDeckDrawAndDiscard(t *testing.T) {
 	drawn := make([]Card, 0, DeckSize)
 	for i := 0; i < DeckSize; i++ {
 		card1, err = obj.Draw()
-		assert.Nil(t, err)
+		assert.NoError(t, err)
 		drawn = append(drawn, card1)
 	}
 	assert.Equal(t, DeckSize, len(drawn))
@@ -109,10 +109,10 @@ func TestDeckDrawAndDiscard(t *testing.T) {
 	drawn = slices.Delete(drawn, 0, 1)
 	assert.Equal(t, len(underlying.XdiscardPile), 0)
 	err = obj.Discard(card1)
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 	assert.Equal(t, len(underlying.XdiscardPile), 1)
 	card2, err = obj.Draw()
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 	assert.Same(t, card1, card2)
 	assert.Equal(t, len(underlying.XdiscardPile), 0)
 	assert.Equal(t, len(underlying.XdrawPile), 0)
@@ -121,7 +121,7 @@ func TestDeckDrawAndDiscard(t *testing.T) {
 	card1 = drawn[0]
 	drawn = slices.Delete(drawn, 0, 1)
 	err = obj.Discard(card1)
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 	err = obj.Discard(card1)
 	assert.EqualError(t, err, "card already exists in deck")
 
@@ -133,27 +133,27 @@ func TestDeckDrawAndDiscard(t *testing.T) {
 	card3 = drawn[0]
 	slices.Delete(drawn, 0, 1)
 	err = obj.Discard(card1)
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 	err = obj.Discard(card2)
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 	err = obj.Discard(card3)
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 	assert.Equal(t, len(underlying.XdiscardPile), 4)
 	assert.Equal(t, len(underlying.XdrawPile), 0)
 	_, err = obj.Draw()
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 	assert.Equal(t, len(underlying.XdiscardPile), 0)
 	assert.Equal(t, len(underlying.XdrawPile), 3)
 	_, err = obj.Draw()
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 	assert.Equal(t, len(underlying.XdiscardPile), 0)
 	assert.Equal(t, len(underlying.XdrawPile), 2)
 	_, err = obj.Draw()
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 	assert.Equal(t, len(underlying.XdiscardPile), 0)
 	assert.Equal(t, len(underlying.XdrawPile), 1)
 	_, err = obj.Draw()
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 	assert.Equal(t, len(underlying.XdiscardPile), 0)
 	assert.Equal(t, len(underlying.XdrawPile), 0)
 

@@ -45,20 +45,20 @@ func TestGetMember(t *testing.T) {
 	assert.EqualError(t, err, "member not found")
 
 	member, err = SampleValues.GetMember("Value1")
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 	assert.Equal(t, Value1, member)
 
 	member, err = SampleValues.GetMember("Value2")
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 	assert.Equal(t, Value2, member)
 }
 
 func TestJsonMarshalUnmarshal(t *testing.T) {
 	value := Value2
 	marshalled, err := json.Marshal(value)
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 	var unmarshalled Sample
 	err = json.Unmarshal(marshalled, &unmarshalled)
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 	assert.True(t, value == unmarshalled)
 }

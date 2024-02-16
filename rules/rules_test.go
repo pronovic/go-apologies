@@ -12,7 +12,7 @@ func TestStartGameStandardMode(t *testing.T) {
 	game, _ := model.NewGame(2, nil)
 	err := NewRules(nil).StartGame(game, model.StandardMode)
 
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 	assert.True(t, game.Started())
 
 	assert.Equal(t, model.Red, game.Players()[model.Red].Color())
@@ -28,7 +28,7 @@ func TestStartGameStandardMode(t *testing.T) {
 func TestStartGameAdultMode(t *testing.T) {
 	game, _ := model.NewGame(4, nil)
 	err := NewRules(nil).StartGame(game, model.AdultMode)
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 
 	assert.Equal(t, model.Red, game.Players()[model.Red].Color())
 	assert.Equal(t, model.AdultHand, len(game.Players()[model.Red].Hand()))
@@ -67,7 +67,7 @@ func TestExecuteMove(t *testing.T) {
 	player := game.Players()[model.Red]
 
 	err := NewRules(nil).ExecuteMove(game, player, move)
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 
 	assert.Equal(t, 10, *game.Players()[model.Red].Pawns()[1].Position().Square())
 	assert.Equal(t, 11, *game.Players()[model.Yellow].Pawns()[3].Position().Square())
@@ -93,24 +93,24 @@ func TestEvaluateMove(t *testing.T) {
 
 	game, _ := model.NewGame(4, nil)
 	view, err := game.CreatePlayerView(model.Red)
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 
 	expected := view.Copy()
 
 	err = expected.Player().Pawns()[1].Position().MoveToSquare(10)
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 
 	err = expected.Opponents()[model.Yellow].Pawns()[3].Position().MoveToSquare(11)
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 
 	err = expected.Opponents()[model.Yellow].Pawns()[2].Position().MoveToStart()
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 
 	err = expected.Opponents()[model.Green].Pawns()[0].Position().MoveToSquare(12)
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 
 	result, err = NewRules(nil).EvaluateMove(view, move)
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 	assert.Equal(t, expected, result)
 }
 
@@ -154,7 +154,7 @@ func TestConstructLegalMovesNoMovesWithCard(t *testing.T) {
 
 	rules := NewRules(&moveGenerator)
 	result, err := rules.ConstructLegalMoves(&view, card)
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 	assert.Equal(t, expectedMoves, result)
 }
 
@@ -198,7 +198,7 @@ func TestConstructLegalMovesNoMovesNoCard(t *testing.T) {
 
 	rules := NewRules(&moveGenerator)
 	result, err := rules.ConstructLegalMoves(&view, card)
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 	assert.Equal(t, expectedMoves, result)
 }
 
@@ -247,7 +247,7 @@ func TestConstructLegalMovesWithMovesWithCard(t *testing.T) {
 
 	rules := NewRules(&moveGenerator)
 	result, err := rules.ConstructLegalMoves(&view, card)
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 	assert.Equal(t, expectedMoves, result)
 }
 
@@ -308,7 +308,7 @@ func TestConstructLegalMovesWithMovesNoCard(t *testing.T) {
 
 	rules := NewRules(&moveGenerator)
 	result, err := rules.ConstructLegalMoves(&view, card)
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 	assert.Equal(t, expectedMoves, result)
 }
 

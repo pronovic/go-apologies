@@ -22,7 +22,7 @@ func TestRandomInputSourceChooseMove(t *testing.T) {
 
 	for i := 0; i < 100; i++ {
 		result, err := obj.ChooseMove(model.AdultMode, nil, moves)
-		assert.Nil(t, err)
+		assert.NoError(t, err)
 		assert.True(t, result == &move1 || result == &move2 || result == &move3)
 	}
 }

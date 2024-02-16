@@ -33,6 +33,6 @@ func TestCharacterChooseMove(t *testing.T) {
 	legalMoves := make([]model.Move, 0)
 	input.On("ChooseMove", mode, &view, legalMoves).Return(&move, nil)
 	result, err := obj.ChooseMove(mode, &view, legalMoves)
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 	assert.Same(t, &move, result)
 }

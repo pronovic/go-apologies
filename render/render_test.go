@@ -61,10 +61,10 @@ func TestLeft(t *testing.T) {
 
 func executeTest(t *testing.T, game model.Game, testdata string) {
 	raw, err := os.ReadFile(fmt.Sprintf("../testdata/render/%s", testdata))
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 	expected := string(raw)
 	actual, err := Board(game)
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 	assert.Equal(t, expected, actual)
 }
 

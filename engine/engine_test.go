@@ -43,7 +43,7 @@ func TestEngineFirst(t *testing.T) {
 
 	for _, color := range model.PlayerColors.Members()[0:e.Players()] {
 		err := e.SetFirst(color)
-		assert.Nil(t, err)
+		assert.NoError(t, err)
 		assert.Equal(t, color, e.First())
 	}
 }
@@ -85,7 +85,7 @@ func TestEngineReset(t *testing.T) {
 	e := createEngine(model.AdultMode, nil, nil)
 	saved := e.Game()
 	game, err := e.Reset()
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 	assert.Same(t, e.Game(), game)
 	assert.NotSame(t, saved, game)
 	assert.False(t, e.Game().Started())
@@ -96,7 +96,7 @@ func TestEngineStartGame(t *testing.T) {
 	assert.False(t, e.Started())
 	assert.False(t, e.Game().Started())
 	game, err := e.StartGame()
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 	assert.Same(t, e.Game(), game)
 	assert.True(t, e.Started())
 	assert.True(t, e.Game().Started())
@@ -109,7 +109,7 @@ func TestEngineDrawAndDiscard(t *testing.T) {
 	drawn := make([]model.Card, 0, model.DeckSize)
 	for i := 0; i < model.DeckSize; i++ {
 		c, err := e.Draw()
-		assert.Nil(t, err)
+		assert.NoError(t, err)
 		drawn = append(drawn, c)
 	}
 
@@ -120,11 +120,11 @@ func TestEngineDrawAndDiscard(t *testing.T) {
 	// put back one card
 	last := drawn[model.DeckSize-1]
 	err = e.Discard(last)
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 
 	// now draw it again and confirm we get it back
 	c, err := e.Draw()
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 	assert.Same(t, last, c)
 }
 
@@ -142,7 +142,7 @@ func TestEngineConstructLegalMovesStandardNoCard(t *testing.T) {
 	evaluator.On("ConstructLegalMoves", &view, drawcard).Return(legalMoves, nil)
 
 	c, m, err := e.ConstructLegalMoves(&view, nil)
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 	assert.Same(t, drawcard, c)
 	assert.Equal(t, legalMoves, m)
 
@@ -165,7 +165,7 @@ func TestEngineConstructLegalMovesStandardCard(t *testing.T) {
 	evaluator.On("ConstructLegalMoves", &view, providedcard).Return(legalMoves, nil)
 
 	c, m, err := e.ConstructLegalMoves(&view, providedcard)
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 	assert.Same(t, providedcard, c)
 	assert.Equal(t, legalMoves, m)
 
@@ -187,7 +187,7 @@ func TestEngineConstructLegalMovesAdultNoCard(t *testing.T) {
 	evaluator.On("ConstructLegalMoves", &view, nil).Return(legalMoves, nil)
 
 	c, m, err := e.ConstructLegalMoves(&view, nil)
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 	assert.Nil(t, c)
 	assert.Equal(t, legalMoves, m)
 
@@ -210,7 +210,7 @@ func TestEngineConstructLegalMovesAdultCard(t *testing.T) {
 	evaluator.On("ConstructLegalMoves", &view, providedcard).Return(legalMoves, nil)
 
 	c, m, err := e.ConstructLegalMoves(&view, providedcard)
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 	assert.Same(t, providedcard, c)
 	assert.Equal(t, legalMoves, m)
 
@@ -245,7 +245,7 @@ func TestEnginePlayNextStandardForfeit(t *testing.T) {
 	input.On("ChooseMove", model.StandardMode, mock.Anything, legalMoves).Return(move, nil).Once()
 
 	game, err := e.PlayNext()
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 	assert.Same(t, e.Game(), game)
 
 	c, _ := e.Draw()
@@ -271,7 +271,7 @@ func TestEnginePlayNextStandardNoDrawAgain(t *testing.T) {
 	evaluator.On("ExecuteMove", e.Game(), player, move).Return(nil).Once()
 
 	game, err := e.PlayNext()
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 	assert.Same(t, e.Game(), game)
 
 	c, _ := e.Draw()
@@ -303,7 +303,7 @@ func TestEnginePlayNextStandardDrawAgain(t *testing.T) {
 	evaluator.On("ExecuteMove", e.Game(), player, move2).Return(nil).Once()
 
 	game, err := e.PlayNext()
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 	assert.Same(t, e.Game(), game)
 
 	// just confirm that both moves were executed
@@ -328,7 +328,7 @@ func TestEnginePlayNextAdultForfeit(t *testing.T) {
 	input.On("ChooseMove", model.AdultMode, mock.Anything, legalMoves).Return(move, nil).Once()
 
 	game, err := e.PlayNext()
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 	assert.Same(t, e.Game(), game)
 
 	// confirm that the forfeited card is not in the player's hand
@@ -370,7 +370,7 @@ func TestEnginePlayNextAdultNoDrawAgain(t *testing.T) {
 	evaluator.On("ExecuteMove", e.Game(), player, move).Return(nil).Once()
 
 	game, err := e.PlayNext()
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 	assert.Same(t, e.Game(), game)
 
 	// confirm that the forfeited card is not in the player's hand
@@ -420,7 +420,7 @@ func TestEnginePlayNextAdultDrawAgain(t *testing.T) {
 	evaluator.On("ExecuteMove", e.Game(), player, move2).Return(nil).Once()
 
 	game, err := e.PlayNext()
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 	assert.Same(t, e.Game(), game)
 
 	// just confirm that both moves were executed

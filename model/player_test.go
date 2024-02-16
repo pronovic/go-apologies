@@ -30,9 +30,9 @@ func TestNewPlayerFromJSON(t *testing.T) {
 	_ = obj.Pawns()[2].Position().MoveToSquare(32)
 
 	marshalled, err = json.Marshal(obj)
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 	unmarshalled, err = NewPlayerFromJSON(bytes.NewReader(marshalled))
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 	assert.Equal(t, obj, unmarshalled)
 }
 
@@ -44,11 +44,11 @@ func TestPlayerCopy(t *testing.T) {
 	obj := NewPlayer(Red)
 	obj.AppendToHand(card1)
 	err = obj.Pawns()[0].Position().MoveToHome()
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 	err = obj.Pawns()[1].Position().MoveToSafe(2)
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 	err = obj.Pawns()[2].Position().MoveToSquare(32)
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 
 	copied := obj.Copy()
 	assert.Equal(t, obj, copied)
@@ -63,11 +63,11 @@ func TestPlayerPublicData(t *testing.T) {
 	obj := NewPlayer(Red)
 	obj.AppendToHand(card1)
 	err = obj.Pawns()[0].Position().MoveToHome()
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 	err = obj.Pawns()[1].Position().MoveToSafe(2)
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 	err = obj.Pawns()[2].Position().MoveToSquare(32)
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 
 	expected := obj.Copy()
 	expected.RemoveFromHand(card1) // the hand is cleared
@@ -114,7 +114,7 @@ func TestPlayerFindFirstPawnInStart(t *testing.T) {
 	for i := 0; i < Pawns; i++ {
 		assert.Same(t, obj.Pawns()[i], *obj.FindFirstPawnInStart())
 		err := obj.Pawns()[i].Position().MoveToHome()
-		assert.Nil(t, err)
+		assert.NoError(t, err)
 	}
 
 	assert.Nil(t, obj.FindFirstPawnInStart())
@@ -126,7 +126,7 @@ func TestPlayerAllPawnsInHome(t *testing.T) {
 	for i := 0; i < Pawns; i++ {
 		assert.False(t, obj.AllPawnsInHome())
 		err := obj.Pawns()[i].Position().MoveToHome()
-		assert.Nil(t, err)
+		assert.NoError(t, err)
 	}
 
 	assert.True(t, obj.AllPawnsInHome())
@@ -168,9 +168,9 @@ func TestNewPlayerViewFromJSON(t *testing.T) {
 	obj = NewPlayerView(player1, opponents)
 
 	marshalled, err = json.Marshal(obj)
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 	unmarshalled, err = NewPlayerViewFromJSON(bytes.NewReader(marshalled))
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 	assert.Equal(t, obj, unmarshalled)
 }
 

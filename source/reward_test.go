@@ -39,6 +39,6 @@ func TestRewardInputSourceChooseMove(t *testing.T) {
 	calculator.On("Calculate", &evaluated3).Return(float32(100.0)).Once()
 
 	result, err := obj.ChooseMove(model.AdultMode, &view, moves)
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 	assert.Same(t, &move2, result)
 }
