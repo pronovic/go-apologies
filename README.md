@@ -1,5 +1,7 @@
 # Apologies Go Library
 
+_Note: I developed this code while working at a new job where GoLang was prevalent. I no longer work there, and don't anticipate working in GoLang much going forward.  So, this repository is archived and isn't really maintained._
+
 This is a Go library that implements a game similar to the [Sorry](https://en.wikipedia.org/wiki/Sorry!_(game)) board game.
 
 The implementation is based on [apologies](https://github.com/pronovic/apologies), which I wrote in 2020 as a Python techology demonstration project.  I wrote go-apologies to help learn Go and the Go ecosystem.  The apologies problem was large enough to force me to struggle with the new language, while still being approachable.  While the code is functional and the unit tests pass, please keep in mind that this was one of my first attempts at Go &mdash; my inexperience probably shows.
